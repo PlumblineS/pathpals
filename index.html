@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Path Pals - Share Your Journey. Retrace Theirs.</title>
+    <title>Flânerie - The Art of Urban Wandering</title>
     
     <!-- Leaflet CSS for interactive maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -502,6 +502,67 @@
             font-weight: 500;
         }
         
+        /* Events Section */
+        .events-section {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 10px 40px rgba(135, 198, 195, 0.1);
+            display: none;
+            border: 2px solid rgba(135, 198, 195, 0.1);
+        }
+        
+        .events-section.active {
+            display: block;
+            animation: fadeInUp 0.5s ease;
+        }
+        
+        .event-card {
+            background: linear-gradient(135deg, #f0f8f8, #e8f4f4);
+            padding: 1.5rem;
+            border-radius: 15px;
+            transition: transform 0.3s ease;
+            border: 1px solid #d4eaea;
+        }
+        
+        .event-card:hover {
+            transform: scale(1.02);
+            border-color: #87c6c3;
+            box-shadow: 0 5px 20px rgba(135, 198, 195, 0.2);
+        }
+        
+        .event-title {
+            color: #87c6c3;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .event-type {
+            display: inline-block;
+            background: #87c6c3;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .event-details {
+            color: #6b6b6b;
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+            line-height: 1.6;
+        }
+        
+        .event-organizer {
+            color: #94b85f;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
         /* Carousel for Upcoming Swarms */
         .swarm-carousel {
             position: relative;
@@ -914,9 +975,9 @@
         <div class="nav-container">
             <a href="#" class="nav-logo">
                 <div class="logo-icon">
-                    <img src="character-logo.png" alt="Path Pals" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    <img src="character-logo.png" alt="Flânerie" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                 </div>
-                Path Pals
+                Flânerie
             </a>
             <ul class="nav-links">
                 <li><a href="#home">Home</a></li>
@@ -931,10 +992,10 @@
     <section class="hero" id="home">
         <div class="hero-content">
             <div class="hero-logo">
-                <img src="character-logo.png" alt="Path Pals Logo" class="hero-logo-img">
+                <img src="character-logo.png" alt="Flânerie Logo" class="hero-logo-img">
             </div>
-            <h1>Path Pals</h1>
-            <p class="tagline">Share your journey. Retrace theirs.</p>
+            <h1>Flânerie</h1>
+            <p class="tagline">The Art of Urban Wandering</p>
             <div class="rotating-text">
                 <span>Wander well. Walk kindly. Support local business.<br>
                 Discover hidden gems in your neighborhood.<br>
@@ -949,13 +1010,37 @@
         <div class="container">
             <!-- Info Section -->
             <section class="info-section">
-                <h2>The Art of Leisurely Urban Discovery</h2>
-                <p>
-                    Welcome to Path Pals, where we transform ordinary walks into extraordinary mini-adventures. 
-                    Search routes tailored to your interests, or share your own urban adventures. 
-                    From cozy cafes and local markets to boutique clothing stores, art galleries, and hidden parks, 
-                    we help you discover the best of your city. Our routes are designed for discovery walks, 
-                    highlighting local businesses, parks, cultural attractions, and unique urban spaces.
+                <h2 style="font-family: 'Pacifico', cursive; font-size: 2.5rem; color: #ee6f57; margin-bottom: 0.5rem;">Flâneur</h2>
+                <p style="font-style: italic; color: #6b6b6b; margin-bottom: 0.5rem; font-size: 1rem;">
+                    (flah-NUR)
+                </p>
+                <p style="font-size: 1.2rem; color: #87c6c3; margin-bottom: 1.5rem; font-weight: 500;">
+                    The art of leisurely urban exploration
+                </p>
+                <p style="max-width: 700px; margin: 0 auto 2rem; color: #6b6b6b; font-size: 1.05rem; line-height: 1.8;">
+                    Rooted in French culture, flânerie celebrates the mindful joy of wandering through the city — not to rush, but to truly see.
+                </p>
+                <div style="text-align: left; max-width: 700px; margin: 0 auto; background: rgba(255,255,255,0.8); padding: 2rem; border-radius: 15px; border-left: 4px solid #ee6f57;">
+                    <p style="margin-bottom: 1.5rem; color: #4a4a4a; font-size: 1.05rem;">
+                        🌿 <strong>Flânerie isn't laziness — it's a refined curiosity.</strong>
+                    </p>
+                    <ul style="list-style: none; padding-left: 0; color: #6b6b6b; line-height: 2.2; font-size: 1rem;">
+                        <li style="margin-bottom: 0.5rem;">🚶 <strong>The Art of Strolling</strong> — Observing city life with intention</li>
+                        <li style="margin-bottom: 0.5rem;">🏙️ <strong>Urban Exploration</strong> — Discovering neighborhoods at your own pace</li>
+                        <li style="margin-bottom: 0.5rem;">🧭 <strong>Mindful Wandering</strong> — Purposeful aimlessness with open eyes</li>
+                        <li>🎨 <strong>Cultural Appreciation</strong> — Slowing down to absorb beauty and life around you</li>
+                    </ul>
+                </div>
+                <h3 style="margin-top: 3rem; margin-bottom: 1rem; font-size: 1.8rem; color: #ee6f57;">Welcome to Flânerie.</h3>
+                <p style="max-width: 800px; margin: 0 auto; color: #6b6b6b; line-height: 1.8; font-size: 1.05rem;">
+                    We turn ordinary walks into extraordinary mini-adventures. 
+                    Search routes tailored to your interests — or share your own. From cozy cafés and local markets to boutique shops, art galleries, and hidden parks, discover the heart of your city one step at a time.
+                </p>
+                <p style="max-width: 800px; margin: 1.5rem auto 0; color: #6b6b6b; line-height: 1.8; font-size: 1.05rem;">
+                    Our routes highlight local businesses, parks, cultural gems, and unique urban spaces — designed to help you wander well, walk kindly, and rediscover the magic in the everyday.
+                </p>
+                <p style="max-width: 800px; margin: 1.5rem auto 0; color: #6b6b6b; line-height: 1.8; font-size: 1.05rem;">
+                    Join a <strong>Shopping Swarm</strong> to explore local businesses with your neighbors, or discover <strong>Local Events</strong> like neighborhood block parties, sidewalk sales, art walks, and community celebrations. Whether it's a spontaneous Saturday market crawl or a curated cultural festival, Flânerie connects you to the heartbeat of your community.
                 </p>
             </section>
             
@@ -1004,12 +1089,19 @@
                     <p>Organize or join community walks where locals explore, shop, and support businesses together — a spontaneous celebration of local culture!</p>
                     <button class="feature-btn">View Shopping Swarms</button>
                 </div>
+                
+                <div class="feature-card" onclick="toggleSection('events')">
+                    <div class="feature-icon">🎉</div>
+                    <h3>Local Events</h3>
+                    <p>Discover and promote neighborhood celebrations, block parties, sidewalk sales, art walks, and community festivals happening in your area.</p>
+                    <button class="feature-btn">Browse Events</button>
+                </div>
             </section>
             
             <!-- Journey Map Section -->
             <section class="map-container" id="journey-map">
                 <h2>Share Your Journey</h2>
-                <p>Click on the map to add waypoints and create your custom route. Share your favorite paths with the Path Pals community!</p>
+                <p>Click on the map to add waypoints and create your custom route. Share your favorite paths with the Flânerie community!</p>
                 <div id="map"></div>
                 <div style="margin-top: 1rem; display: flex; gap: 1rem;">
                     <button class="feature-btn" onclick="saveRoute()">Save Route</button>
@@ -1093,6 +1185,69 @@
                     </div>
                 </div>
             </section>
+            
+            <!-- Local Events Section -->
+            <section class="events-section" id="events">
+                <h2>Local Events</h2>
+                <p>Discover neighborhood celebrations, festivals, and community gatherings happening near you.</p>
+                <button class="feature-btn" style="margin-bottom: 1rem;" onclick="createEvent()">Promote Your Event</button>
+                
+                <!-- Search Near Me for Events -->
+                <div style="background: white; padding: 1.5rem; border-radius: 15px; margin: 1.5rem 0; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom: 1rem; color: #87c6c3;">🔍 Find Events Near You</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">State</label>
+                            <select id="eventState" style="width: 100%; padding: 0.8rem; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem;">
+                                <option value="">Select State</option>
+                                <option value="CO">Colorado</option>
+                                <option value="CA">California</option>
+                                <option value="NY">New York</option>
+                                <option value="TX">Texas</option>
+                                <option value="FL">Florida</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">City</label>
+                            <select id="eventCity" style="width: 100%; padding: 0.8rem; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem;">
+                                <option value="">Select City</option>
+                                <option value="denver">Denver</option>
+                                <option value="boulder">Boulder</option>
+                                <option value="colorado-springs">Colorado Springs</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="feature-btn" style="margin-top: 1rem;" onclick="searchNearbyEvents()">Search Events</button>
+                </div>
+                
+                <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Upcoming Events</h3>
+                <div class="swarm-list">
+                    <div class="event-card">
+                        <span class="event-type">Block Party</span>
+                        <div class="event-title">Highland Street Festival</div>
+                        <div class="event-details">📅 Saturday, June 15, 12-6 PM<br>📍 Highland Neighborhood<br>🎵 Live music, local vendors, food trucks</div>
+                        <div class="event-organizer">Organized by Highland Merchants Association</div>
+                    </div>
+                    <div class="event-card">
+                        <span class="event-type">Art Walk</span>
+                        <div class="event-title">First Friday Gallery Stroll</div>
+                        <div class="event-details">📅 First Friday of every month, 6-9 PM<br>📍 Santa Fe Arts District<br>🎨 Free gallery openings, artist demos</div>
+                        <div class="event-organizer">Organized by Arts District Alliance</div>
+                    </div>
+                    <div class="event-card">
+                        <span class="event-type">Sidewalk Sale</span>
+                        <div class="event-title">Pearl Street Summer Sidewalk Sale</div>
+                        <div class="event-details">📅 July 20-22, 10 AM-7 PM<br>📍 Pearl Street Mall<br>🛍️ Special discounts, outdoor displays</div>
+                        <div class="event-organizer">Organized by Pearl Street Association</div>
+                    </div>
+                    <div class="event-card">
+                        <span class="event-type">Food Festival</span>
+                        <div class="event-title">Taste of the Neighborhood</div>
+                        <div class="event-details">📅 August 10, 5-10 PM<br>📍 City Park<br>🍴 Local restaurants, craft beer, live entertainment</div>
+                        <div class="event-organizer">Organized by Denver Food Alliance</div>
+                    </div>
+                </div>
+            </section>
         </div>
     </main>
     
@@ -1100,8 +1255,8 @@
     <footer>
         <div class="footer-content">
             <div class="footer-section">
-                <h4>Path Pals</h4>
-                <p>Share your journey. Retrace theirs.</p>
+                <h4>Flânerie</h4>
+                <p>The art of urban wandering.</p>
                 <p style="margin-top: 1rem;">Turning ordinary walks into extraordinary adventures since 2025.</p>
             </div>
             <div class="footer-section">
@@ -1133,7 +1288,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 Path Pals. All rights reserved. Made with ❤️ for urban explorers.</p>
+            <p>&copy; 2025 Flânerie. All rights reserved. Made with ❤️ for urban explorers.</p>
         </div>
     </footer>
     
@@ -1202,7 +1357,7 @@
             <div class="modal-body">
                 <p>Share your route with friends!</p>
                 <div class="share-link-container">
-                    <input type="text" id="shareLink" readonly value="https://plumblines.github.io/pathpals/#route/123">
+                    <input type="text" id="shareLink" readonly value="https://plumblines.github.io/flanerie/#route/123">
                     <button class="copy-btn" onclick="copyShareLink()">📋 Copy</button>
                 </div>
                 <div class="share-buttons">
@@ -1254,6 +1409,64 @@
         </div>
     </div>
     
+    <!-- Create Event Modal -->
+    <div class="modal" id="createEventModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Promote Your Event</h2>
+                <span class="modal-close" onclick="closeEventModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="eventName">Event Name *</label>
+                    <input type="text" id="eventName" placeholder="e.g., Highland Street Festival" required>
+                </div>
+                <div class="form-group">
+                    <label for="eventType">Event Type *</label>
+                    <select id="eventType" required>
+                        <option value="">Select Type</option>
+                        <option value="block-party">Block Party</option>
+                        <option value="art-walk">Art Walk</option>
+                        <option value="sidewalk-sale">Sidewalk Sale</option>
+                        <option value="food-festival">Food Festival</option>
+                        <option value="farmers-market">Farmers Market</option>
+                        <option value="street-fair">Street Fair</option>
+                        <option value="concert">Concert/Performance</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="eventDescription">Description</label>
+                    <textarea id="eventDescription" rows="3" placeholder="Describe the event, activities, vendors..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="eventDate">Date *</label>
+                    <input type="date" id="eventDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="eventTime">Time *</label>
+                    <input type="time" id="eventTime" required>
+                </div>
+                <div class="form-group">
+                    <label for="eventLocation">Location *</label>
+                    <input type="text" id="eventLocation" placeholder="e.g., Highland Neighborhood, 3200 W 32nd Ave" required>
+                </div>
+                <div class="form-group">
+                    <label for="eventOrganizer">Organizer/Business Name *</label>
+                    <input type="text" id="eventOrganizer" placeholder="e.g., Highland Merchants Association" required>
+                </div>
+                <div class="form-group">
+                    <label for="eventContact">Contact Email (for verification)</label>
+                    <input type="email" id="eventContact" placeholder="your@email.com">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-cancel" onclick="closeEventModal()">Cancel</button>
+                <button class="modal-btn modal-btn-save" onclick="confirmCreateEvent()">Submit Event</button>
+            </div>
+        </div>
+    </div>
+    
     <!-- Leaflet JavaScript -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
@@ -1278,7 +1491,7 @@
         
         // Toggle sections
         function toggleSection(sectionId) {
-            const sections = ['journey-map', 'search', 'swarms'];
+            const sections = ['journey-map', 'search', 'swarms', 'events'];
             
             sections.forEach(id => {
                 const section = document.getElementById(id);
@@ -1427,9 +1640,9 @@
             };
             
             // Save to localStorage (in real app, would save to backend)
-            const savedRoutes = JSON.parse(localStorage.getItem('pathPalsRoutes') || '[]');
+            const savedRoutes = JSON.parse(localStorage.getItem('flanerieRoutes') || '[]');
             savedRoutes.push(routeData);
-            localStorage.setItem('pathPalsRoutes', JSON.stringify(savedRoutes));
+            localStorage.setItem('flanerieRoutes', JSON.stringify(savedRoutes));
             
             console.log('Saved route:', routeData);
             
@@ -1449,7 +1662,7 @@
             
             // Generate a unique link (in real app, would create actual shareable link)
             const routeId = Date.now();
-            document.getElementById('shareLink').value = `https://plumblines.github.io/pathpals/#route/${routeId}`;
+            document.getElementById('shareLink').value = `https://plumblines.github.io/flanerie/#route/${routeId}`;
         }
         
         // Close share modal
@@ -1578,6 +1791,75 @@
             showToast(`Swarm "${swarmName}" created successfully!`);
             
             // In a real app, this would update the swarm list dynamically
+        }
+        
+        // Create new event
+        function createEvent() {
+            document.getElementById('createEventModal').classList.add('show');
+        }
+        
+        // Close create event modal
+        function closeEventModal() {
+            document.getElementById('createEventModal').classList.remove('show');
+            // Clear form
+            document.getElementById('eventName').value = '';
+            document.getElementById('eventType').value = '';
+            document.getElementById('eventDescription').value = '';
+            document.getElementById('eventDate').value = '';
+            document.getElementById('eventTime').value = '';
+            document.getElementById('eventLocation').value = '';
+            document.getElementById('eventOrganizer').value = '';
+            document.getElementById('eventContact').value = '';
+        }
+        
+        // Confirm create event
+        function confirmCreateEvent() {
+            const eventName = document.getElementById('eventName').value;
+            const eventType = document.getElementById('eventType').value;
+            const eventDate = document.getElementById('eventDate').value;
+            const eventTime = document.getElementById('eventTime').value;
+            const eventLocation = document.getElementById('eventLocation').value;
+            const eventOrganizer = document.getElementById('eventOrganizer').value;
+            
+            if (!eventName || !eventType || !eventDate || !eventTime || !eventLocation || !eventOrganizer) {
+                showToast('Please fill in all required fields!');
+                return;
+            }
+            
+            // Create event object
+            const eventData = {
+                name: eventName,
+                type: eventType,
+                description: document.getElementById('eventDescription').value,
+                date: eventDate,
+                time: eventTime,
+                location: eventLocation,
+                organizer: eventOrganizer,
+                contact: document.getElementById('eventContact').value,
+                timestamp: new Date().toISOString()
+            };
+            
+            console.log('Created event:', eventData);
+            
+            closeEventModal();
+            showToast(`Event "${eventName}" submitted for review!`);
+            
+            // In a real app, this would go to a moderation queue
+        }
+        
+        // Search nearby events
+        function searchNearbyEvents() {
+            const state = document.getElementById('eventState').value;
+            const city = document.getElementById('eventCity').value;
+            
+            if (!state || !city) {
+                showToast('Please select both state and city!');
+                return;
+            }
+            
+            showToast(`Searching for events in ${city}, ${state}...`);
+            
+            // In a real app, this would filter events based on location
         }
         
         // Initialize Swarm Map
