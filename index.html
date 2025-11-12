@@ -25,7 +25,7 @@
             color: #e0e0e0;
         }
         
-        /* Background with rotating images */
+        /* Background with rotating images - FIXED POSITION */
         .bg-container {
             position: fixed;
             top: 0;
@@ -37,18 +37,18 @@
         }
         
         .bg-image {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: 100vh;
             object-fit: cover;
             opacity: 0;
             transition: opacity 2s ease-in-out;
         }
         
         .bg-image.active {
-            opacity: 0.2;
+            opacity: 0.35;
         }
         
         /* Navigation */
@@ -772,6 +772,9 @@
                 </p>
                 <p class="welcome-text">
                     Join a <strong style="color: #ee6f57;">Shopping Swarm</strong> to explore local businesses with your neighbors, or discover <strong style="color: #87c6c3;">Local Events</strong> like neighborhood block parties, sidewalk sales, art walks, and community celebrations.
+                </p>
+                <p style="margin-top: 2rem; font-size: 1.3rem; color: #ee6f57; font-style: italic; font-weight: 500;">
+                    Share your journey. Retrace theirs.
                 </p>
             </section>
             
