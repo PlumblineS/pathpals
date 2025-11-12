@@ -41,7 +41,7 @@
 
     /* ---------- Hero (image-first, minimal overlay) ---------- */
     .hero{position:relative; height:62vh; min-height:420px; display:flex; align-items:flex-end}
-    .hero::before{content:""; position:absolute; inset:0; background:url('hero-neighborhood-illustration.jpg') center/cover no-repeat; filter:saturate(95%) contrast(102%)}
+    
     .hero::after{content:""; position:absolute; inset:0; background:linear-gradient(to top, rgba(250,248,246,.95) 5%, rgba(250,248,246,.55) 45%, rgba(250,248,246,0) 70%)}
     .hero-inner{position:relative; width:100%; padding:28px 0 10px}
     .hero-title{font-family:'Playfair Display',serif; font-size:clamp(2rem,5vw,3.25rem); line-height:1.12;}
@@ -99,7 +99,17 @@
 </head>
 <body>
   <!-- Header -->
-  <header>
+  <div class="bg-container">
+  <img src="character-bg.png" class="bg-image active" alt="">
+  <img src="character-bg2.png" class="bg-image" alt="">
+  <img src="character-bg3.png" class="bg-image" alt="">
+  <img src="character-bg4.png" class="bg-image" alt="">
+  <img src="character-bg5.png" class="bg-image" alt="">
+  <img src="character-bg6.png" class="bg-image" alt="">
+  <img src="character-bg7.png" class="bg-image" alt="">
+  <img src="character-bg8.png" class="bg-image" alt="">
+</div>
+<header>
     <div class="container nav">
       <div class="brand">Flânerie</div>
       <nav class="nav-right">
@@ -305,7 +315,16 @@
     }));
 
     // Leaflet maps (lightweight defaults)
-    const mapStyle = {
+    // Rotating Background
+let bgIndex=0;
+const bgImages=document.querySelectorAll('.bg-image');
+setInterval(()=>{
+  bgImages[bgIndex].classList.remove('active');
+  bgIndex=(bgIndex+1)%bgImages.length;
+  bgImages[bgIndex].classList.add('active');
+},4000);
+
+const mapStyle = {
       url:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       opts:{ attribution:'© OpenStreetMap' }
     };
