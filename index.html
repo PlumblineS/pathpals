@@ -47,19 +47,13 @@
             object-fit: cover;
             object-position: center center;
             opacity: 0;
-            transition: opacity 2s ease-in-out;
-        }
-        
-        /* Better background on mobile */
-        @media (max-width: 768px) {
-            .bg-image {
-                object-fit: contain;
-                background: #0a0a0a;
-            }
+            transform: scale(1);
+            transition: opacity 2s ease-in-out, transform 2s ease-in-out;
         }
         
         .bg-image.active {
             opacity: 0.45;
+            transform: scale(1.05);
         }
         
         /* Navigation */
@@ -114,7 +108,7 @@
         
         /* Hero Section */
         .hero {
-            min-height: 100vh;
+            min-height: 75vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -781,6 +775,12 @@
                 padding: 0.75rem 1rem;
             }
             
+            /* Background images on mobile */
+            .bg-image {
+                object-fit: contain;
+                background: #0a0a0a;
+            }
+            
             /* Hero Section - much smaller on mobile */
             .hero {
                 min-height: 70vh;
@@ -1383,7 +1383,7 @@
             bgImages[currentBgIndex].classList.add('active');
         }
         
-        setInterval(rotateBgImages, 4000);
+        setInterval(rotateBgImages, 6000);
         
         // Initialize Variables
         let journeyMap = null;
