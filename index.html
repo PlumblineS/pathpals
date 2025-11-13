@@ -88,6 +88,15 @@
             gap: 0.5rem;
         }
         
+        .nav-logo img {
+            animation: navLogoFloat 3s ease-in-out infinite;
+        }
+        
+        @keyframes navLogoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
         .nav-links {
             display: flex;
             gap: 2rem;
@@ -126,27 +135,6 @@
             box-shadow: none;
             max-width: 800px;
             border: none;
-        }
-        
-        .hero-logo {
-            width: 300px;
-            height: 300px;
-            margin: 0 auto 1.5rem;
-            position: relative;
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        .hero-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            object-position: center center;
-            filter: drop-shadow(0 10px 40px rgba(0, 0, 0, 0.9));
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
         }
         
         .hero h1 {
@@ -795,11 +783,6 @@
                 max-width: 100%;
             }
             
-            .hero-logo {
-                width: 200px !important;
-                height: 200px !important;
-            }
-            
             .hero h1 {
                 font-size: 2.5rem;
             }
@@ -862,11 +845,6 @@
             /* Extra small phones */
             .hero h1 {
                 font-size: 2rem;
-            }
-            
-            .hero-logo {
-                width: 150px !important;
-                height: 150px !important;
             }
             
             .nav-links {
@@ -989,7 +967,7 @@
     <nav id="navbar">
         <div class="nav-container">
             <a href="#home" class="nav-logo">
-                <img src="character-logo.png" alt="Flânerie" style="height: 80px; width: 80px; object-fit: contain;">
+                <img src="character-logo.png" alt="Flânerie" style="height: 120px; width: 120px; object-fit: contain;">
                 Flânerie
             </a>
             <ul class="nav-links">
@@ -1004,9 +982,6 @@
     <!-- Hero Section -->
     <section class="hero" id="home">
         <div class="hero-content">
-            <div class="hero-logo">
-                <img src="character-logo.png" alt="Flânerie Character">
-            </div>
             <h1>Flânerie</h1>
             <div class="rotating-text">
                 <span>Wander well.<br>
