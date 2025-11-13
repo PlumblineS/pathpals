@@ -883,9 +883,91 @@
                 font-size: 1.5rem;
             }
         }
+        
+        /* Epigraph Intro */
+        .epigraph-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #0a0a0a;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            animation: epigraphSequence 5s ease-in-out forwards;
+        }
+        
+        .epigraph-content {
+            text-align: center;
+            padding: 2rem;
+            max-width: 800px;
+            opacity: 0;
+            animation: epigraphFadeIn 1s ease-in forwards;
+        }
+        
+        .epigraph-content h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 5rem;
+            font-weight: 400;
+            color: #e0e0e0;
+            margin-bottom: 1rem;
+            letter-spacing: 2px;
+        }
+        
+        .epigraph-content .pronunciation {
+            font-size: 1.3rem;
+            color: #999;
+            margin-bottom: 2rem;
+            font-style: italic;
+        }
+        
+        .epigraph-content .definition {
+            font-size: 1.8rem;
+            color: #d4d4d4;
+            line-height: 1.8;
+            font-weight: 300;
+        }
+        
+        @keyframes epigraphSequence {
+            0% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; pointer-events: none; }
+        }
+        
+        @keyframes epigraphFadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        
+        /* Mobile epigraph */
+        @media (max-width: 768px) {
+            .epigraph-content h2 {
+                font-size: 3rem;
+            }
+            
+            .epigraph-content .pronunciation {
+                font-size: 1rem;
+            }
+            
+            .epigraph-content .definition {
+                font-size: 1.3rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Epigraph Intro -->
+    <div class="epigraph-overlay">
+        <div class="epigraph-content">
+            <h2>flânerie</h2>
+            <p class="pronunciation">| ˈflɑːnəri |</p>
+            <p class="definition">The art of leisurely urban exploration;<br>mindful wandering through city streets<br>with intention and curiosity.</p>
+        </div>
+    </div>
+    
     <!-- Background Images -->
     <div class="bg-container">
         <img src="character-bg.png" class="bg-image active" alt="">
