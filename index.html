@@ -1011,12 +1011,20 @@
         /* Definition box - starts hidden, fades in after epigraph */
         .definition-box-animated {
             opacity: 0;
-            animation: definitionFadeIn 1s ease-in forwards;
-            animation-delay: 7s;
+            transform: scale(1.3);
+            animation: definitionFadeIn 1.5s ease-out forwards;
+            animation-delay: 6.5s;
         }
         
         @keyframes definitionFadeIn {
-            to { opacity: 1; }
+            0% {
+                opacity: 0;
+                transform: scale(1.3) translateY(-200px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
         }
         
         /* Mobile epigraph */
@@ -1121,17 +1129,17 @@
                 
                 <!-- THE PROBLEM FIRST - Take Back Your Main Street -->
                 <div id="take-back-section" style="text-align: left; max-width: 1100px; margin: 0 auto 3rem;">
-                    <h3 style="font-family: 'Playfair Display', serif; color: var(--accent-color); font-size: 2.2rem; margin-bottom: 2rem; font-weight: 600;">Take Back Your Main Street</h3>
+                    <h3 style="font-family: 'Playfair Display', serif; color: var(--accent-color); font-size: 2.6rem; margin-bottom: 2rem; font-weight: 600;">Take Back Your Main Street</h3>
                     
                     <p style="font-size: 1.2rem; font-weight: 400; color: #e0e0e0; line-height: 1.9; margin-bottom: 1.8rem;">
-                        <span id="typewriter-sentence" style="display: inline-block; border-right: 2px solid var(--accent-light);"><strong style="color: var(--accent-light);"></strong></span>
-                        <span id="rest-of-paragraph" style="opacity: 0;"> Search engines direct you to chains. Online shopping replaces neighborhood stores. <strong style="color: var(--accent-light);">Meanwhile, the café owner who remembers your name can't make rent.</strong> Small businesses don't have marketing budgets or algorithms working for them — they have <strong style="color: var(--accent-color);">you</strong>. Flânerie is crowdsourced discovery. <strong style="color: var(--accent-color);">Your route to that hidden coffee roaster? Someone's new favorite spot. Your Shopping Swarm? A local merchant's best weekend in months.</strong> This is how communities fight back — one walk, one recommendation, one conscious choice at a time.</span>
+                        <span id="typewriter-sentence" style="display: block; font-size: 1.45rem; margin-bottom: 1rem; border-right: 2px solid var(--accent-light);"><strong style="color: var(--accent-light);"></strong></span>
+                        <span id="rest-of-paragraph" style="opacity: 0; display: block;">Search engines direct you to chains. Online shopping replaces neighborhood stores. <strong style="color: var(--accent-light);">Meanwhile, the café owner who remembers your name can't make rent.</strong> Small businesses don't have marketing budgets or algorithms working for them — they have <strong style="color: var(--accent-color);">you</strong>. Flânerie is crowdsourced discovery. <strong style="color: var(--accent-color);">Your route to that hidden coffee roaster? Someone's new favorite spot. Your Shopping Swarm? A local merchant's best weekend in months.</strong> This is how communities fight back — one walk, one recommendation, one conscious choice at a time.</span>
                     </p>
                 </div>
                 
                 <!-- THE SOLUTION - Welcome to Flânerie -->
                 <div style="text-align: left; max-width: 1100px; margin: 0 auto 3rem;">
-                    <h3 style="font-family: 'Playfair Display', serif; color: var(--accent-color); font-size: 2.2rem; margin-bottom: 2rem; font-weight: 600;">Welcome to Flânerie</h3>
+                    <h3 style="font-family: 'Playfair Display', serif; color: var(--accent-color); font-size: 2.6rem; margin-bottom: 2rem; font-weight: 600;">Welcome to Flânerie</h3>
                     
                     <p style="font-size: 1.2rem; font-weight: 400; color: #e0e0e0; line-height: 1.9; margin-bottom: 1.8rem;">
                         We turn ordinary walks into extraordinary mini-adventures. Rooted in French culture, flânerie celebrates <strong style="color: var(--accent-color);">the art of strolling</strong> — observing city life with intention rather than rushing past it.
@@ -1262,7 +1270,10 @@
             <!-- Journey Map Section -->
             <section class="map-container" id="journey-map">
                 <h2>Share Your Journey</h2>
-                <p>Click on the map to add waypoints and create your custom route. Share your favorite paths with the Flânerie community!</p>
+                <p>Search for a location or business to get started, or click on the map to add waypoints and create your custom route.</p>
+                <div style="margin-bottom: 1rem;">
+                    <input type="text" id="mapSearch" placeholder="Search address, zip code, or business name..." style="width: 100%; padding: 1rem; border: 2px solid rgba(238, 111, 87, 0.3); border-radius: 15px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-size: 1rem; font-family: 'Poppins', sans-serif;">
+                </div>
                 <div id="map"></div>
                 <div style="margin-top: 1rem; display: flex; gap: 1rem;">
                     <button class="feature-btn" onclick="saveRoute()">Save Route</button>
@@ -1275,6 +1286,9 @@
             <section class="search-section" id="search">
                 <h2>Search Routes</h2>
                 <p>Find the perfect route for your next adventure</p>
+                <div style="margin-bottom: 1rem;">
+                    <input type="text" id="searchMapLocation" placeholder="Search address, zip code, or business name..." style="width: 100%; padding: 1rem; border: 2px solid rgba(238, 111, 87, 0.3); border-radius: 15px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-size: 1rem; font-family: 'Poppins', sans-serif; margin-bottom: 1rem;">
+                </div>
                 <div class="search-box">
                     <input type="text" class="search-input" placeholder="Search by interest, location, or mood...">
                     <button class="feature-btn" onclick="searchRoutes()">Search</button>
@@ -1291,14 +1305,31 @@
                 
                 <div style="background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px; margin: 2rem 0;">
                     <h3 style="color: var(--accent-light); margin-bottom: 1rem;">🔍 Search Near Me</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                         <div>
-                            <label style="display: block; margin-bottom: 0.5rem; color: #d4d4d4;">State</label>
+                            <label style="display: block; margin-bottom: 0.5rem; color: #d4d4d4;">Country</label>
+                            <select id="swarmCountry" style="width: 100%; padding: 0.8rem; border: 2px solid rgba(238, 111, 87, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0;">
+                                <option value="">Select Country</option>
+                                <option value="US">United States</option>
+                                <option value="CA">Canada</option>
+                                <option value="UK">United Kingdom</option>
+                                <option value="AU">Australia</option>
+                                <option value="NZ">New Zealand</option>
+                                <option value="IE">Ireland</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; color: #d4d4d4;">State/Province</label>
                             <select id="swarmState" style="width: 100%; padding: 0.8rem; border: 2px solid rgba(238, 111, 87, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0;">
-                                <option value="">Select State</option>
+                                <option value="">Select State/Province</option>
                                 <option value="CO">Colorado</option>
                                 <option value="CA">California</option>
                                 <option value="NY">New York</option>
+                                <option value="TX">Texas</option>
+                                <option value="FL">Florida</option>
+                                <option value="ON">Ontario</option>
+                                <option value="BC">British Columbia</option>
+                                <option value="QC">Quebec</option>
                             </select>
                         </div>
                         <div>
@@ -1307,10 +1338,17 @@
                                 <option value="">Select City</option>
                                 <option value="denver">Denver</option>
                                 <option value="boulder">Boulder</option>
+                                <option value="losangeles">Los Angeles</option>
+                                <option value="newyork">New York</option>
+                                <option value="toronto">Toronto</option>
                             </select>
                         </div>
                     </div>
-                    <button class="feature-btn" style="margin-top: 1rem;" onclick="searchSwarms()">Search</button>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: #d4d4d4;">Or Search by Address/Zip</label>
+                        <input type="text" id="swarmLocationSearch" placeholder="Enter address, zip code, or business name..." style="width: 100%; padding: 0.8rem; border: 2px solid rgba(238, 111, 87, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif;">
+                    </div>
+                    <button class="feature-btn" onclick="searchSwarms()">Search</button>
                 </div>
                 
                 <div id="swarm-map"></div>
@@ -1343,14 +1381,31 @@
                 
                 <div style="background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px; margin: 2rem 0;">
                     <h3 style="color: var(--accent-light); margin-bottom: 1rem;">🔍 Find Events Near You</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                         <div>
-                            <label style="display: block; margin-bottom: 0.5rem; color: #d4d4d4;">State</label>
+                            <label style="display: block; margin-bottom: 0.5rem; color: #d4d4d4;">Country</label>
+                            <select id="eventCountry" style="width: 100%; padding: 0.8rem; border: 2px solid rgba(238, 111, 87, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0;">
+                                <option value="">Select Country</option>
+                                <option value="US">United States</option>
+                                <option value="CA">Canada</option>
+                                <option value="UK">United Kingdom</option>
+                                <option value="AU">Australia</option>
+                                <option value="NZ">New Zealand</option>
+                                <option value="IE">Ireland</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; color: #d4d4d4;">State/Province</label>
                             <select id="eventState" style="width: 100%; padding: 0.8rem; border: 2px solid rgba(238, 111, 87, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0;">
-                                <option value="">Select State</option>
+                                <option value="">Select State/Province</option>
                                 <option value="CO">Colorado</option>
                                 <option value="CA">California</option>
                                 <option value="NY">New York</option>
+                                <option value="TX">Texas</option>
+                                <option value="FL">Florida</option>
+                                <option value="ON">Ontario</option>
+                                <option value="BC">British Columbia</option>
+                                <option value="QC">Quebec</option>
                             </select>
                         </div>
                         <div>
@@ -1359,10 +1414,17 @@
                                 <option value="">Select City</option>
                                 <option value="denver">Denver</option>
                                 <option value="boulder">Boulder</option>
+                                <option value="losangeles">Los Angeles</option>
+                                <option value="newyork">New York</option>
+                                <option value="toronto">Toronto</option>
                             </select>
                         </div>
                     </div>
-                    <button class="feature-btn" style="margin-top: 1rem;" onclick="searchEvents()">Search Events</button>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: #d4d4d4;">Or Search by Address/Zip</label>
+                        <input type="text" id="eventLocationSearch" placeholder="Enter address, zip code, or business name..." style="width: 100%; padding: 0.8rem; border: 2px solid rgba(238, 111, 87, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif;">
+                    </div>
+                    <button class="feature-btn" onclick="searchEvents()">Search Events</button>
                 </div>
                 
                 <h3 style="color: var(--accent-color); margin: 2rem 0 1rem;">Upcoming Events</h3>
@@ -1649,6 +1711,16 @@
                             journeyMap.on('click', function(e) {
                                 addWaypoint(e.latlng);
                             });
+                            
+                            // Add search functionality
+                            const searchInput = modal.querySelector('#mapSearch');
+                            if (searchInput) {
+                                searchInput.addEventListener('keypress', function(e) {
+                                    if (e.key === 'Enter') {
+                                        searchLocation(searchInput.value, journeyMap);
+                                    }
+                                });
+                            }
                         }
                     }, 300);
                 } else if (sectionId === 'search') {
@@ -1659,6 +1731,16 @@
                             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                                 attribution: '© OpenStreetMap'
                             }).addTo(searchMap);
+                            
+                            // Add search functionality
+                            const searchInput = modal.querySelector('#searchMapLocation');
+                            if (searchInput) {
+                                searchInput.addEventListener('keypress', function(e) {
+                                    if (e.key === 'Enter') {
+                                        searchLocation(searchInput.value, searchMap);
+                                    }
+                                });
+                            }
                         }
                     }, 300);
                 } else if (sectionId === 'swarms') {
@@ -1709,6 +1791,44 @@
             if (routeCoordinates.length > 1) {
                 routePath = L.polyline(routeCoordinates, { color: 'var(--accent-color)', weight: 4 }).addTo(journeyMap);
             }
+        }
+        
+        // Search location using Nominatim (OpenStreetMap geocoding)
+        function searchLocation(query, map) {
+            if (!query || query.trim() === '') {
+                showToast('Please enter a location to search');
+                return;
+            }
+            
+            // Using Nominatim API for geocoding
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        const result = data[0];
+                        const lat = parseFloat(result.lat);
+                        const lon = parseFloat(result.lon);
+                        
+                        // Center map on result
+                        map.setView([lat, lon], 15);
+                        
+                        // Add marker
+                        L.marker([lat, lon])
+                            .addTo(map)
+                            .bindPopup(`<strong>${result.display_name}</strong>`)
+                            .openPopup();
+                        
+                        showToast(`Found: ${result.display_name.split(',')[0]}`);
+                    } else {
+                        showToast('Location not found. Try a different search.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    showToast('Search failed. Please try again.');
+                });
         }
         
         function clearRoute() {
