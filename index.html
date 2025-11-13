@@ -50,6 +50,14 @@
             transition: opacity 2s ease-in-out;
         }
         
+        /* Better background on mobile */
+        @media (max-width: 768px) {
+            .bg-image {
+                object-fit: contain;
+                background: #0a0a0a;
+            }
+        }
+        
         .bg-image.active {
             opacity: 0.45;
         }
@@ -751,6 +759,128 @@
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            /* Navigation - smaller logo and better spacing */
+            .nav-logo {
+                font-size: 1.5rem;
+            }
+            
+            .nav-logo img {
+                height: 50px !important;
+                width: 50px !important;
+            }
+            
+            .nav-links {
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+            
+            nav {
+                padding: 0.75rem 1rem;
+            }
+            
+            /* Hero Section - much smaller on mobile */
+            .hero {
+                min-height: 70vh;
+                padding: 1rem;
+                padding-top: 80px;
+            }
+            
+            .hero-content {
+                padding: 2rem 1.5rem;
+                max-width: 100%;
+            }
+            
+            .hero-logo {
+                width: 200px !important;
+                height: 200px !important;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .rotating-text {
+                font-size: 0.95rem;
+            }
+            
+            /* Info Section */
+            .info-section h2 {
+                font-size: 2.5rem !important;
+            }
+            
+            .info-section h3 {
+                font-size: 1.8rem !important;
+            }
+            
+            .info-section h4 {
+                font-size: 1.4rem !important;
+            }
+            
+            .info-section p {
+                font-size: 1rem !important;
+            }
+            
+            /* Tagline */
+            .info-section p[style*="font-size: 2.5rem"] {
+                font-size: 1.8rem !important;
+            }
+            
+            /* Feature Cards */
+            .feature-card h3 {
+                font-size: 1.3rem;
+            }
+            
+            .feature-card p {
+                font-size: 0.95rem;
+            }
+            
+            /* Upcoming Sections */
+            .upcoming-section {
+                padding: 2rem 1.5rem;
+            }
+            
+            .upcoming-section h2 {
+                font-size: 2rem;
+            }
+            
+            /* Container padding */
+            .container {
+                padding: 0 1rem !important;
+            }
+            
+            .main-content {
+                padding: 3rem 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            /* Extra small phones */
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero-logo {
+                width: 150px !important;
+                height: 150px !important;
+            }
+            
+            .nav-links {
+                display: none; /* Hide nav links on very small screens */
+            }
+            
+            .info-section h2 {
+                font-size: 2rem !important;
+            }
+            
+            .feature-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -839,10 +969,6 @@
                     
                     <p style="font-size: 1.2rem; font-weight: 400; color: #e0e0e0; line-height: 1.9; margin-bottom: 1.8rem;">
                         <strong style="color: var(--accent-light);">Every year, 200,000 small businesses close in the U.S. alone.</strong> Search engines direct you to chains. Online shopping replaces neighborhood stores. <strong style="color: var(--accent-light);">Meanwhile, the café owner who remembers your name can't make rent.</strong> Small businesses don't have marketing budgets or algorithms working for them — they have <strong style="color: var(--accent-color);">you</strong>. Flânerie is crowdsourced discovery. <strong style="color: var(--accent-color);">Your route to that hidden coffee roaster? Someone's new favorite spot. Your Shopping Swarm? A local merchant's best weekend in months.</strong> This is how communities fight back — one walk, one recommendation, one conscious choice at a time.
-                    </p>
-                    
-                    <p style="font-size: 1.2rem; font-weight: 400; color: #e0e0e0; line-height: 1.9;">
-                        Join a <strong style="color: var(--accent-color);">Shopping Swarm</strong> to explore local businesses with your neighbors, or discover <strong style="color: var(--accent-light);">Local Events</strong> like neighborhood block parties, sidewalk sales, art walks, and community celebrations.
                     </p>
                 </div>
                 
