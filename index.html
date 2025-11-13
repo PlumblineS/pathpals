@@ -130,7 +130,7 @@
             align-items: center;
             position: relative;
             padding: 2rem;
-            padding-top: 100px;
+            padding-top: 140px;
         }
         
         .hero-content {
@@ -1100,7 +1100,7 @@
         .definition-box-animated {
             opacity: 0;
             transform: translateY(-60vh) scale(1.5);
-            animation: definitionSlideToPlace 2s ease-out forwards;
+            animation: definitionSlideToPlace 1.5s ease-out forwards;
             animation-delay: 5.5s;
         }
         
@@ -1246,7 +1246,7 @@
                 </div>
                 
                 <!-- Tagline -->
-                <p style="margin-top: 3rem; font-family: 'Playfair Display', serif; font-size: 2.5rem; color: var(--accent-color); font-style: italic; font-weight: 700; text-align: center;">
+                <p id="tagline-reveal" class="hidden-until-ready" style="margin-top: 3rem; font-family: 'Playfair Display', serif; font-size: 2.5rem; color: var(--accent-color); font-style: italic; font-weight: 700; text-align: center;">
                     Share your journey. Retrace theirs.
                 </p>
             </section>
@@ -1720,30 +1720,38 @@
             if (choreographyStarted) return;
             choreographyStarted = true;
             
-            // Step 1: Definition slides to place (already animated via CSS)
-            // Waits 7.5 seconds for epigraph to fade
+            // Ensure page is at top
+            window.scrollTo({ top: 0, behavior: 'instant' });
             
-            // Step 2: After definition settles, show "Take Back Your Main Street" header (10 seconds total)
+            // Step 1: Definition slides to place (already animated via CSS at 7.5 seconds)
+            
+            // Step 2: Show "Take Back Your Main Street" header right after definition settles (8 seconds)
             setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'instant' });
                 const takeBackSection = document.getElementById('take-back-section');
                 takeBackSection.classList.remove('hidden-until-ready');
                 takeBackSection.classList.add('fade-in-section');
-            }, 10000);
+            }, 8000);
             
-            // Step 3: Start typewriter 2 seconds after header appears (12 seconds total)
+            // Step 3: Start typewriter 2 seconds after header appears (10 seconds total)
             setTimeout(() => {
                 startTypewriter();
-            }, 12000);
+            }, 10000);
             
-            // Step 4: After typewriter completes (~17 seconds), wait then show Welcome section
-            // Typewriter takes ~3 seconds to type + 2 sec pause = 5 seconds
-            // So show Welcome at 17 seconds
+            // Step 4: After typewriter completes (~15 seconds), show Welcome section
+            // Typewriter takes ~3 seconds to type + 2 sec pause before + 2 sec pause after = 7 seconds
             setTimeout(() => {
                 showWelcomeSection();
             }, 17000);
             
-            // Step 5: Show rest of content after Welcome paragraph fades in
+            // Step 5: Show tagline and rest of content after Welcome appears
             setTimeout(() => {
+                const tagline = document.getElementById('tagline-reveal');
+                if (tagline) {
+                    tagline.classList.remove('hidden-until-ready');
+                    tagline.classList.add('fade-in-section');
+                }
+                
                 const featuresContent = document.getElementById('features-content');
                 featuresContent.classList.remove('hidden-until-ready');
                 featuresContent.classList.add('fade-in-section');
