@@ -158,11 +158,15 @@
             height: 50px;
             overflow: hidden;
             margin: 1rem 0;
+            position: relative;
         }
         
         .rotating-text span {
             display: block;
-            animation: rotate 18s infinite;
+            position: absolute;
+            width: 100%;
+            opacity: 0;
+            animation: textFade 60s infinite;
             color: #ffffff;
             font-style: italic;
             font-weight: 400;
@@ -171,14 +175,32 @@
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
         }
         
-        @keyframes rotate {
-            0%, 14% { transform: translateY(0); opacity: 1; }
-            16%, 30% { transform: translateY(-50px); opacity: 1; }
-            32%, 46% { transform: translateY(-100px); opacity: 1; }
-            48%, 62% { transform: translateY(-150px); opacity: 1; }
-            64%, 78% { transform: translateY(-200px); opacity: 1; }
-            80%, 94% { transform: translateY(-250px); opacity: 1; }
-            96%, 100% { transform: translateY(-300px); opacity: 0; }
+        .rotating-text span:nth-child(1) { animation-delay: 0s; }
+        .rotating-text span:nth-child(2) { animation-delay: 3s; }
+        .rotating-text span:nth-child(3) { animation-delay: 6s; }
+        .rotating-text span:nth-child(4) { animation-delay: 9s; }
+        .rotating-text span:nth-child(5) { animation-delay: 12s; }
+        .rotating-text span:nth-child(6) { animation-delay: 15s; }
+        .rotating-text span:nth-child(7) { animation-delay: 18s; }
+        .rotating-text span:nth-child(8) { animation-delay: 21s; }
+        .rotating-text span:nth-child(9) { animation-delay: 24s; }
+        .rotating-text span:nth-child(10) { animation-delay: 27s; }
+        .rotating-text span:nth-child(11) { animation-delay: 30s; }
+        .rotating-text span:nth-child(12) { animation-delay: 33s; }
+        .rotating-text span:nth-child(13) { animation-delay: 36s; }
+        .rotating-text span:nth-child(14) { animation-delay: 39s; }
+        .rotating-text span:nth-child(15) { animation-delay: 42s; }
+        .rotating-text span:nth-child(16) { animation-delay: 45s; }
+        .rotating-text span:nth-child(17) { animation-delay: 48s; }
+        .rotating-text span:nth-child(18) { animation-delay: 51s; }
+        .rotating-text span:nth-child(19) { animation-delay: 54s; }
+        .rotating-text span:nth-child(20) { animation-delay: 57s; }
+        
+        @keyframes textFade {
+            0%, 5% { opacity: 0; }
+            5%, 10% { opacity: 1; }
+            10%, 15% { opacity: 0; }
+            15%, 100% { opacity: 0; }
         }
         
         /* Main Content */
@@ -649,6 +671,88 @@
             border: 2px solid rgba(238, 111, 87, 0.3);
         }
         
+        /* Fullscreen Modal for Maps and Upcoming Sections */
+        .modal-fullscreen {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: rgba(10, 10, 10, 0.98);
+            overflow-y: auto;
+        }
+        
+        .modal-fullscreen.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-fullscreen .close-btn {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            background: rgba(238, 111, 87, 0.9);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 2001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-fullscreen .close-btn:hover {
+            background: var(--accent-color);
+            transform: scale(1.1);
+        }
+        
+        .modal-fullscreen .fullscreen-content {
+            padding: 3rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        /* Typewriter effect for Take Back Your Main Street */
+        .typewriter-text {
+            overflow: hidden;
+            border-right: 2px solid var(--accent-light);
+            white-space: nowrap;
+            animation: typing 4s steps(60, end), blink 0.75s step-end infinite;
+            display: inline-block;
+        }
+        
+        .typewriter-text.finished {
+            border-right: none;
+            animation: none;
+        }
+        
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        
+        @keyframes blink {
+            from, to { border-color: transparent; }
+            50% { border-color: var(--accent-light); }
+        }
+        
+        .fade-in-paragraph {
+            opacity: 0;
+            animation: paragraphFadeIn 1s ease-in forwards;
+            animation-delay: 4.5s;
+        }
+        
+        @keyframes paragraphFadeIn {
+            to { opacity: 1; }
+        }
+        
         .modal-header {
             display: flex;
             justify-content: space-between;
@@ -984,12 +1088,24 @@
         <div class="hero-content">
             <h1>Flânerie</h1>
             <div class="rotating-text">
-                <span>Wander well.<br>
-                Walk kindly.<br>
-                Support local business.<br>
-                Discover hidden gems in your neighborhood.<br>
-                Turn ordinary walks into extraordinary adventures.<br>
-                Connect with your community, one step at a time.</span>
+                <span>Wander well.</span>
+                <span>Walk kindly.</span>
+                <span>Support local business.</span>
+                <span>Discover hidden gems in your neighborhood.</span>
+                <span>Turn ordinary walks into extraordinary adventures.</span>
+                <span>Connect with your community, one step at a time.</span>
+                <span>Every block has a story to tell.</span>
+                <span>Shop small, feel big.</span>
+                <span>Find your city's secrets.</span>
+                <span>Life moves fast - walk slower.</span>
+                <span>Explore locally. Live fully.</span>
+                <span>Walk the paths that connect us.</span>
+                <span>Take the scenic route - every time.</span>
+                <span>Snack stops encouraged.</span>
+                <span>Explore like a kid again.</span>
+                <span>Where small lights glow, communities grow.</span>
+                <span>Let curiosity guide your compass.</span>
+                <span>Local lives here.</span>
             </div>
         </div>
     </section>
@@ -1018,7 +1134,8 @@
                     <h3 style="font-family: 'Playfair Display', serif; color: var(--accent-color); font-size: 2.2rem; margin-bottom: 2rem; font-weight: 600;">Take Back Your Main Street</h3>
                     
                     <p style="font-size: 1.2rem; font-weight: 400; color: #e0e0e0; line-height: 1.9; margin-bottom: 1.8rem;">
-                        <strong style="color: var(--accent-light);">Every year, 200,000 small businesses close in the U.S. alone.</strong> Search engines direct you to chains. Online shopping replaces neighborhood stores. <strong style="color: var(--accent-light);">Meanwhile, the café owner who remembers your name can't make rent.</strong> Small businesses don't have marketing budgets or algorithms working for them — they have <strong style="color: var(--accent-color);">you</strong>. Flânerie is crowdsourced discovery. <strong style="color: var(--accent-color);">Your route to that hidden coffee roaster? Someone's new favorite spot. Your Shopping Swarm? A local merchant's best weekend in months.</strong> This is how communities fight back — one walk, one recommendation, one conscious choice at a time.
+                        <span class="typewriter-text"><strong style="color: var(--accent-light);">Every year, 200,000 small businesses close in the U.S. alone.</strong></span>
+                        <span class="fade-in-paragraph">Search engines direct you to chains. Online shopping replaces neighborhood stores. <strong style="color: var(--accent-light);">Meanwhile, the café owner who remembers your name can't make rent.</strong> Small businesses don't have marketing budgets or algorithms working for them — they have <strong style="color: var(--accent-color);">you</strong>. Flânerie is crowdsourced discovery. <strong style="color: var(--accent-color);">Your route to that hidden coffee roaster? Someone's new favorite spot. Your Shopping Swarm? A local merchant's best weekend in months.</strong> This is how communities fight back — one walk, one recommendation, one conscious choice at a time.</span>
                     </p>
                 </div>
                 
@@ -1031,7 +1148,7 @@
                     </p>
                     
                     <p style="font-size: 1.2rem; font-weight: 400; color: #e0e0e0; line-height: 1.9; margin-bottom: 1.8rem;">
-                        Through <strong style="color: var(--accent-color);">urban exploration</strong>, discover neighborhoods at your own pace. From cozy cafés and local markets to boutique shops, art galleries, and hidden parks, our routes are designed for <strong style="color: var(--accent-color);">mindful wandering</strong> — purposeful aimlessness with open eyes, where every corner holds possibility.
+                        Through <strong style="color: var(--accent-color);">urban exploration</strong>, discover neighborhoods at your own pace. From cozy cafés and local markets to boutique shops, art galleries, and bookstores, our routes are designed for <strong style="color: var(--accent-color);">mindful wandering</strong> — purposeful aimlessness with open eyes, where every corner holds possibility.
                     </p>
                     
                     <p style="font-size: 1.2rem; font-weight: 400; color: #e0e0e0; line-height: 1.9; margin-bottom: 1.8rem;">
@@ -1450,7 +1567,17 @@
             bgImages[currentBgIndex].classList.add('active');
         }
         
-        setInterval(rotateBgImages, 6000);
+        setInterval(rotateBgImages, 7000);
+        
+        // Typewriter effect completion
+        document.addEventListener('DOMContentLoaded', function() {
+            const typewriterElement = document.querySelector('.typewriter-text');
+            if (typewriterElement) {
+                setTimeout(() => {
+                    typewriterElement.classList.add('finished');
+                }, 4000);
+            }
+        });
         
         // Initialize Variables
         let journeyMap = null;
@@ -1460,29 +1587,50 @@
         let routePath = null;
         let routeCoordinates = [];
         
-        // Toggle Sections
+        // Toggle Sections - Now with fullscreen option
         function toggleSection(sectionId) {
-            const sections = ['journey-map', 'search', 'swarms', 'events'];
+            const section = document.getElementById(sectionId);
             
-            sections.forEach(id => {
-                const section = document.getElementById(id);
-                if (id === sectionId) {
-                    section.classList.toggle('active');
-                    
-                    if (section.classList.contains('active')) {
-                        if (id === 'journey-map' && !journeyMap) {
-                            initJourneyMap();
-                        } else if (id === 'search' && !searchMap) {
-                            initSearchMap();
-                        } else if (id === 'swarms' && !swarmMap) {
-                            initSwarmMap();
-                        }
-                        section.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                } else {
-                    section.classList.remove('active');
+            if (section.classList.contains('upcoming-section') || 
+                section.classList.contains('map-container') || 
+                section.classList.contains('search-section') ||
+                section.classList.contains('swarms-section') ||
+                section.classList.contains('events-section')) {
+                
+                // Create fullscreen modal
+                const modal = document.createElement('div');
+                modal.className = 'modal-fullscreen show';
+                modal.id = 'fullscreen-' + sectionId;
+                
+                const closeBtn = document.createElement('button');
+                closeBtn.className = 'close-btn';
+                closeBtn.innerHTML = '&times;';
+                closeBtn.onclick = () => closeFullscreen('fullscreen-' + sectionId);
+                
+                const content = document.createElement('div');
+                content.className = 'fullscreen-content';
+                content.innerHTML = section.innerHTML;
+                
+                modal.appendChild(closeBtn);
+                modal.appendChild(content);
+                document.body.appendChild(modal);
+                
+                // Initialize maps if needed
+                if (sectionId === 'journey-map' && !journeyMap) {
+                    setTimeout(() => initJourneyMap(), 100);
+                } else if (sectionId === 'search' && !searchMap) {
+                    setTimeout(() => initSearchMap(), 100);
+                } else if (sectionId === 'swarms' && !swarmMap) {
+                    setTimeout(() => initSwarmMap(), 100);
                 }
-            });
+            }
+        }
+        
+        function closeFullscreen(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.remove();
+            }
         }
         
         // Initialize Maps
