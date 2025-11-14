@@ -1713,25 +1713,43 @@
             slideshowTypewriter(() => {
                 
                // Slide 3: Shortened paragraph (5 seconds to read)
+// Slide 3: Shortened paragraph (5 seconds to read)
 setTimeout(() => {
     showSlide('slide-paragraph', 5000, () => {
         
-        // Slide 4: YOU (paragraph slides up as YOU comes in and grows - 4 seconds)
-        const paragraphSlide = document.getElementById('slide-paragraph');
-        showSlide('slide-you', 0, () => {
-            // Slide paragraph up
-            if (paragraphSlide) {
-                paragraphSlide.querySelector('.slide-content').style.transition = 'transform 4s ease-out, opacity 4s ease-out';
-                paragraphSlide.querySelector('.slide-content').style.transform = 'translateY(-100px)';
-                paragraphSlide.querySelector('.slide-content').style.opacity = '0';
+        // Slide 4: YOU fades in and grows while paragraph fades out (4 seconds)
+        const paragraphContent = document.querySelector('#slide-paragraph .slide-content p');
+        const youSlide = document.getElementById('slide-you');
+        
+        // Make YOU visible but transparent to start
+        if (youSlide) {
+            youSlide.style.opacity = '0';
+            youSlide.classList.add('active');
+        }
+        
+        const youText = document.getElementById('you-text');
+        
+        // Start the transition
+        setTimeout(() => {
+            // Fade out paragraph
+            if (paragraphContent) {
+                paragraphContent.style.transition = 'opacity 4s ease-out';
+                paragraphContent.style.opacity = '0';
             }
             
-            const youText = document.getElementById('you-text');
-            if (youText) {
-                setTimeout(() => {
-                    youText.style.transform = 'scale(1.5)';
-                }, 100);
+            // Fade in and grow YOU
+            if (youSlide) {
+                youSlide.style.transition = 'opacity 4s ease-in';
+                youSlide.style.opacity = '1';
             }
+            if (youText) {
+                youText.style.transition = 'transform 4s ease-out';
+                youText.style.transform = 'scale(1.5)';
+            }
+        }, 100);
+        
+        // Wait for animation to complete before next slide
+        setTimeout(() => {
                             
                             setTimeout(() => {
                                 // Slide 5: Welcome + tagline fade in
