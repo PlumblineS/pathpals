@@ -1030,6 +1030,56 @@
             }
         }
         
+        /* Slideshow Controls */
+        .slideshow-controls {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 10001;
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .slideshow-controls button {
+            background: rgba(107, 155, 158, 0.3);
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .slideshow-controls button:hover {
+            background: var(--accent-color);
+            color: #0a0a0a;
+            transform: scale(1.1);
+        }
+        
+        .slideshow-controls button.paused {
+            background: var(--accent-color);
+            color: #0a0a0a;
+        }
+        
+        @media (max-width: 768px) {
+            .slideshow-controls {
+                bottom: 1rem;
+                right: 1rem;
+                gap: 0.5rem;
+            }
+            
+            .slideshow-controls button {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+        }
+        
         /* Slideshow Overlay - Combined with Epigraph */
         .slideshow-overlay {
             position: fixed;
@@ -1136,6 +1186,13 @@
 <body>
  <!-- Cinematic Slideshow - Starts with Definition -->
     <div id="slideshow-overlay" class="slideshow-overlay">
+        <!-- Slideshow Controls -->
+        <div class="slideshow-controls">
+            <button id="rewind-btn" title="Restart">↺</button>
+            <button id="pause-btn" title="Pause/Play">⏸</button>
+            <button id="skip-btn" title="Skip">⏭</button>
+        </div>
+        
         <!-- Slide 1: Definition -->
         <div class="slide active" id="slide-definition">
             <div class="slide-content">
@@ -1153,19 +1210,21 @@
             </div>
         </div>
         
-     <!-- Slide 3: Shortened paragraph -->
+     <!-- Slide 3: Shortened paragraph with image -->
 <div class="slide" id="slide-paragraph">
     <div class="slide-content" style="max-width: 900px;">
+        <img src="empty-street.png" alt="Empty street" style="max-width: 500px; width: 80%; height: auto; margin-bottom: 2rem; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
         <p style="font-size: 1.3rem; color: #e0e0e0; line-height: 1.9;">
             Search engines direct you to chains. Online shopping replaces neighborhood stores. Meanwhile, the café owner who remembers your name can't make rent. Small businesses don't have marketing budgets or algorithms working for them — they have...
         </p>
     </div>
 </div>
 
-<!-- Slide 4: YOU - grows in size -->
+<!-- Slide 4: YOU - with shopping image above, grows in size -->
 <div class="slide" id="slide-you">
-    <div class="slide-content">
-        <h2 id="you-text" style="font-family: 'Playfair Display', serif; color: var(--accent-color); font-size: 4rem; font-weight: 700; transform: scale(1); transition: transform 4s ease-out;">YOU</h2>
+    <div class="slide-content" style="display: flex; flex-direction: column; align-items: center;">
+        <img id="you-image" src="shopping-street.png" alt="People shopping" style="max-width: 500px; width: 80%; height: auto; margin-bottom: 2rem; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); opacity: 1;">
+        <h2 id="you-text" style="font-family: 'Playfair Display', serif; color: var(--accent-color); font-size: 4rem; font-weight: 700; transform: scale(1); transition: transform 4s ease-out; opacity: 0;">YOU</h2>
     </div>
 </div>
 
@@ -1251,15 +1310,6 @@
                     <div style="width: 60px; height: 1px; background: #555; margin: 1rem 0;"></div>
                     <p style="font-size: 1.3rem; color: #d4d4d4; line-height: 1.7; font-weight: 400;">
                         The art of leisurely urban exploration; mindful wandering through city streets with intention and curiosity.
-                    </p>
-                </div>
-                
-                <!-- THE PROBLEM FIRST - Take Back Your Main Street (NO TYPEWRITER) -->
-                <div id="take-back-section" style="text-align: left; max-width: 1100px; margin: 0 auto 3rem;">
-                    <h3 style="font-family: 'Playfair Display', serif; color: var(--accent-color); font-size: 3.2rem; margin-bottom: 2rem; font-weight: 600;">Take Back Your Main Street</h3>
-                    
-                    <p style="font-size: 1.2rem; font-weight: 400; color: #e0e0e0; line-height: 1.9; margin-bottom: 1.8rem;">
-                        <strong style="color: var(--accent-light);">Every year, 200,000 small businesses close in the U.S. alone.</strong> Search engines direct you to chains. Online shopping replaces neighborhood stores. <strong style="color: var(--accent-light);">Meanwhile, the café owner who remembers your name can't make rent.</strong> Small businesses don't have marketing budgets or algorithms working for them — they have <strong style="color: var(--accent-color);">you</strong>.
                     </p>
                 </div>
                 
@@ -1801,13 +1851,14 @@ setTimeout(() => {
                 paragraphContent.style.opacity = '0';
             }
             
-            // Fade in and grow YOU
+            // Fade in and grow YOU (text fades in below image)
             if (youSlide) {
                 youSlide.style.transition = 'opacity 4s ease-in';
                 youSlide.style.opacity = '1';
             }
             if (youText) {
-                youText.style.transition = 'transform 4s ease-out';
+                youText.style.transition = 'opacity 2s ease-in, transform 4s ease-out';
+                youText.style.opacity = '1';
                 youText.style.transform = 'scale(1.5)';
             }
         }, 100);
@@ -1902,6 +1953,58 @@ setTimeout(() => {
         
         // Lock scrolling during slideshow
         document.body.classList.add('choreography-active');
+        
+        // Slideshow control variables
+        let slideshowPaused = false;
+        let slideshowTimeouts = [];
+        
+        // Slideshow control buttons
+        document.getElementById('skip-btn').addEventListener('click', function() {
+            endSlideshow();
+        });
+        
+        document.getElementById('pause-btn').addEventListener('click', function() {
+            slideshowPaused = !slideshowPaused;
+            this.classList.toggle('paused');
+            this.textContent = slideshowPaused ? '▶' : '⏸';
+            
+            if (slideshowPaused) {
+                // Clear all pending timeouts
+                slideshowTimeouts.forEach(timeout => clearTimeout(timeout));
+                slideshowTimeouts = [];
+            } else {
+                // Resume - this is complex, for now just let them skip or rewind
+                showToast('Click skip to continue or restart to replay');
+            }
+        });
+        
+        document.getElementById('rewind-btn').addEventListener('click', function() {
+            // Clear all timeouts
+            slideshowTimeouts.forEach(timeout => clearTimeout(timeout));
+            slideshowTimeouts = [];
+            slideshowPaused = false;
+            document.getElementById('pause-btn').classList.remove('paused');
+            document.getElementById('pause-btn').textContent = '⏸';
+            charIndex = 0;
+            // Restart
+            const typewriterElement = document.getElementById('slideshow-typewriter-sentence');
+            if (typewriterElement) typewriterElement.textContent = '';
+            startSlideshow();
+        });
+        
+        function endSlideshow() {
+            const slideshowOverlay = document.getElementById('slideshow-overlay');
+            slideshowOverlay.style.transition = 'opacity 0.5s ease-out';
+            slideshowOverlay.style.opacity = '0';
+            
+            setTimeout(() => {
+                slideshowOverlay.style.display = 'none';
+                document.body.classList.remove('choreography-active');
+                window.scrollTo(0, 0);
+                document.querySelector('.main-content').style.opacity = '1';
+            }, 500);
+        }
+        
         startSlideshow();
         
         // Category dropdown - show custom field when "Other" is selected
