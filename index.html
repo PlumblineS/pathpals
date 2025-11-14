@@ -226,6 +226,8 @@
             border-radius: 0;
             padding: 4rem 2rem;
             min-height: 100vh;
+            opacity: 0;
+            transition: opacity 0.5s ease;
         }
         
         .container {
@@ -1842,7 +1844,10 @@ setTimeout(() => {
                                         setTimeout(() => {
                                             slideshowOverlay.style.display = 'none';
                                             document.body.classList.remove('choreography-active');
-                                            window.scrollTo({ top: 0, behavior: 'instant' });
+                                            // Force scroll to very top
+                                            window.scrollTo(0, 0);
+                                            // Show main content
+                                            document.querySelector('.main-content').style.opacity = '1';
                                         }, 1000);
                                    }, 4000);
                 });
@@ -1905,6 +1910,31 @@ setTimeout(() => {
                     }
                 });
             }
+            
+            // Smooth scroll with offset for fixed navigation
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    
+                    if (targetId === '#home') {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        return;
+                    }
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        const navHeight = 140; // Height of fixed nav
+                        const elementPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
+                        const offsetPosition = elementPosition - navHeight;
+                        
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
         });
         
         // Initialize Variables
