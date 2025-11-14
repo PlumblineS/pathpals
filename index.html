@@ -1782,13 +1782,13 @@ showSlide('slide-definition', 4000, () => {
                     element.textContent += typewriterText.charAt(charIndex);
                     charIndex++;
                     setTimeout(type, 50);
-                } else {
-                    // Pause 2 seconds after typing
-                    setTimeout(() => {
-                        element.classList.add('cursor-hidden');
-                        callback();
-                    }, 2000);
-                }
+              } else {
+    // Pause 3 seconds after typing
+    setTimeout(() => {
+        element.classList.add('cursor-hidden');
+        callback();
+    }, 3000);
+}  
             }
             type();
         }
