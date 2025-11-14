@@ -1719,25 +1719,25 @@
             // Start slideshow immediately (definition is first slide)
             slideshowOverlay.classList.add('active');
             
-            // Slide 1: Definition (3 seconds)
-            showSlide('slide-definition', 3000, () => {
-                
-                // Slide 2: Typewriter (starts typing immediately)
-                showSlide('slide-typewriter', 0, () => {
-                    slideshowTypewriter(() => {
+           // Slide 1: Definition (4 seconds)
+showSlide('slide-definition', 4000, () => {
+    
+    // Slide 2: Typewriter header (2 seconds)
+    showSlide('slide-typewriter', 2000, () => {
+        slideshowTypewriter(() => {
+            
+            // Slide 3: Paragraph (holds 3 seconds after typing, then shows for 4 seconds)
+            setTimeout(() => {
+                showSlide('slide-paragraph', 4000, () => {
+                    
+                    // Slide 4: Welcome header (4 seconds)
+                    showSlide('slide-welcome-header', 4000, () => {
                         
-                        // Slide 3: Paragraph (2 seconds after typing)
-                        setTimeout(() => {
-                            showSlide('slide-paragraph', 5000, () => {
-                                
-                                // Slide 4: Welcome header (2 seconds)
-                                showSlide('slide-welcome-header', 2000, () => {
-                                    
-                                    // Slide 5: Welcome content (5 seconds)
-                                    showSlide('slide-welcome-content', 5000, () => {
-                                        
-                                        // Slide 6: Tagline (3 seconds)
-                                        showSlide('slide-tagline', 3000, () => {
+                        // Slide 5: Welcome content (4 seconds)
+                        showSlide('slide-welcome-content', 4000, () => {
+                            
+                            // Slide 6: Tagline (4 seconds)
+                            showSlide('slide-tagline', 4000, () => { 
                                             
                                             // Fade out slideshow and reveal site
                                             setTimeout(() => {
