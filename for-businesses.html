@@ -22,6 +22,38 @@
             --accent-light: #8DBCC0;
         }
         
+        /* Top Notice Banner */
+        .notice-banner {
+            background: linear-gradient(135deg, rgba(107, 155, 158, 0.15), rgba(141, 188, 192, 0.15));
+            border-bottom: 2px solid rgba(107, 155, 158, 0.3);
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .notice-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .notice-content h3 {
+            color: var(--accent-color);
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .notice-content p {
+            color: #d4d4d4;
+            line-height: 1.8;
+            font-size: 1.05rem;
+            margin-bottom: 1rem;
+        }
+        
+        .notice-content .signature {
+            color: var(--accent-light);
+            font-style: italic;
+            margin-top: 1rem;
+        }
+        
         .hero {
             min-height: 60vh;
             display: flex;
@@ -43,7 +75,7 @@
         .hero-content p {
             font-size: 1.5rem;
             color: #d4d4d4;
-            max-width: 700px;
+            max-width: 800px;
             margin: 0 auto 2rem;
             line-height: 1.6;
         }
@@ -53,6 +85,7 @@
             gap: 1.5rem;
             justify-content: center;
             margin-top: 2rem;
+            flex-wrap: wrap;
         }
         
         .btn-primary {
@@ -104,7 +137,60 @@
             font-size: 2.5rem;
             color: var(--accent-color);
             text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            color: #d4d4d4;
+            font-size: 1.2rem;
             margin-bottom: 3rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* How It Works Section */
+        .how-it-works {
+            background: rgba(20, 20, 20, 0.8);
+            padding: 4rem 2rem;
+        }
+        
+        .steps-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .step {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 3rem;
+            align-items: start;
+        }
+        
+        .step-number {
+            background: linear-gradient(135deg, var(--accent-color), #f7a399);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        .step-content h3 {
+            color: var(--accent-light);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .step-content p {
+            color: #d4d4d4;
+            line-height: 1.8;
         }
         
         .features-grid {
@@ -117,6 +203,10 @@
         @media (max-width: 968px) {
             .features-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .step {
+                flex-direction: column;
             }
         }
         
@@ -151,99 +241,152 @@
             font-size: 1.05rem;
         }
         
-        .feature-card ul {
+        /* Social Proof Box */
+        .social-proof {
+            background: linear-gradient(135deg, rgba(107, 155, 158, 0.1), rgba(10, 10, 10, 0.8));
+            border: 2px solid rgba(107, 155, 158, 0.3);
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 4rem auto;
+            max-width: 900px;
+        }
+        
+        .social-proof h3 {
+            color: var(--accent-color);
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .proof-list {
             list-style: none;
-            margin-top: 1rem;
             padding: 0;
         }
         
-        .feature-card li {
+        .proof-list li {
+            color: #d4d4d4;
+            padding: 1rem 0;
+            padding-left: 2rem;
+            position: relative;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .proof-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 1.4rem;
+        }
+        
+        /* Why Different Section */
+        .why-different {
+            padding: 4rem 2rem;
+            background: rgba(20, 20, 20, 0.5);
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        @media (max-width: 768px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .comparison-card {
+            background: rgba(30, 30, 30, 0.8);
+            border-radius: 15px;
+            padding: 2rem;
+        }
+        
+        .comparison-card.bad {
+            border-left: 4px solid #d9534f;
+        }
+        
+        .comparison-card.good {
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .comparison-card h4 {
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+        }
+        
+        .comparison-card.bad h4 {
+            color: #d9534f;
+        }
+        
+        .comparison-card.good h4 {
+            color: var(--accent-color);
+        }
+        
+        .comparison-card ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .comparison-card li {
             color: #d4d4d4;
             padding: 0.5rem 0;
             padding-left: 1.5rem;
             position: relative;
         }
         
-        .feature-card li:before {
+        .comparison-card.bad li:before {
+            content: "✗";
+            position: absolute;
+            left: 0;
+            color: #d9534f;
+        }
+        
+        .comparison-card.good li:before {
             content: "✓";
             position: absolute;
             left: 0;
             color: var(--accent-color);
-            font-weight: bold;
         }
         
-        .pricing-section {
-            background: rgba(20, 20, 20, 0.8);
-            padding: 4rem 2rem;
-            margin: 4rem 0;
-        }
-        
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        @media (max-width: 968px) {
-            .pricing-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .pricing-card {
-            background: rgba(30, 30, 30, 0.95);
-            border-radius: 20px;
-            padding: 2.5rem;
-            border: 2px solid rgba(107, 155, 158, 0.2);
+        /* Sticker Section */
+        .sticker-section {
+            background: linear-gradient(135deg, rgba(107, 155, 158, 0.15), rgba(141, 188, 192, 0.15));
+            border: 2px solid rgba(107, 155, 158, 0.3);
+            border-radius: 25px;
+            padding: 3rem;
+            margin: 4rem auto;
+            max-width: 800px;
             text-align: center;
-            transition: all 0.3s ease;
         }
         
-        .pricing-card:hover {
-            border-color: var(--accent-color);
-            transform: scale(1.02);
+        .sticker-section img {
+            max-width: 300px;
+            margin: 2rem auto;
+            display: block;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
         }
         
-        .pricing-card.featured {
-            border-color: var(--accent-color);
-            background: rgba(107, 155, 158, 0.1);
-            transform: scale(1.05);
-        }
-        
-        .pricing-card h3 {
-            color: var(--accent-light);
-            font-size: 1.8rem;
+        .sticker-section h3 {
+            color: var(--accent-color);
+            font-size: 2rem;
             margin-bottom: 1rem;
         }
         
-        .price {
-            font-family: 'Playfair Display', serif;
-            font-size: 3rem;
-            color: var(--accent-color);
-            margin: 1.5rem 0;
-        }
-        
-        .price span {
-            font-size: 1.2rem;
-            color: #999;
-        }
-        
-        .pricing-card ul {
-            list-style: none;
-            text-align: left;
-            margin: 2rem 0;
-        }
-        
-        .pricing-card li {
-            padding: 0.8rem 0;
+        .sticker-section p {
             color: #d4d4d4;
-            border-bottom: 1px solid rgba(107, 155, 158, 0.1);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
         }
         
+        /* Testimonials */
         .testimonial-section {
-            background: linear-gradient(135deg, rgba(107, 155, 158, 0.05), rgba(10, 10, 10, 0.9));
             padding: 4rem 2rem;
         }
         
@@ -289,6 +432,7 @@
         .final-cta {
             text-align: center;
             padding: 4rem 2rem;
+            background: linear-gradient(135deg, rgba(107, 155, 158, 0.1), rgba(10, 10, 10, 0.9));
         }
         
         .final-cta h2 {
@@ -313,157 +457,190 @@
                 font-size: 1.2rem;
             }
             
-            .cta-buttons {
-                flex-direction: column;
-            }
-            
             .section-title {
                 font-size: 2rem;
+            }
+            
+            .notice-banner {
+                padding: 1.5rem 1rem;
+            }
+            
+            .notice-content h3 {
+                font-size: 1.1rem;
+            }
+            
+            .notice-content p {
+                font-size: 0.95rem;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Top Notice Banner -->
+    <section class="notice-banner">
+        <div class="notice-content">
+            <h3>Hey, quick heads up:</h3>
+            <p>This is a one-person project built for local businesses, not corporate budgets. Everything's <strong>free right now</strong> while we grow the community.</p>
+            <p>Down the road, I might charge a small one-time fee ($20-ish) for premium features to keep the lights on, but anyone who joins early gets locked in free forever. Fair?</p>
+            <p>Let's bring neighborhoods back to life. 🚶‍♀️</p>
+            <p class="signature">— Bobby, the entire Flânerie "team"</p>
+        </div>
+    </section>
+    
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
-            <h1>Your customers are walking<br>right past you.</h1>
-            <p>Stop competing with chains on Google. Get discovered by locals who actually walk your street.</p>
+            <h1>Get discovered by people<br>already walking past your door.</h1>
+            <p>Search engines show the biggest advertisers. Flânerie helps locals discover your business because someone they trust put you on their walking route. Not ads. Not algorithms. Just neighbors sharing what they love.</p>
             <div class="cta-buttons">
-                <a href="#pricing" class="btn-primary">Get Started Free</a>
-                <a href="#features" class="btn-secondary">See How It Works</a>
+                <a href="#claim" class="btn-primary">Claim Your Free Listing</a>
+                <a href="#how-it-works" class="btn-secondary">See How It Works</a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">Word-of-mouth, but mapped.</p>
+            
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>A regular customer creates a route</h3>
+                        <p>"Best Coffee & Bookstores Walk" or "Sunday Brunch Crawl"</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>They add your shop as a stop</h3>
+                        <p>Because they actually love your place and want others to find it</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Other locals follow that route</h3>
+                        <p>They're walking with intention, not rushing to a destination</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>New customers walk through your door</h3>
+                        <p>Discovered organically by people who value local businesses</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
     
     <!-- Features Section -->
-    <section id="features" class="container">
-        <h2 class="section-title">Three Ways to Grow Your Foot Traffic</h2>
+    <section class="container">
+        <h2 class="section-title">What You Get (All Free)</h2>
         <div class="features-grid">
             <div class="feature-card">
                 <div class="feature-icon">📍</div>
-                <h3>Get on the Map</h3>
-                <p>Be featured on walking routes that locals actually follow. When someone plans their Saturday stroll, your shop is on the path.</p>
-                <ul>
-                    <li>Free basic business listing</li>
-                    <li>Appear on curated walking routes</li>
-                    <li>Photos, hours, and special offers</li>
-                    <li>No ads, no algorithms—just discovery</li>
-                </ul>
+                <h3>Your Business on the Map</h3>
+                <p>Free verified listing with photos and hours. Show up when locals create walking routes. See how many routes include your business and track how many "flâneurs" have visited. No fees. No subscriptions. Ever.</p>
             </div>
             
             <div class="feature-card">
                 <div class="feature-icon">🛍️</div>
-                <h3>Host a Shopping Swarm</h3>
-                <p>Bring 20-50 locals to your door in a single afternoon. Shopping Swarms are organized group walks that support local businesses.</p>
-                <ul>
-                    <li>Create and promote your swarm</li>
-                    <li>Featured placement for paid accounts</li>
-                    <li>Custom landing page with your branding</li>
-                    <li>Collect emails for follow-up (with consent)</li>
-                </ul>
+                <h3>Host Shopping Swarms</h3>
+                <p>Organize group walks that bring 20-50 people to your door. Free to create and promote. Build your community of regulars. Turn one-time visitors into loyal customers. We handle the platform, you handle the coffee.</p>
             </div>
             
             <div class="feature-card">
                 <div class="feature-icon">📅</div>
                 <h3>Promote Your Events</h3>
-                <p>Sidewalk sales, tastings, workshops, live music—get your events in front of people who love exploring local.</p>
-                <ul>
-                    <li>Community event calendar</li>
-                    <li>Automatic route suggestions to your event</li>
-                    <li>Share across all Flânerie users</li>
-                    <li>Turn one-time visitors into regulars</li>
-                </ul>
+                <p>Sidewalk sales, tastings, workshops, live music—free event calendar listing. Automatically suggest routes to your event. Reach locals who actually explore neighborhoods. Build buzz without buying ads.</p>
+            </div>
+        </div>
+        
+        <!-- Social Proof Box -->
+        <div class="social-proof">
+            <h3>What This Actually Looks Like</h3>
+            <ul class="proof-list">
+                <li>Photos, hours, what makes you special</li>
+                <li>"Included in 47 walking routes"</li>
+                <li>"234 flâneurs have been here"</li>
+                <li>Your upcoming events and swarms</li>
+                <li>Customer routes that feature you: "Sunday Coffee Ritual," "Best Main Street Walk"</li>
+            </ul>
+        </div>
+    </section>
+    
+    <!-- Why Different Section -->
+    <section class="why-different">
+        <div class="container">
+            <h2 class="section-title">Why It's Different</h2>
+            <div class="comparison-grid">
+                <div class="comparison-card bad">
+                    <h4>Most discovery tools favor:</h4>
+                    <ul>
+                        <li>Whoever pays the most for ads</li>
+                        <li>National chains with big budgets</li>
+                        <li>Businesses gaming algorithms</li>
+                    </ul>
+                </div>
+                
+                <div class="comparison-card good">
+                    <h4>Flânerie favors:</h4>
+                    <ul>
+                        <li>Businesses that locals actually love</li>
+                        <li>Word-of-mouth, but mapped</li>
+                        <li>Real foot traffic, not click farms</li>
+                        <li>Community over corporations</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </section>
     
-    <!-- Pricing Section -->
-    <section id="pricing" class="pricing-section">
-        <h2 class="section-title">Simple, Honest Pricing</h2>
-        <div class="pricing-grid">
-            <div class="pricing-card">
-                <h3>Free</h3>
-                <div class="price">$0<span>/month</span></div>
-                <ul>
-                    <li>✓ Basic business listing</li>
-                    <li>✓ Appear on walking routes</li>
-                    <li>✓ Photos & hours</li>
-                    <li>✓ Create shopping swarms</li>
-                    <li>✓ Post events</li>
-                </ul>
-                <button class="btn-secondary" style="margin-top: 2rem; width: 100%;">Start Free</button>
-            </div>
-            
-            <div class="pricing-card featured">
-                <h3>Pro</h3>
-                <div class="price">$29<span>/month</span></div>
-                <ul>
-                    <li>✓ Everything in Free</li>
-                    <li>✓ Featured swarm placement</li>
-                    <li>✓ Custom swarm landing page</li>
-                    <li>✓ Post-swarm analytics</li>
-                    <li>✓ Collect participant emails</li>
-                    <li>✓ Priority event placement</li>
-                    <li>✓ Route inclusion requests</li>
-                </ul>
-                <button class="btn-primary" style="margin-top: 2rem; width: 100%;">Start 30-Day Trial</button>
-            </div>
-            
-            <div class="pricing-card">
-                <h3>Neighborhood</h3>
-                <div class="price">$99<span>/month</span></div>
-                <ul>
-                    <li>✓ Everything in Pro</li>
-                    <li>✓ Up to 5 locations</li>
-                    <li>✓ Co-op swarms with other businesses</li>
-                    <li>✓ Neighborhood route analytics</li>
-                    <li>✓ Custom route creation</li>
-                    <li>✓ Quarterly merchant meetups</li>
-                    <li>✓ Priority support</li>
-                </ul>
-                <button class="btn-secondary" style="margin-top: 2rem; width: 100%;">Contact Sales</button>
-            </div>
+    <!-- Free Window Sticker Section -->
+    <section class="container">
+        <div class="sticker-section">
+            <h3>💡 Want a Free Window Sticker?</h3>
+            <img src="flanerie-sticker-transparent.png" alt="Flânerie Window Sticker">
+            <p>Let customers know you're on Flânerie with a window decal. Show your support for local discovery and help spread the word!</p>
+            <a href="mailto:contact@flanerie.com?subject=Free Window Sticker Request" class="btn-primary">Contact Us for Your Free Sticker</a>
         </div>
     </section>
     
     <!-- Testimonials Section -->
     <section class="testimonial-section">
-        <h2 class="section-title">What Local Merchants Say</h2>
-        <div class="testimonials-grid">
-            <div class="testimonial-card">
-                <p class="testimonial-quote">"We hosted a Saturday morning swarm and had 34 people show up. Made more that morning than the entire week before. This is exactly what small businesses need."</p>
-                <p class="testimonial-author">Maria Rodriguez</p>
-                <p class="testimonial-business">Luna Coffee Roasters • Denver, CO</p>
-            </div>
-            
-            <div class="testimonial-card">
-                <p class="testimonial-quote">"Being on these walking routes has brought us so many new customers. People actually stop in because they're following a route, not rushing to a destination."</p>
-                <p class="testimonial-author">James Chen</p>
-                <p class="testimonial-business">Binding & Spine Books • Boulder, CO</p>
-            </div>
-            
-            <div class="testimonial-card">
-                <p class="testimonial-quote">"I love that it's not about gaming an algorithm or paying for ads. Real people find us because they're actually walking by. That's how neighborhoods should work."</p>
-                <p class="testimonial-author">Sarah Martinez</p>
-                <p class="testimonial-business">Verde Vintage • Austin, TX</p>
-            </div>
-            
-            <div class="testimonial-card">
-                <p class="testimonial-quote">"The Pro account paid for itself after one swarm. The email list alone was worth it—we now have a way to stay in touch with our most engaged customers."</p>
-                <p class="testimonial-author">David Kim</p>
-                <p class="testimonial-business">Craft & Draft Brewery • Portland, OR</p>
+        <div class="container">
+            <h2 class="section-title">What Local Merchants Say</h2>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <p class="testimonial-quote">"We're on 23 routes now. Every Saturday we get new faces saying 'I found you on the Coffee Lovers route!' This is how neighborhoods should work."</p>
+                    <p class="testimonial-author">Maria Rodriguez</p>
+                    <p class="testimonial-business">Luna Coffee Roasters • Denver, CO</p>
+                </div>
+                
+                <div class="testimonial-card">
+                    <p class="testimonial-quote">"Better than paid ads. People show up because they're actually interested, not because we outbid someone."</p>
+                    <p class="testimonial-author">James Chen</p>
+                    <p class="testimonial-business">Binding & Spine Books • Boulder, CO</p>
+                </div>
             </div>
         </div>
     </section>
     
     <!-- Final CTA -->
-    <section class="final-cta">
+    <section id="claim" class="final-cta">
         <h2>Ready to be discovered?</h2>
         <p>Join hundreds of local businesses bringing their neighborhoods back to life.</p>
         <div class="cta-buttons">
-            <a href="#" class="btn-primary">Claim Your Free Listing</a>
-            <a href="#" class="btn-secondary">Schedule a Demo</a>
+            <a href="mailto:contact@flanerie.com?subject=Claim My Business Listing" class="btn-primary">Claim Your Free Listing</a>
+            <a href="mailto:contact@flanerie.com?subject=Question About Flanerie" class="btn-secondary">Questions? Email Us</a>
         </div>
     </section>
 </body>
