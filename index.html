@@ -1251,7 +1251,6 @@
     </div>
 </div>   
     </div>
-    
     <!-- Background Images -->
     <div class="bg-container">
         <img src="character-bg.png" class="bg-image active" alt="">
@@ -1832,101 +1831,130 @@
     // Start slideshow immediately (definition is first slide)
     slideshowOverlay.classList.add('active');
     
-    // Slide 1: Definition (holds)
+    // Slide 1: Definition (holds for 4 seconds)
     showSlide('slide-definition', 4000, () => {
         
         // Slide 2: Typewriter (starts typing)
         showSlide('slide-typewriter', 2000, () => {
             slideshowTypewriter(() => {
                 
-               // Slide 3: Shortened paragraph (5 seconds to read)
-// Slide 3: Shortened paragraph (5 seconds to read)
-setTimeout(() => {
-    showSlide('slide-paragraph', 5000, () => {
-        
-        // Slide 4: YOU fades in and grows while paragraph fades out (4 seconds)
-        const paragraphContent = document.querySelector('#slide-paragraph .slide-content p');
-        const youSlide = document.getElementById('slide-you');
-        
-        // Make YOU visible but transparent to start
-        if (youSlide) {
-            youSlide.style.opacity = '0';
-            youSlide.classList.add('active');
-        }
-        
-        const youText = document.getElementById('you-text');
-        
-        // Start the transition
-        setTimeout(() => {
-            // Fade out paragraph
-            if (paragraphContent) {
-                paragraphContent.style.transition = 'opacity 4s ease-out';
-                paragraphContent.style.opacity = '0';
-            }
-            
-            // Fade in and grow YOU (text fades in below image)
-            if (youSlide) {
-                youSlide.style.transition = 'opacity 4s ease-in';
-                youSlide.style.opacity = '1';
-            }
-            if (youText) {
-                youText.style.transition = 'opacity 2s ease-in, transform 4s ease-out';
-                youText.style.opacity = '1';
-                youText.style.transform = 'scale(1.5)';
-            }
-        }, 100);
-        
-        // Wait for animation to complete before next slide
-       // Wait for animation to complete before next slide
-        setTimeout(() => {
-            // Hide the paragraph and YOU slides completely
-            const paragraphSlide = document.getElementById('slide-paragraph');
-            const youSlide = document.getElementById('slide-you');
-            if (paragraphSlide) {
-                paragraphSlide.classList.remove('active');
-                paragraphSlide.style.opacity = '0';
-            }
-            if (youSlide) {
-                youSlide.classList.remove('active');
-                youSlide.style.opacity = '0';
-            }
-            
-            // Small delay to ensure YOU is gone before Welcome appears
-            setTimeout(() => {
-                // Slide 5: Welcome + tagline fade in
-                showSlide('slide-welcome-final', 0, () => {
-                                    const welcomeText = document.getElementById('welcome-text');
-                                    const taglineText = document.getElementById('tagline-text');
+                // Fade out typewriter before showing image
+                const typewriterSlide = document.getElementById('slide-typewriter');
+                typewriterSlide.style.transition = 'opacity 1s ease-out';
+                typewriterSlide.style.opacity = '0';
+                
+                setTimeout(() => {
+                    typewriterSlide.classList.remove('active');
+                    
+                    // Slide 3: Empty street image only (fades in, zooms for 3 seconds)
+                    showSlide('slide-image', 0, () => {
+                        const emptyStreetImg = document.getElementById('empty-street-img');
+                        
+                        // Start zoom effect
+                        setTimeout(() => {
+                            emptyStreetImg.style.transform = 'scale(1.1)';
+                        }, 100);
+                        
+                        // After 3 seconds, fade out image
+                        setTimeout(() => {
+                            const imageSlide = document.getElementById('slide-image');
+                            imageSlide.style.transition = 'opacity 1s ease-out';
+                            imageSlide.style.opacity = '0';
+                            
+                            setTimeout(() => {
+                                imageSlide.classList.remove('active');
+                                emptyStreetImg.style.transform = 'scale(1)'; // Reset for next time
+                                
+                                // Slide 4: Paragraph (fades in)
+                                showSlide('slide-paragraph', 5000, () => {
                                     
-                                    // After 2 seconds, slide welcome up and fade in tagline
-                                    setTimeout(() => {
-                                        if (welcomeText) {
-                                            welcomeText.style.transform = 'translateY(-40px)';
-                                        }
-                                        if (taglineText) {
-                                            taglineText.style.opacity = '1';
-                                        }
-                                    }, 2000);
+                                    // Slide 5: YOU fades in and grows while paragraph fades out (4 seconds)
+                                    const paragraphSlide = document.getElementById('slide-paragraph');
+                                    const youSlide = document.getElementById('slide-you');
                                     
-                                    // After another 2 seconds, fade to site
+                                    // Make YOU visible but transparent to start
+                                    if (youSlide) {
+                                        youSlide.style.opacity = '0';
+                                        youSlide.classList.add('active');
+                                    }
+                                    
+                                    const youText = document.getElementById('you-text');
+                                    
+                                    // Start the transition
                                     setTimeout(() => {
-                                        slideshowOverlay.style.transition = 'opacity 1s ease-out';
-                                        slideshowOverlay.style.opacity = '0';
+                                        // Fade out paragraph
+                                        if (paragraphSlide) {
+                                            paragraphSlide.style.transition = 'opacity 2s ease-out';
+                                            paragraphSlide.style.opacity = '0';
+                                        }
                                         
+                                        // Fade in and grow YOU (text fades in below image)
+                                        if (youSlide) {
+                                            youSlide.style.transition = 'opacity 4s ease-in';
+                                            youSlide.style.opacity = '1';
+                                        }
+                                        if (youText) {
+                                            youText.style.transition = 'opacity 2s ease-in, transform 4s ease-out';
+                                            youText.style.opacity = '1';
+                                            youText.style.transform = 'scale(1.5)';
+                                        }
+                                    }, 100);
+                                    
+                                    // Wait for animation to complete before next slide
+                                    setTimeout(() => {
+                                        // Fade out YOU completely
+                                        if (paragraphSlide) {
+                                            paragraphSlide.classList.remove('active');
+                                            paragraphSlide.style.opacity = '0';
+                                        }
+                                        if (youSlide) {
+                                            youSlide.style.transition = 'opacity 1s ease-out';
+                                            youSlide.style.opacity = '0';
+                                        }
+                                        
+                                        // Wait for YOU to fully fade out before showing Welcome
                                         setTimeout(() => {
-                                            slideshowOverlay.style.display = 'none';
-                                            document.body.classList.remove('choreography-active');
-                                            // Force scroll to very top
-                                            window.scrollTo(0, 0);
-                                            // Show main content
-                                            document.querySelector('.main-content').style.opacity = '1';
-                                        }, 1000);
-                                   }, 4000);
-                });
-            }, 500);  // <-- CHANGED: Added delay before Welcome appears
-        }, 4000);
-    });
-}, 3000);
+                                            if (youSlide) {
+                                                youSlide.classList.remove('active');
+                                            }
+                                            
+                                            // Slide 6: Welcome + tagline fade in
+                                            showSlide('slide-welcome-final', 0, () => {
+                                                const welcomeText = document.getElementById('welcome-text');
+                                                const taglineText = document.getElementById('tagline-text');
+                                                
+                                                // After 2 seconds, slide welcome up and fade in tagline
+                                                setTimeout(() => {
+                                                    if (welcomeText) {
+                                                        welcomeText.style.transform = 'translateY(-40px)';
+                                                    }
+                                                    if (taglineText) {
+                                                        taglineText.style.opacity = '1';
+                                                    }
+                                                }, 2000);
+                                                
+                                                // After another 2 seconds, fade to site
+                                                setTimeout(() => {
+                                                    slideshowOverlay.style.transition = 'opacity 1s ease-out';
+                                                    slideshowOverlay.style.opacity = '0';
+                                                    
+                                                    setTimeout(() => {
+                                                        slideshowOverlay.style.display = 'none';
+                                                        document.body.classList.remove('choreography-active');
+                                                        // Force scroll to very top
+                                                        window.scrollTo(0, 0);
+                                                        // Show main content
+                                                        document.querySelector('.main-content').style.opacity = '1';
+                                                    }, 1000);
+                                               }, 4000);
+                                            });
+                                        }, 1000); // Wait 1 second for YOU to fade out
+                                    }, 4000);
+                                });
+                            }, 1000); // Wait for image fade out
+                        }, 3000); // Show image for 3 seconds with zoom
+                    });
+                }, 1000); // Wait for typewriter to fade out
             });
         });
     });
@@ -1955,7 +1983,7 @@ setTimeout(() => {
                     charIndex++;
                     setTimeout(type, 50);
              } else {
-    // Pause 3 seconds after typing (keep cursor blinking)
+    // Pause 2 seconds after typing (keep cursor blinking)
     setTimeout(() => {
         callback();
     }, 2000);
@@ -2002,6 +2030,16 @@ setTimeout(() => {
             // Restart
             const typewriterElement = document.getElementById('slideshow-typewriter-sentence');
             if (typewriterElement) typewriterElement.textContent = '';
+            
+            // Reset image transforms
+            const emptyStreetImg = document.getElementById('empty-street-img');
+            if (emptyStreetImg) emptyStreetImg.style.transform = 'scale(1)';
+            const youText = document.getElementById('you-text');
+            if (youText) {
+                youText.style.opacity = '0';
+                youText.style.transform = 'scale(1)';
+            }
+            
             startSlideshow();
         });
         
@@ -2019,7 +2057,6 @@ setTimeout(() => {
         }
         
         startSlideshow();
-        
         // Category dropdown - show custom field when "Other" is selected
         document.addEventListener('DOMContentLoaded', function() {
             const categorySelect = document.getElementById('routeCategory');
