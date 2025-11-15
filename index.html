@@ -198,6 +198,8 @@
             font-size: 1.56rem;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
             padding: 0 2rem;
+            word-wrap: break-word;
+            white-space: normal;
         }
         
         .rotating-text span:nth-child(1) { animation-delay: 0s; }
@@ -962,7 +964,12 @@
             }
             
             .rotating-text {
-                font-size: 0.95rem;
+                height: 140px;
+            }
+            
+            .rotating-text span {
+                font-size: 1rem;
+                padding: 0 1rem;
             }
             
             .info-section h2 {
@@ -1210,17 +1217,23 @@
             </div>
         </div>
         
-     <!-- Slide 3: Shortened paragraph with image -->
+     <!-- Slide 3: Empty street image only (zooms) -->
+<div class="slide" id="slide-image">
+    <div class="slide-content" style="max-width: 900px;">
+        <img id="empty-street-img" src="empty-street.png" alt="Empty street" style="max-width: 500px; width: 80%; height: auto; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transform: scale(1); transition: transform 3s ease-out;">
+    </div>
+</div>
+
+<!-- Slide 4: Shortened paragraph -->
 <div class="slide" id="slide-paragraph">
     <div class="slide-content" style="max-width: 900px;">
-        <img src="empty-street.png" alt="Empty street" style="max-width: 500px; width: 80%; height: auto; margin-bottom: 2rem; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
         <p style="font-size: 1.3rem; color: #e0e0e0; line-height: 1.9;">
             Search engines direct you to chains. Online shopping replaces neighborhood stores. Meanwhile, the café owner who remembers your name can't make rent. Small businesses don't have marketing budgets or algorithms working for them — they have...
         </p>
     </div>
 </div>
 
-<!-- Slide 4: YOU - with shopping image above, grows in size -->
+<!-- Slide 5: YOU - with shopping image above, grows in size -->
 <div class="slide" id="slide-you">
     <div class="slide-content" style="display: flex; flex-direction: column; align-items: center;">
         <img id="you-image" src="shopping-street.png" alt="People shopping" style="max-width: 500px; width: 80%; height: auto; margin-bottom: 2rem; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); opacity: 1;">
@@ -1228,7 +1241,7 @@
     </div>
 </div>
 
-<!-- Slide 5: Welcome with tagline fade in -->
+<!-- Slide 6: Welcome with tagline fade in -->
 <div class="slide" id="slide-welcome-final">
     <div class="slide-content">
         <h3 id="welcome-text" style="font-family: 'Playfair Display', serif; color: var(--accent-color); font-size: 3rem; font-weight: 600; transition: transform 2s ease-out;">Welcome to Flânerie</h3>
