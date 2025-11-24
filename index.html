@@ -198,11 +198,10 @@
 .rotating-text span {
     position: absolute;
     opacity: 0;
-    color: rgba(141, 188, 192, 0.6);
-    font-size: 1.3rem;
+    color: rgba(141, 188, 192, 0.7);
+    font-size: 1.4rem;
     font-weight: 300;
     font-style: italic;
-    white-space: nowrap;
     transition: opacity 1s ease-in-out, transform 1s ease-in-out;
 }
 
@@ -211,34 +210,33 @@
     transform: translateX(0) translateY(0);
 }
 
-/* Alternate positions - VERY FAR left and right (in margins only) */
-.rotating-text span:nth-child(odd) {
-    left: 2%;
-    top: 50%;
-    transform: translateX(-50px) translateY(-50%);
+/* Top corners and bottom corners - rotating between 4 positions */
+.rotating-text span:nth-child(4n+1) {
+    top: 15%;
+    left: 5%;
+    transform: translateX(-30px) translateY(-30px);
     text-align: left;
-    max-width: 15%;
 }
 
-.rotating-text span:nth-child(even) {
-    right: 2%;
-    top: 50%;
-    transform: translateX(50px) translateY(-50%);
+.rotating-text span:nth-child(4n+2) {
+    top: 15%;
+    right: 5%;
+    transform: translateX(30px) translateY(-30px);
     text-align: right;
-    max-width: 15%;
 }
 
-/* Vary the vertical position */
-.rotating-text span:nth-child(3n) {
-    top: 30%;
+.rotating-text span:nth-child(4n+3) {
+    bottom: 15%;
+    left: 5%;
+    transform: translateX(-30px) translateY(30px);
+    text-align: left;
 }
 
-.rotating-text span:nth-child(3n+1) {
-    top: 50%;
-}
-
-.rotating-text span:nth-child(3n+2) {
-    top: 70%;
+.rotating-text span:nth-child(4n) {
+    bottom: 15%;
+    right: 5%;
+    transform: translateX(30px) translateY(30px);
+    text-align: right;
 }
 
 @keyframes fadeInUp {
