@@ -211,19 +211,21 @@
     transform: translateX(0) translateY(0);
 }
 
-/* Alternate positions - FAR left and FAR right (away from logo) */
+/* Alternate positions - VERY FAR left and right (in margins only) */
 .rotating-text span:nth-child(odd) {
-    left: 5%;
+    left: 2%;
     top: 50%;
     transform: translateX(-50px) translateY(-50%);
     text-align: left;
+    max-width: 15%;
 }
 
 .rotating-text span:nth-child(even) {
-    right: 5%;
+    right: 2%;
     top: 50%;
     transform: translateX(50px) translateY(-50%);
     text-align: right;
+    max-width: 15%;
 }
 
 /* Vary the vertical position */
