@@ -1160,54 +1160,164 @@
             const modal = document.createElement('div');
             modal.className = 'modal-fullscreen show';
             modal.id = 'fullscreen-' + sectionId;
-            modal.style.cssText = 'display: block; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100vh; background-color: rgba(10, 10, 10, 0.98); overflow-y: auto;';
+            modal.style.cssText = 'display: block; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100vh; background-color: rgba(10, 10, 10, 0.98);';
             
             const closeBtn = document.createElement('button');
             closeBtn.innerHTML = '&times;';
             closeBtn.style.cssText = 'position: fixed; top: 2rem; right: 2rem; width: 50px; height: 50px; background: rgba(107, 155, 158, 0.9); border: none; border-radius: 50%; color: white; font-size: 2rem; cursor: pointer; z-index: 2001;';
-            closeBtn.onclick = () => modal.remove();
+            closeBtn.onclick = () => {
+                modal.remove();
+                // Reset map variables so they can be recreated
+                journeyMap = null;
+                searchMap = null;
+                swarmMap = null;
+            };
             
             const content = document.createElement('div');
-            content.style.cssText = 'padding: 3rem; max-width: 1600px; margin: 0 auto;';
+            content.style.cssText = 'padding: 3rem; max-width: 1600px; margin: 0 auto; height: 100vh; overflow-y: auto;';
             
             // Create content based on section
             if (sectionId === 'journey-map') {
                 content.innerHTML = `
                     <h2 style="color: var(--accent-color); margin-bottom: 1rem;">Share Your Journey</h2>
-                    <p style="color: #d4d4d4; margin-bottom: 1.5rem;">Click on the map to add waypoints and create your custom route.</p>
+                    <p style="color: #d4d4d4; margin-bottom: 1.5rem;">Search for a location or business to get started, or click on the map to add waypoints and create your custom route.</p>
+                    <div style="margin-bottom: 1rem;">
+                        <input type="text" id="mapSearch" placeholder="Search address, zip code, or business name..." style="width: 100%; padding: 1rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-size: 1rem; font-family: 'Poppins', sans-serif;">
+                    </div>
                     <div id="map" style="height: 500px; border-radius: 15px; margin: 1rem 0;"></div>
                     <div style="margin-top: 1rem; display: flex; gap: 1rem;">
                         <button class="feature-btn" onclick="showToast('Route saved!')">Save Route</button>
                         <button class="feature-btn" onclick="clearRoute()">Clear Route</button>
+                        <button class="feature-btn" onclick="showToast('Share link copied!')">Share Route</button>
                     </div>
                 `;
             } else if (sectionId === 'search') {
                 content.innerHTML = `
                     <h2 style="color: var(--accent-color); margin-bottom: 1rem;">Search Routes</h2>
                     <p style="color: #d4d4d4; margin-bottom: 1.5rem;">Find the perfect route for your next adventure</p>
+                    <div style="margin-bottom: 1rem;">
+                        <input type="text" id="searchMapLocation" placeholder="Search address, zip code, or business name..." style="width: 100%; padding: 1rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-size: 1rem; font-family: 'Poppins', sans-serif; margin-bottom: 1rem;">
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                        <input type="text" id="searchByCategory" placeholder="Search by interest, location, or mood..." style="flex: 1; padding: 1rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-size: 1rem; font-family: 'Poppins', sans-serif;">
+                        <button class="feature-btn" onclick="showToast('Searching routes...')">Search</button>
+                    </div>
                     <div id="search-map" style="height: 500px; border-radius: 15px; margin: 1rem 0;"></div>
+                    <div id="search-results" style="margin-top: 2rem; color: #d4d4d4;"></div>
                 `;
             } else if (sectionId === 'swarms') {
                 content.innerHTML = `
                     <h2 style="color: var(--accent-color); margin-bottom: 1rem;">Shopping Swarms</h2>
-                    <p style="color: #d4d4d4; margin-bottom: 1.5rem;">Organize or join community walks</p>
+                    <p style="color: #d4d4d4; margin-bottom: 1.5rem;">Organize or join community walks where locals explore, shop, and support businesses together — a spontaneous celebration of local culture!</p>
+                    <button class="feature-btn" onclick="showToast('Create swarm feature coming soon!')">Create Shopping Swarm</button>
+                    
+                    <div style="background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px; margin: 2rem 0;">
+                        <h3 style="color: var(--accent-light); margin-bottom: 1rem;">🔍 Search Near Me</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; color: #d4d4d4;">Country</label>
+                                <select style="width: 100%; padding: 0.8rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0;">
+                                    <option>Select Country</option>
+                                    <option>United States</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; color: #d4d4d4;">State/Province</label>
+                                <select style="width: 100%; padding: 0.8rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0;">
+                                    <option>Select State/Province</option>
+                                    <option>Colorado</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; color: #d4d4d4;">City</label>
+                                <select style="width: 100%; padding: 0.8rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0;">
+                                    <option>Select City</option>
+                                    <option>Denver</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; color: #d4d4d4;">Or Search by Address/Zip</label>
+                            <input type="text" placeholder="Enter address, zip code, or business name..." style="width: 100%; padding: 0.8rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif;">
+                        </div>
+                        <button class="feature-btn" onclick="showToast('Searching swarms...')">Search</button>
+                    </div>
+                    
                     <div id="swarm-map" style="height: 500px; border-radius: 15px; margin: 1rem 0;"></div>
+                    
+                    <h3 style="color: var(--accent-color); margin: 2rem 0 1rem;">Active Shopping Swarms</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <div style="background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px;">
+                            <h4 style="color: var(--accent-color);">Saturday Market Crawl</h4>
+                            <p style="color: #d4d4d4;">📅 This Saturday, 10 AM<br>📍 Downtown Farmers Market</p>
+                            <p style="color: var(--accent-light);">👥 23 people joined</p>
+                        </div>
+                        <div style="background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px;">
+                            <h4 style="color: var(--accent-color);">Art Gallery Night Walk</h4>
+                            <p style="color: #d4d4d4;">📅 Friday, 6 PM<br>📍 Arts District</p>
+                            <p style="color: var(--accent-light);">👥 15 people joined</p>
+                        </div>
+                        <div style="background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px;">
+                            <h4 style="color: var(--accent-color);">Coffee Shop Marathon</h4>
+                            <p style="color: #d4d4d4;">📅 Sunday, 9 AM<br>📍 Various Locations</p>
+                            <p style="color: var(--accent-light);">👥 31 people joined</p>
+                        </div>
+                    </div>
                 `;
             } else if (sectionId === 'events') {
                 content.innerHTML = `
                     <h2 style="color: var(--accent-color); margin-bottom: 1rem;">Local Events</h2>
-                    <p style="color: #d4d4d4; margin-bottom: 1.5rem;">Discover neighborhood celebrations and community festivals</p>
-                    <div style="margin-top: 2rem; color: #d4d4d4;">
-                        <h3>Upcoming Events</h3>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
-                            <div style="background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px;">
-                                <h4 style="color: var(--accent-color);">Highland Street Festival</h4>
-                                <p>📅 Saturday, June 15, 12-6 PM<br>📍 Highland Neighborhood</p>
+                    <p style="color: #d4d4d4; margin-bottom: 1.5rem;">Discover and promote neighborhood celebrations, block parties, sidewalk sales, and community festivals.</p>
+                    <button class="feature-btn" onclick="showToast('Promote event feature coming soon!')">Promote Your Event</button>
+                    
+                    <div style="background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px; margin: 2rem 0;">
+                        <h3 style="color: var(--accent-light); margin-bottom: 1rem;">🔍 Find Events Near You</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; color: #d4d4d4;">Country</label>
+                                <select style="width: 100%; padding: 0.8rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0;">
+                                    <option>Select Country</option>
+                                    <option>United States</option>
+                                </select>
                             </div>
-                            <div style="background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px;">
-                                <h4 style="color: var(--accent-color);">First Friday Gallery Stroll</h4>
-                                <p>📅 First Friday, 6-9 PM<br>📍 Santa Fe Arts District</p>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; color: #d4d4d4;">State/Province</label>
+                                <select style="width: 100%; padding: 0.8rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0;">
+                                    <option>Select State/Province</option>
+                                    <option>Colorado</option>
+                                </select>
                             </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; color: #d4d4d4;">City</label>
+                                <select style="width: 100%; padding: 0.8rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0;">
+                                    <option>Select City</option>
+                                    <option>Denver</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; color: #d4d4d4;">Or Search by Address/Zip</label>
+                            <input type="text" placeholder="Enter address, zip code, or business name..." style="width: 100%; padding: 0.8rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif;">
+                        </div>
+                        <button class="feature-btn" onclick="showToast('Searching events...')">Search Events</button>
+                    </div>
+                    
+                    <h3 style="color: var(--accent-color); margin: 2rem 0 1rem;">Upcoming Events</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <div style="background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px;">
+                            <span style="display: inline-block; background: var(--accent-light); color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.75rem; margin-bottom: 0.8rem; font-weight: 600;">Block Party</span>
+                            <h4 style="color: var(--accent-color);">Highland Street Festival</h4>
+                            <p style="color: #d4d4d4;">📅 Saturday, June 15, 12-6 PM<br>📍 Highland Neighborhood<br>🎵 Live music, local vendors, food trucks</p>
+                        </div>
+                        <div style="background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px;">
+                            <span style="display: inline-block; background: var(--accent-light); color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.75rem; margin-bottom: 0.8rem; font-weight: 600;">Art Walk</span>
+                            <h4 style="color: var(--accent-color);">First Friday Gallery Stroll</h4>
+                            <p style="color: #d4d4d4;">📅 First Friday, 6-9 PM<br>📍 Santa Fe Arts District<br>🎨 Free gallery openings, artist demos</p>
+                        </div>
+                        <div style="background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px;">
+                            <span style="display: inline-block; background: var(--accent-light); color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.75rem; margin-bottom: 0.8rem; font-weight: 600;">Sidewalk Sale</span>
+                            <h4 style="color: var(--accent-color);">Pearl Street Summer Sale</h4>
+                            <p style="color: #d4d4d4;">📅 July 20-22, 10 AM-7 PM<br>📍 Pearl Street Mall<br>🛍️ Special discounts, outdoor displays</p>
                         </div>
                     </div>
                 `;
