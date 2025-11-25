@@ -278,7 +278,8 @@
         
         /* Feature Cards - 2x2 Grid */
         .features-section {
-            padding: 4rem 0 60vh 0;
+            padding: 10rem 0 60vh 0;
+            scroll-margin-top: 140px;
         }
         
         .feature-grid {
@@ -1184,9 +1185,10 @@
                                 </select>
                             </div>
                         </div>
-                        <div style="margin-bottom: 1rem;">
+                        <div style="margin-bottom: 1rem; position: relative;">
                             <label style="display: block; margin-bottom: 0.5rem; color: #d4d4d4;">Or Search by Address/Zip</label>
-                            <input type="text" placeholder="Enter address, zip code, or business name..." style="width: 100%; padding: 0.8rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif;">
+                            <input type="text" id="swarmLocationSearch" placeholder="Enter address, zip code, or business name..." style="width: 100%; padding: 0.8rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif;">
+                            <div id="swarmSearchSuggestions" style="position: absolute; top: calc(100% + 0.5rem); left: 0; right: 0; background: rgba(30, 30, 30, 0.98); border: 2px solid rgba(107, 155, 158, 0.3); border-top: none; border-radius: 0 0 15px 15px; max-height: 300px; overflow-y: auto; z-index: 1000; display: none; margin-top: 0.5rem;"></div>
                         </div>
                         <button class="feature-btn" onclick="showToast('Searching swarms...')">Search</button>
                     </div>
@@ -1243,9 +1245,10 @@
                                 </select>
                             </div>
                         </div>
-                        <div style="margin-bottom: 1rem;">
+                        <div style="margin-bottom: 1rem; position: relative;">
                             <label style="display: block; margin-bottom: 0.5rem; color: #d4d4d4;">Or Search by Address/Zip</label>
-                            <input type="text" placeholder="Enter address, zip code, or business name..." style="width: 100%; padding: 0.8rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif;">
+                            <input type="text" id="eventLocationSearch" placeholder="Enter address, zip code, or business name..." style="width: 100%; padding: 0.8rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif;">
+                            <div id="eventSearchSuggestions" style="position: absolute; top: calc(100% + 0.5rem); left: 0; right: 0; background: rgba(30, 30, 30, 0.98); border: 2px solid rgba(107, 155, 158, 0.3); border-top: none; border-radius: 0 0 15px 15px; max-height: 300px; overflow-y: auto; z-index: 1000; display: none; margin-top: 0.5rem;"></div>
                         </div>
                         <button class="feature-btn" onclick="showToast('Searching events...')">Search Events</button>
                     </div>
@@ -1388,6 +1391,72 @@
                             L.marker([swarm.lat, swarm.lng]).addTo(swarmMap)
                                 .bindPopup(`<strong>${swarm.name}</strong><br>👥 ${swarm.participants} people`);
                         });
+                        
+                        // Add search autocomplete functionality for swarms
+                        const swarmSearchInput = document.getElementById('swarmLocationSearch');
+                        const swarmSuggestionsDiv = document.getElementById('swarmSearchSuggestions');
+                        let swarmSearchTimeout;
+                        
+                        if (swarmSearchInput && swarmSuggestionsDiv) {
+                            swarmSearchInput.addEventListener('input', function(e) {
+                                const query = e.target.value.trim();
+                                clearTimeout(swarmSearchTimeout);
+                                
+                                if (query.length < 2) {
+                                    swarmSuggestionsDiv.style.display = 'none';
+                                    return;
+                                }
+                                
+                                swarmSearchTimeout = setTimeout(() => {
+                                    fetchLocationSuggestions(query, swarmSuggestionsDiv, swarmMap, swarmSearchInput);
+                                }, 100);
+                            });
+                            
+                            swarmSearchInput.addEventListener('keypress', function(e) {
+                                if (e.key === 'Enter' && swarmSuggestionsDiv.style.display === 'none') {
+                                    searchLocation(swarmSearchInput.value, swarmMap);
+                                }
+                            });
+                            
+                            document.addEventListener('click', function(e) {
+                                if (!swarmSearchInput.contains(e.target) && !swarmSuggestionsDiv.contains(e.target)) {
+                                    swarmSuggestionsDiv.style.display = 'none';
+                                }
+                            });
+                        }
+                    }
+                } else if (sectionId === 'events') {
+                    // Add autocomplete for events search
+                    const eventSearchInput = document.getElementById('eventLocationSearch');
+                    const eventSuggestionsDiv = document.getElementById('eventSearchSuggestions');
+                    let eventSearchTimeout;
+                    
+                    if (eventSearchInput && eventSuggestionsDiv) {
+                        eventSearchInput.addEventListener('input', function(e) {
+                            const query = e.target.value.trim();
+                            clearTimeout(eventSearchTimeout);
+                            
+                            if (query.length < 2) {
+                                eventSuggestionsDiv.style.display = 'none';
+                                return;
+                            }
+                            
+                            eventSearchTimeout = setTimeout(() => {
+                                fetchLocationSuggestions(query, eventSuggestionsDiv, null, eventSearchInput);
+                            }, 100);
+                        });
+                        
+                        eventSearchInput.addEventListener('keypress', function(e) {
+                            if (e.key === 'Enter' && eventSuggestionsDiv.style.display === 'none') {
+                                showToast('Searching events in ' + eventSearchInput.value);
+                            }
+                        });
+                        
+                        document.addEventListener('click', function(e) {
+                            if (!eventSearchInput.contains(e.target) && !eventSuggestionsDiv.contains(e.target)) {
+                                eventSuggestionsDiv.style.display = 'none';
+                            }
+                        });
                     }
                 }
             }, 300);
@@ -1456,11 +1525,16 @@
                         item.addEventListener('click', function() {
                             const lon = result.center[0];
                             const lat = result.center[1];
-                            map.setView([lat, lon], 15);
-                            L.marker([lat, lon])
-                                .addTo(map)
-                                .bindPopup(`<strong>${result.place_name}</strong>`)
-                                .openPopup();
+                            
+                            // Only update map if map exists
+                            if (map) {
+                                map.setView([lat, lon], 15);
+                                L.marker([lat, lon])
+                                    .addTo(map)
+                                    .bindPopup(`<strong>${result.place_name}</strong>`)
+                                    .openPopup();
+                            }
+                            
                             suggestionsDiv.style.display = 'none';
                             inputElement.value = result.place_name;
                             showToast(`Found: ${result.text}`);
