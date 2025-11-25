@@ -278,8 +278,11 @@
         
         /* Feature Cards - 2x2 Grid */
         .features-section {
-            padding: 10rem 0 60vh 0;
+            min-height: 100vh;
+            padding: 6rem 0 4rem 0;
             scroll-margin-top: 140px;
+            display: flex;
+            align-items: center;
         }
         
         .feature-grid {
@@ -287,6 +290,7 @@
             grid-template-columns: repeat(2, 1fr);
             gap: 3rem;
             max-width: 1400px;
+            width: 100%;
             margin: 0 auto;
         }
         
@@ -370,8 +374,10 @@
             border: 2px solid rgba(107, 155, 158, 0.3);
             border-radius: 25px;
             padding: 3rem;
-            margin: 3rem auto;
+            margin: 2rem auto 3rem;
             max-width: 1400px;
+            min-height: 80vh;
+            scroll-margin-top: 140px;
         }
         
         .upcoming-section h2 {
