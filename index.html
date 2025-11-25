@@ -276,114 +276,72 @@
             text-align: center;
         }
         
-        /* Feature Cards - 4 in One Row */
+        /* Feature Cards - 2x2 Grid */
         .features-section {
             padding: 4rem 0;
         }
         
         .feature-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 0;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
         }
         
-        @media (max-width: 1200px) {
-            .feature-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
-        @media (max-width: 768px) {
+        @media (max-width: 968px) {
             .feature-grid {
                 grid-template-columns: 1fr;
+                gap: 2rem;
             }
         }
         
         .feature-card-large {
-            position: relative;
-            min-height: 50vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            cursor: pointer;
+            background: rgba(30, 30, 30, 0.9);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid rgba(107, 155, 158, 0.2);
         }
         
-        .feature-card-large::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-size: cover;
-            background-position: center;
-            transition: transform 0.5s ease;
-            z-index: 1;
-        }
-        
-        .feature-card-large::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(10, 10, 10, 0.7);
-            transition: background 0.3s ease;
-            z-index: 2;
-        }
-        
-        .feature-card-large:hover::before {
-            transform: scale(1.05);
-        }
-        
-        .feature-card-large:hover::after {
-            background: rgba(10, 10, 10, 0.85);
-        }
-        
-        .feature-card-large:nth-child(1)::before {
-            background-image: url('character-bg5.png');
-        }
-        
-        .feature-card-large:nth-child(2)::before {
-            background-image: url('character-bg2.png');
-        }
-        
-        .feature-card-large:nth-child(3)::before {
-            background-image: url('character-bg3.png');
-        }
-        
-        .feature-card-large:nth-child(4)::before {
-            background-image: url('character-bg4.png');
+        .feature-card-large:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(107, 155, 158, 0.3);
+            border-color: var(--accent-color);
         }
         
         .feature-content {
             position: relative;
             z-index: 3;
-            text-align: center;
-            padding: 3rem 2rem;
+            text-align: left;
         }
         
         .feature-icon {
-            font-size: 5rem;
-            margin-bottom: 2rem;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
         }
         
         .feature-card-large h3 {
             font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
+            font-size: 1.8rem;
             color: var(--accent-light);
             margin-bottom: 1rem;
-            text-shadow: 0 3px 15px rgba(0, 0, 0, 0.8);
         }
         
         .feature-card-large p {
             font-size: 1.1rem;
-            color: var(--accent-light);
-            margin-bottom: 2rem;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+            color: #d4d4d4;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
         }
         
         .feature-btn {
@@ -714,18 +672,6 @@
             .hero-logo-btn {
                 width: 150px;
                 height: 150px;
-            }
-            
-            .feature-card-large {
-                min-height: 40vh;
-            }
-            
-            .feature-card-large h3 {
-                font-size: 2rem;
-            }
-            
-            .feature-content {
-                padding: 2.5rem 1.5rem;
             }
             
             .nav-links {
