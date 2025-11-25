@@ -881,7 +881,7 @@
             <!-- Feature Cards - 4 in a row -->
             <div id="features-content" class="features-section">
                 <div class="feature-grid">
-                    <div class="feature-card-large">
+                    <div class="feature-card-large" onclick="toggleSection('journey-map')" style="cursor: pointer;">
                         <div class="feature-content">
                             <div class="feature-icon">📍</div>
                             <h3>Share Your Journey</h3>
@@ -890,7 +890,7 @@
                         </div>
                     </div>
                     
-                    <div class="feature-card-large">
+                    <div class="feature-card-large" onclick="toggleSection('search')" style="cursor: pointer;">
                         <div class="feature-content">
                             <div class="feature-icon">🔍</div>
                             <h3>Search Routes</h3>
@@ -899,7 +899,7 @@
                         </div>
                     </div>
                     
-                    <div class="feature-card-large">
+                    <div class="feature-card-large" onclick="toggleSection('swarms')" style="cursor: pointer;">
                         <div class="feature-content">
                             <div class="feature-icon">🛍️</div>
                             <h3>Shopping Swarms</h3>
@@ -908,7 +908,7 @@
                         </div>
                     </div>
                     
-                    <div class="feature-card-large">
+                    <div class="feature-card-large" onclick="toggleSection('events')" style="cursor: pointer;">
                         <div class="feature-content">
                             <div class="feature-icon">🎉</div>
                             <h3>Local Events</h3>
@@ -1067,7 +1067,6 @@
                                                 setTimeout(() => {
                                                     slideshowOverlay.style.display = 'none';
                                                     document.body.classList.remove('choreography-active');
-                                                    window.scrollTo(0, 0);
                                                 }, 1000);
                                             }, 4000);
                                         }, 2000);
@@ -1106,7 +1105,6 @@
             setTimeout(() => {
                 slideshowOverlay.style.display = 'none';
                 document.body.classList.remove('choreography-active');
-                window.scrollTo(0, 0);
             }, 500);
         });
         
@@ -1141,6 +1139,179 @@
         // Scroll to content
         function scrollToContent() {
             document.querySelector('.main-content').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+    
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Map variables
+        let journeyMap = null;
+        let searchMap = null;
+        let swarmMap = null;
+        let routeMarkers = [];
+        let routePath = null;
+        let routeCoordinates = [];
+        
+        // Toggle Sections - Opens fullscreen modal with maps
+        function toggleSection(sectionId) {
+            // Create fullscreen modal
+            const modal = document.createElement('div');
+            modal.className = 'modal-fullscreen show';
+            modal.id = 'fullscreen-' + sectionId;
+            modal.style.cssText = 'display: block; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100vh; background-color: rgba(10, 10, 10, 0.98); overflow-y: auto;';
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.innerHTML = '&times;';
+            closeBtn.style.cssText = 'position: fixed; top: 2rem; right: 2rem; width: 50px; height: 50px; background: rgba(107, 155, 158, 0.9); border: none; border-radius: 50%; color: white; font-size: 2rem; cursor: pointer; z-index: 2001;';
+            closeBtn.onclick = () => modal.remove();
+            
+            const content = document.createElement('div');
+            content.style.cssText = 'padding: 3rem; max-width: 1600px; margin: 0 auto;';
+            
+            // Create content based on section
+            if (sectionId === 'journey-map') {
+                content.innerHTML = `
+                    <h2 style="color: var(--accent-color); margin-bottom: 1rem;">Share Your Journey</h2>
+                    <p style="color: #d4d4d4; margin-bottom: 1.5rem;">Click on the map to add waypoints and create your custom route.</p>
+                    <div id="map" style="height: 500px; border-radius: 15px; margin: 1rem 0;"></div>
+                    <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                        <button class="feature-btn" onclick="showToast('Route saved!')">Save Route</button>
+                        <button class="feature-btn" onclick="clearRoute()">Clear Route</button>
+                    </div>
+                `;
+            } else if (sectionId === 'search') {
+                content.innerHTML = `
+                    <h2 style="color: var(--accent-color); margin-bottom: 1rem;">Search Routes</h2>
+                    <p style="color: #d4d4d4; margin-bottom: 1.5rem;">Find the perfect route for your next adventure</p>
+                    <div id="search-map" style="height: 500px; border-radius: 15px; margin: 1rem 0;"></div>
+                `;
+            } else if (sectionId === 'swarms') {
+                content.innerHTML = `
+                    <h2 style="color: var(--accent-color); margin-bottom: 1rem;">Shopping Swarms</h2>
+                    <p style="color: #d4d4d4; margin-bottom: 1.5rem;">Organize or join community walks</p>
+                    <div id="swarm-map" style="height: 500px; border-radius: 15px; margin: 1rem 0;"></div>
+                `;
+            } else if (sectionId === 'events') {
+                content.innerHTML = `
+                    <h2 style="color: var(--accent-color); margin-bottom: 1rem;">Local Events</h2>
+                    <p style="color: #d4d4d4; margin-bottom: 1.5rem;">Discover neighborhood celebrations and community festivals</p>
+                    <div style="margin-top: 2rem; color: #d4d4d4;">
+                        <h3>Upcoming Events</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+                            <div style="background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px;">
+                                <h4 style="color: var(--accent-color);">Highland Street Festival</h4>
+                                <p>📅 Saturday, June 15, 12-6 PM<br>📍 Highland Neighborhood</p>
+                            </div>
+                            <div style="background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px;">
+                                <h4 style="color: var(--accent-color);">First Friday Gallery Stroll</h4>
+                                <p>📅 First Friday, 6-9 PM<br>📍 Santa Fe Arts District</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            modal.appendChild(closeBtn);
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            
+            // Initialize maps after DOM is ready
+            setTimeout(() => {
+                if (sectionId === 'journey-map') {
+                    const mapElement = document.getElementById('map');
+                    if (mapElement && !journeyMap) {
+                        journeyMap = L.map(mapElement).setView([39.7392, -104.9903], 13);
+                        L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
+                            attribution: '© Mapbox © OpenStreetMap',
+                            tileSize: 512,
+                            zoomOffset: -1
+                        }).addTo(journeyMap);
+                        
+                        journeyMap.on('click', function(e) {
+                            addWaypoint(e.latlng);
+                        });
+                    }
+                } else if (sectionId === 'search') {
+                    const mapElement = document.getElementById('search-map');
+                    if (mapElement && !searchMap) {
+                        searchMap = L.map(mapElement).setView([39.7392, -104.9903], 13);
+                        L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
+                            attribution: '© Mapbox © OpenStreetMap',
+                            tileSize: 512,
+                            zoomOffset: -1
+                        }).addTo(searchMap);
+                    }
+                } else if (sectionId === 'swarms') {
+                    const mapElement = document.getElementById('swarm-map');
+                    if (mapElement && !swarmMap) {
+                        swarmMap = L.map(mapElement).setView([39.7392, -104.9903], 13);
+                        L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
+                            attribution: '© Mapbox © OpenStreetMap',
+                            tileSize: 512,
+                            zoomOffset: -1
+                        }).addTo(swarmMap);
+                        
+                        // Add sample swarm markers
+                        const swarms = [
+                            { lat: 39.7392, lng: -104.9903, name: 'Saturday Market Crawl', participants: 23 },
+                            { lat: 39.7420, lng: -104.9880, name: 'Art Gallery Night Walk', participants: 15 },
+                            { lat: 39.7350, lng: -104.9950, name: 'Coffee Shop Marathon', participants: 31 }
+                        ];
+                        
+                        swarms.forEach(swarm => {
+                            L.marker([swarm.lat, swarm.lng]).addTo(swarmMap)
+                                .bindPopup(`<strong>${swarm.name}</strong><br>👥 ${swarm.participants} people`);
+                        });
+                    }
+                }
+            }, 300);
+        }
+        
+        function addWaypoint(latlng) {
+            const waypointNumber = routeCoordinates.length + 1;
+            const numberIcon = L.divIcon({
+                className: 'numbered-marker',
+                html: `<div style="background: var(--accent-color); color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">${waypointNumber}</div>`,
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+            
+            const marker = L.marker(latlng, { icon: numberIcon }).addTo(journeyMap);
+            routeMarkers.push(marker);
+            routeCoordinates.push([latlng.lat, latlng.lng]);
+            
+            if (routePath) {
+                journeyMap.removeLayer(routePath);
+            }
+            
+            if (routeCoordinates.length > 1) {
+                routePath = L.polyline(routeCoordinates, { color: 'var(--accent-color)', weight: 4 }).addTo(journeyMap);
+            }
+            
+            showToast(`Waypoint ${waypointNumber} added!`);
+        }
+        
+        function clearRoute() {
+            routeMarkers.forEach(marker => journeyMap.removeLayer(marker));
+            if (routePath) journeyMap.removeLayer(routePath);
+            routeMarkers = [];
+            routeCoordinates = [];
+            routePath = null;
+            showToast('Route cleared!');
+        }
+        
+        // Toast Notification
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position: fixed; bottom: 2rem; right: 2rem; background: rgba(107, 155, 158, 0.95); color: white; padding: 1rem 2rem; border-radius: 10px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3); z-index: 3000;';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
         }
     </script>
 </body>
