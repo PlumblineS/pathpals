@@ -578,11 +578,18 @@
         
         #slide-typewriter-with-image .typewriter-section {
             margin-bottom: 3rem;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         #slide-typewriter-with-image .image-section {
             opacity: 0;
-            transition: opacity 3s ease-in;
+            transition: opacity 4s ease-in;
+            display: flex;
+            justify-content: center;
+            width: 100%;
         }
         
         #slide-typewriter-with-image .image-section.fading {
@@ -596,12 +603,18 @@
         
         #slide-paragraph-with-image .paragraph-section {
             margin-bottom: 3rem;
+            display: flex;
+            justify-content: center;
+            width: 100%;
         }
         
         #slide-paragraph-with-image .image-section {
             opacity: 0;
             transition: opacity 3s ease-in;
-            margin-bottom: 2rem;
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+            width: 100%;
         }
         
         #slide-paragraph-with-image .image-section.fading {
@@ -610,11 +623,12 @@
         
         #slide-paragraph-with-image .you-text {
             opacity: 0;
-            transition: opacity 1s ease-in;
+            transition: opacity 1.5s ease-in;
             font-family: 'Playfair Display', serif;
             color: var(--accent-color);
             font-size: 4rem;
             font-weight: 700;
+            margin-bottom: 1rem;
         }
         
         #slide-paragraph-with-image .you-text.showing {
@@ -653,6 +667,8 @@
             font-size: 1.6rem;
             color: var(--accent-light);
             font-weight: 600;
+            text-align: center;
+            min-height: 50px;
         }
         
         .slideshow-controls {
@@ -744,7 +760,7 @@
         <!-- Slide 2: Typewriter + Image -->
         <div class="slide" id="slide-typewriter-with-image">
             <div class="typewriter-section">
-                <h3 style="font-family: 'Playfair Display', serif; color: var(--accent-color); font-size: 2.8rem; margin-bottom: 3rem;">Take Back Your Main Street</h3>
+                <h3 style="font-family: 'Playfair Display', serif; color: var(--accent-color); font-size: 2.8rem; margin-bottom: 3rem; text-align: center;">Take Back Your Main Street</h3>
                 <p id="slideshow-typewriter-sentence"></p>
             </div>
             
@@ -753,19 +769,19 @@
             </div>
         </div>
         
-        <!-- Slide 3: Paragraph + Image + YOU -->
+        <!-- Slide 3: Paragraph + YOU + Image -->
         <div class="slide" id="slide-paragraph-with-image">
             <div class="paragraph-section">
-                <p style="font-size: 1.3rem; color: var(--accent-light); line-height: 1.9;">
+                <p style="font-size: 1.3rem; color: var(--accent-light); line-height: 1.9; text-align: center; max-width: 800px;">
                     Search engines direct you to chains. Online shopping replaces neighborhood stores. Meanwhile, the café owner who remembers your name can't make rent. Small businesses don't have marketing budgets or algorithms working for them — they have...
                 </p>
             </div>
             
+            <div class="you-text" id="you-text">YOU</div>
+            
             <div class="image-section" id="shopping-street-section">
                 <img src="shopping-street.png" alt="Shopping street" style="max-width: 500px; width: 80%; height: auto; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
             </div>
-            
-            <div class="you-text" id="you-text">YOU</div>
         </div>
         
         <!-- Slide 4: Welcome -->
@@ -1002,52 +1018,56 @@
                 document.getElementById('slide-definition').classList.remove('active');
                 document.getElementById('slide-typewriter-with-image').classList.add('active');
                 
-                // Start image fade when typing starts
+                // Start image fade when typing starts (slower now - 4s)
                 setTimeout(() => {
                     document.getElementById('empty-street-section').classList.add('fading');
                 }, 100);
                 
                 // Start typewriter
                 slideshowTypewriter(() => {
-                    // Hold for 3 seconds after typing finishes
+                    // Hold for 5 seconds after typing finishes
                     setTimeout(() => {
                         document.getElementById('slide-typewriter-with-image').classList.remove('active');
                         document.getElementById('slide-paragraph-with-image').classList.add('active');
                         
-                        // Paragraph sits for 2 seconds
+                        // Paragraph HOLDS for 4 seconds (people can read)
                         setTimeout(() => {
-                            document.getElementById('shopping-street-section').classList.add('fading');
+                            // YOU fades in
+                            document.getElementById('you-text').classList.add('showing');
                             
-                            // Wait for image to finish (3 sec)
+                            // Wait for YOU to finish fading (1.5 sec), then start image
                             setTimeout(() => {
-                                document.getElementById('you-text').classList.add('showing');
+                                document.getElementById('shopping-street-section').classList.add('fading');
                                 
-                                // YOU holds for 2 seconds
+                                // Wait for image to finish (3 sec), then hold
                                 setTimeout(() => {
-                                    document.getElementById('slide-paragraph-with-image').classList.remove('active');
-                                    document.getElementById('slide-welcome').classList.add('active');
-                                    
-                                    // After 2 sec, move Welcome up and fade in tagline
+                                    // Everything holds for 3 seconds
                                     setTimeout(() => {
-                                        document.getElementById('welcome-text').classList.add('move-up');
-                                        document.getElementById('tagline-text').classList.add('fade-in');
+                                        document.getElementById('slide-paragraph-with-image').classList.remove('active');
+                                        document.getElementById('slide-welcome').classList.add('active');
                                         
-                                        // Hold for 4 sec, then END
+                                        // After 2 sec, move Welcome up and fade in tagline
                                         setTimeout(() => {
-                                            slideshowOverlay.style.transition = 'opacity 1s ease-out';
-                                            slideshowOverlay.style.opacity = '0';
+                                            document.getElementById('welcome-text').classList.add('move-up');
+                                            document.getElementById('tagline-text').classList.add('fade-in');
                                             
+                                            // Hold for 4 sec, then END
                                             setTimeout(() => {
-                                                slideshowOverlay.style.display = 'none';
-                                                document.body.classList.remove('choreography-active');
-                                                window.scrollTo(0, 0);
-                                            }, 1000);
-                                        }, 4000);
-                                    }, 2000);
-                                }, 2000);
-                            }, 3000);
-                        }, 2000);
-                    }, 3000);
+                                                slideshowOverlay.style.transition = 'opacity 1s ease-out';
+                                                slideshowOverlay.style.opacity = '0';
+                                                
+                                                setTimeout(() => {
+                                                    slideshowOverlay.style.display = 'none';
+                                                    document.body.classList.remove('choreography-active');
+                                                    window.scrollTo(0, 0);
+                                                }, 1000);
+                                            }, 4000);
+                                        }, 2000);
+                                    }, 3000);
+                                }, 3000);
+                            }, 1500);
+                        }, 4000);
+                    }, 5000);
                 });
             }, 4000);
         }
