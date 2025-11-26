@@ -883,6 +883,7 @@
             <!-- Upcoming Shopping Swarms -->
             <section class="upcoming-section">
                 <h2>🛍️ Upcoming Shopping Swarms</h2>
+                <p style="color: #999; text-align: center; margin: -1rem 0 1.5rem; font-size: 0.9rem;">Click any card to view on map</p>
                 <div class="upcoming-cards">
                     <div class="upcoming-card" onclick="toggleSection('swarms')" style="cursor: pointer;">
                         <h3>Saturday Market Crawl</h3>
@@ -922,13 +923,22 @@
             <!-- Upcoming Events -->
             <section class="upcoming-section">
                 <h2>🎉 Upcoming Local Events</h2>
+                <p style="color: #999; text-align: center; margin: -1rem 0 1.5rem; font-size: 0.9rem;">Click any card to view on map · Weather shown for events within 7 days</p>
                 <div class="upcoming-cards">
                     <div class="upcoming-card" onclick="toggleSection('events')" style="cursor: pointer;">
                         <span class="event-type">Block Party</span>
                         <h3>Highland Street Festival</h3>
                         <p>📅 Saturday, June 15, 12-6 PM</p>
                         <p>📍 Highland Neighborhood</p>
-                        <p style="color: #999; font-size: 0.9rem; margin-top: 0.5rem;">Posted by: Highland Merchants Assoc.</p>
+                        <div style="background: rgba(40, 40, 40, 0.6); padding: 0.8rem; border-radius: 10px; margin-top: 0.8rem; border: 1px solid rgba(107, 155, 158, 0.3);">
+                            <p style="color: var(--accent-light); font-weight: 600; margin-bottom: 0.3rem;">
+                                ☀️ 78°F - Clear skies
+                            </p>
+                            <p style="color: #d4d4d4; font-size: 0.85rem;">
+                                Range: 72°F - 82°F | Precipitation: 10%
+                            </p>
+                        </div>
+                        <p style="color: #999; font-size: 0.9rem; margin-top: 0.8rem;">Posted by: Highland Merchants Assoc.</p>
                         <p id="event-interest-0" style="color: var(--accent-color); font-weight: 600; margin-top: 0.5rem;">👥 0 locals interested</p>
                         <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
                             <button onclick="addInterest('event', 0); event.stopPropagation();" style="flex: 1; background: rgba(107, 155, 158, 0.2); border: 2px solid var(--accent-color); color: var(--accent-color); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; cursor: pointer; transition: all 0.3s;">I'm Interested</button>
@@ -941,7 +951,16 @@
                         <h3>First Friday Gallery Stroll</h3>
                         <p>📅 First Friday, 6-9 PM</p>
                         <p>📍 Santa Fe Arts District</p>
-                        <p style="color: #999; font-size: 0.9rem; margin-top: 0.5rem;">Posted by: Santa Fe Arts Council</p>
+                        <div style="background: rgba(40, 40, 40, 0.6); padding: 0.8rem; border-radius: 10px; margin-top: 0.8rem; border: 1px solid rgba(107, 155, 158, 0.3);">
+                            <p style="color: var(--accent-light); font-weight: 600; margin-bottom: 0.3rem;">
+                                🌧️ 65°F - Light rain
+                            </p>
+                            <p style="color: #d4d4d4; font-size: 0.85rem;">
+                                Range: 62°F - 68°F | Precipitation: 70%
+                            </p>
+                            <p style="color: #f39c12; font-size: 0.9rem; margin-top: 0.5rem;">⚠️ High chance of rain - bring umbrella!</p>
+                        </div>
+                        <p style="color: #999; font-size: 0.9rem; margin-top: 0.8rem;">Posted by: Santa Fe Arts Council</p>
                         <p id="event-interest-1" style="color: var(--accent-color); font-weight: 600; margin-top: 0.5rem;">👥 0 locals interested</p>
                         <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
                             <button onclick="addInterest('event', 1); event.stopPropagation();" style="flex: 1; background: rgba(107, 155, 158, 0.2); border: 2px solid var(--accent-color); color: var(--accent-color); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; cursor: pointer; transition: all 0.3s;">I'm Interested</button>
@@ -1169,7 +1188,7 @@
             };
             
             const content = document.createElement('div');
-            content.style.cssText = 'padding: 3rem; max-width: 1600px; margin: 0 auto;';
+            content.style.cssText = 'padding: 3rem; max-width: 1600px; margin: 0 auto; max-height: 100vh; overflow-y: auto;';
             
             // Create content based on section
             if (sectionId === 'journey-map') {
@@ -1815,6 +1834,12 @@
                     items[id].interested = newCount;
                     localStorage.setItem(key, JSON.stringify(items));
                 }
+                
+                // Navigate to the map section
+                const sectionName = type === 'swarm' ? 'swarms' : 'events';
+                setTimeout(() => {
+                    toggleSection(sectionName);
+                }, 500);
             }
         }
 
