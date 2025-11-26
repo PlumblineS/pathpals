@@ -1162,25 +1162,31 @@
         
         // Toggle Sections - Opens fullscreen modal with maps
         function toggleSection(sectionId) {
+            // Lock background scrolling
+            document.body.style.overflow = 'hidden';
+            
             // Create fullscreen modal
             const modal = document.createElement('div');
             modal.className = 'modal-fullscreen show';
             modal.id = 'fullscreen-' + sectionId;
-            modal.style.cssText = 'display: block; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100vh; background-color: rgba(10, 10, 10, 0.98); overflow-y: auto;';
+            modal.style.cssText = 'display: block; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100vh; background-color: rgba(10, 10, 10, 0.98);';
             
             const closeBtn = document.createElement('button');
             closeBtn.innerHTML = '&times;';
             closeBtn.style.cssText = 'position: fixed; top: 2rem; right: 2rem; width: 50px; height: 50px; background: rgba(107, 155, 158, 0.9); border: none; border-radius: 50%; color: white; font-size: 2rem; cursor: pointer; z-index: 2001;';
             closeBtn.onclick = () => {
                 modal.remove();
+                // Unlock background scrolling
+                document.body.style.overflow = 'auto';
                 // Reset map variables so they can be recreated
                 journeyMap = null;
                 searchMap = null;
                 swarmMap = null;
+                eventMap = null;
             };
             
             const content = document.createElement('div');
-            content.style.cssText = 'padding: 3rem; max-width: 1600px; margin: 0 auto; padding-bottom: 4rem;';
+            content.style.cssText = 'padding: 3rem; max-width: 1600px; margin: 0 auto; padding-bottom: 4rem; height: 100vh; overflow-y: auto;';
             
             // Create content based on section
             if (sectionId === 'journey-map') {
