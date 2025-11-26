@@ -279,7 +279,7 @@
         /* Feature Cards - 2x2 Grid */
         .features-section {
             min-height: 100vh;
-            padding: 10rem 2rem 3rem;
+            padding: 8rem 2rem 2rem;
             scroll-margin-top: 140px;
             display: flex;
             align-items: flex-start;
@@ -763,7 +763,7 @@
             <ul class="nav-links">
                 <li><a href="#home">Home</a></li>
                 <li><a href="javascript:void(0)" onclick="scrollToContent()">How It Works</a></li>
-                <li><a href="#features-content">Explore</a></li>
+                <li><a href="javascript:void(0)" onclick="scrollToExplore()">Explore</a></li>
                 <li><a href="for-businesses.html">For Businesses</a></li>
                 <li><a href="about.html">About</a></li>
             </ul>
@@ -1093,6 +1093,10 @@
         // Scroll to content
         function scrollToContent() {
             document.querySelector('.main-content').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function scrollToExplore() {
+            document.getElementById('features-content').scrollIntoView({ behavior: 'smooth' });
         }
     </script>
     
