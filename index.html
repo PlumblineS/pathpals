@@ -278,22 +278,13 @@
         
         /* Feature Cards - 2x2 Grid */
         .features-section {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: #0a0a0a;
-    z-index: 9999;
-    display: none;
-    justify-content: center;
-    align-items: center;
-    padding: 2rem;
-}
-.features-section.show {
-    display: flex;
-}
-
+            min-height: 100vh;
+            padding: 10rem 2rem 3rem;
+            scroll-margin-top: 140px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
         
         .feature-grid {
             display: grid;
@@ -772,7 +763,7 @@
             <ul class="nav-links">
                 <li><a href="#home">Home</a></li>
                 <li><a href="javascript:void(0)" onclick="scrollToContent()">How It Works</a></li>
-                <a href="#explore">Explore</a>
+                <li><a href="#features-content">Explore</a></li>
                 <li><a href="for-businesses.html">For Businesses</a></li>
                 <li><a href="about.html">About</a></li>
             </ul>
@@ -842,7 +833,7 @@
             </section>
             
             <!-- Feature Cards - 4 in a row -->
-            <div id="explore" class="features-section">
+            <div id="features-content" class="features-section">
                 <div class="feature-grid">
                     <div class="feature-card-large" onclick="toggleSection('journey-map')" style="cursor: pointer;">
                         <div class="feature-content">
@@ -1683,10 +1674,5 @@
             }, 3000);
         }
     </script>
-        </script>
-
- </body>
-</html>
-
 </body>
 </html>
