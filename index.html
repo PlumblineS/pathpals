@@ -842,39 +842,39 @@
             <!-- Feature Cards - 4 in a row -->
             <div id="features-content" class="features-section">
                 <div class="feature-grid">
-                    <div class="feature-card-large" onclick="toggleSection('journey-map')" style="cursor: pointer;">
+                    <div class="feature-card-large">
                         <div class="feature-content">
                             <div class="feature-icon">📍</div>
                             <h3>Share Your Journey</h3>
                             <p>Plot your favorite routes</p>
-                            <button class="feature-btn">Start Mapping</button>
+                            <button class="feature-btn" onclick="toggleSection('journey-map')">Start Mapping</button>
                         </div>
                     </div>
                     
-                    <div class="feature-card-large" onclick="toggleSection('search')" style="cursor: pointer;">
+                    <div class="feature-card-large">
                         <div class="feature-content">
                             <div class="feature-icon">🔍</div>
                             <h3>Search Routes</h3>
                             <p>Discover curated paths</p>
-                            <button class="feature-btn">Explore Routes</button>
+                            <button class="feature-btn" onclick="toggleSection('search')">Explore Routes</button>
                         </div>
                     </div>
                     
-                    <div class="feature-card-large" onclick="toggleSection('swarms')" style="cursor: pointer;">
+                    <div class="feature-card-large">
                         <div class="feature-content">
                             <div class="feature-icon">🛍️</div>
                             <h3>Shopping Swarms</h3>
                             <p>Join community walks</p>
-                            <button class="feature-btn">View Swarms</button>
+                            <button class="feature-btn" onclick="toggleSection('swarms')">View Swarms</button>
                         </div>
                     </div>
                     
-                    <div class="feature-card-large" onclick="toggleSection('events')" style="cursor: pointer;">
+                    <div class="feature-card-large">
                         <div class="feature-content">
                             <div class="feature-icon">🎉</div>
                             <h3>Local Events</h3>
                             <p>Discover celebrations</p>
-                            <button class="feature-btn">Browse Events</button>
+                            <button class="feature-btn" onclick="toggleSection('events')">Browse Events</button>
                         </div>
                     </div>
                 </div>
@@ -884,21 +884,21 @@
             <section class="upcoming-section">
                 <h2>🛍️ Upcoming Shopping Swarms</h2>
                 <div class="upcoming-cards">
-                    <div class="upcoming-card">
+                    <div class="upcoming-card" onclick="toggleSection('swarms')" style="cursor: pointer;">
                         <h3>Saturday Market Crawl</h3>
                         <p>📅 This Saturday, 10 AM</p>
                         <p>📍 Downtown Farmers Market</p>
                         <p style="color: var(--accent-color); font-weight: 600;">👥 23 locals joining</p>
                     </div>
                     
-                    <div class="upcoming-card">
+                    <div class="upcoming-card" onclick="toggleSection('swarms')" style="cursor: pointer;">
                         <h3>Art Gallery Night Walk</h3>
                         <p>📅 Friday, 6 PM</p>
                         <p>📍 Arts District</p>
                         <p style="color: var(--accent-color); font-weight: 600;">👥 15 locals joining</p>
                     </div>
                     
-                    <div class="upcoming-card">
+                    <div class="upcoming-card" onclick="toggleSection('swarms')" style="cursor: pointer;">
                         <h3>Coffee Shop Marathon</h3>
                         <p>📅 Sunday, 9 AM</p>
                         <p>📍 Various Locations</p>
@@ -911,21 +911,21 @@
             <section class="upcoming-section">
                 <h2>🎉 Upcoming Local Events</h2>
                 <div class="upcoming-cards">
-                    <div class="upcoming-card">
+                    <div class="upcoming-card" onclick="toggleSection('events')" style="cursor: pointer;">
                         <span class="event-type">Block Party</span>
                         <h3>Highland Street Festival</h3>
                         <p>📅 Saturday, June 15, 12-6 PM</p>
                         <p>📍 Highland Neighborhood</p>
                     </div>
                     
-                    <div class="upcoming-card">
+                    <div class="upcoming-card" onclick="toggleSection('events')" style="cursor: pointer;">
                         <span class="event-type">Art Walk</span>
                         <h3>First Friday Gallery Stroll</h3>
                         <p>📅 First Friday, 6-9 PM</p>
                         <p>📍 Santa Fe Arts District</p>
                     </div>
                     
-                    <div class="upcoming-card">
+                    <div class="upcoming-card" onclick="toggleSection('events')" style="cursor: pointer;">
                         <span class="event-type">Sidewalk Sale</span>
                         <h3>Pearl Street Summer Sale</h3>
                         <p>📅 July 20-22, 10 AM-7 PM</p>
@@ -1139,7 +1139,7 @@
             };
             
             const content = document.createElement('div');
-            content.style.cssText = 'padding: 3rem; max-width: 1600px; margin: 0 auto; height: 100vh; overflow-y: auto;';
+            content.style.cssText = 'padding: 3rem; max-width: 1600px; margin: 0 auto;';
             
             // Create content based on section
             if (sectionId === 'journey-map') {
