@@ -879,26 +879,6 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Upcoming Shopping Swarms -->
-            <section class="upcoming-section">
-                <h2>🛍️ Upcoming Shopping Swarms</h2>
-                <p style="color: #999; text-align: center; margin: -1rem 0 1.5rem; font-size: 0.9rem;">Click "I'm Interested" to view on map</p>
-                <div id="swarms-container" class="upcoming-cards">
-                    <!-- Swarms will be loaded from Firebase -->
-                    <p style="color: #999; text-align: center; width: 100%; padding: 2rem;">Loading swarms...</p>
-                </div>
-            </section>
-            
-            <!-- Upcoming Events -->
-            <section class="upcoming-section">
-                <h2>🎉 Upcoming Local Events</h2>
-                <p style="color: #999; text-align: center; margin: -1rem 0 1.5rem; font-size: 0.9rem;">Click "I'm Interested" to view on map · Weather shown for events within 7 days</p>
-                <div id="events-container" class="upcoming-cards">
-                    <!-- Events will be loaded from Firebase -->
-                    <p style="color: #999; text-align: center; width: 100%; padding: 2rem;">Loading events...</p>
-                </div>
-            </section>
         </div>
     </main>
     
@@ -1249,91 +1229,6 @@
                 callback(swarms);
             });
         }
-        
-        // ===== DISPLAY FUNCTIONS FOR HOMEPAGE =====
-        
-        // Load and display swarms on homepage
-        async function loadHomepageSwarms() {
-            const container = document.getElementById('swarms-container');
-            if (!container) return;
-            
-            try {
-                const swarms = await getAllSwarms();
-                
-                if (swarms.length === 0) {
-                    container.innerHTML = '<p style="color: #999; text-align: center; width: 100%; padding: 2rem;">No swarms yet. Be the first to create one!</p>';
-                    return;
-                }
-                
-                container.innerHTML = '';
-                swarms.forEach(swarm => {
-                    const card = document.createElement('div');
-                    card.className = 'upcoming-card';
-                    card.style.cursor = 'default';
-                    card.innerHTML = `
-                        <h3>${swarm.title}</h3>
-                        <p>📅 ${swarm.date} at ${swarm.time}</p>
-                        <p>📍 ${swarm.location}</p>
-                        <p id="swarm-interest-${swarm.id}" style="color: var(--accent-color); font-weight: 600;">👥 ${swarm.interested || 0} locals interested</p>
-                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                            <button onclick="addInterest('swarm', '${swarm.id}');" style="flex: 1; background: rgba(107, 155, 158, 0.2); border: 2px solid var(--accent-color); color: var(--accent-color); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; cursor: pointer; transition: all 0.3s;">I'm Interested</button>
-                            <button onclick="shareItem('${swarm.title.replace(/'/g, "\\'")}', window.location.href);" style="background: rgba(107, 155, 158, 0.2); border: 2px solid var(--accent-color); color: var(--accent-color); padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; transition: all 0.3s;">📤 Share</button>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-            } catch (error) {
-                console.error('Error loading swarms:', error);
-                container.innerHTML = '<p style="color: #999; text-align: center; width: 100%; padding: 2rem;">Unable to load swarms. Please refresh the page.</p>';
-            }
-        }
-        
-        // Load and display events on homepage
-        async function loadHomepageEvents() {
-            const container = document.getElementById('events-container');
-            if (!container) return;
-            
-            try {
-                const events = await getAllEvents();
-                
-                if (events.length === 0) {
-                    container.innerHTML = '<p style="color: #999; text-align: center; width: 100%; padding: 2rem;">No events yet. Be the first to promote one!</p>';
-                    return;
-                }
-                
-                container.innerHTML = '';
-                events.forEach(event => {
-                    const card = document.createElement('div');
-                    card.className = 'upcoming-card';
-                    card.style.cursor = 'default';
-                    card.innerHTML = `
-                        <span class="event-type">${event.type}</span>
-                        <h3>${event.name}</h3>
-                        <p>📅 ${event.startDate} at ${event.startTime}</p>
-                        <p>📍 ${event.location}</p>
-                        ${event.postedBy ? `<p style="color: #999; font-size: 0.9rem; margin-top: 0.5rem;">Posted by: ${event.postedBy}</p>` : ''}
-                        <p id="event-interest-${event.id}" style="color: var(--accent-color); font-weight: 600; margin-top: 0.5rem;">👥 ${event.interested || 0} locals interested</p>
-                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                            <button onclick="addInterest('event', '${event.id}');" style="flex: 1; background: rgba(107, 155, 158, 0.2); border: 2px solid var(--accent-color); color: var(--accent-color); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; cursor: pointer; transition: all 0.3s;">I'm Interested</button>
-                            <button onclick="shareItem('${event.name.replace(/'/g, "\\'")}', window.location.href);" style="background: rgba(107, 155, 158, 0.2); border: 2px solid var(--accent-color); color: var(--accent-color); padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; transition: all 0.3s;">📤 Share</button>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-            } catch (error) {
-                console.error('Error loading events:', error);
-                container.innerHTML = '<p style="color: #999; text-align: center; width: 100%; padding: 2rem;">Unable to load events. Please refresh the page.</p>';
-            }
-        }
-        
-        // Load content when page loads - wait for Firebase to be ready
-        window.addEventListener('DOMContentLoaded', () => {
-            // Give Firebase a moment to initialize
-            setTimeout(() => {
-                loadHomepageSwarms();
-                loadHomepageEvents();
-            }, 500);
-        });
     </script>
     
     <script>
