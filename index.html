@@ -1150,6 +1150,159 @@
     <!-- Leaflet JavaScript -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <script>
+        // ===== FIREBASE CONFIGURATION =====
+        const firebaseConfig = {
+            apiKey: "AIzaSyB4nznaJQ1VGNDylnfN5J9MW74Thm8XoS8",
+            authDomain: "flanerie-70dfd.firebaseapp.com",
+            databaseURL: "https://flanerie-70dfd-default-rtdb.firebaseio.com",
+            projectId: "flanerie-70dfd",
+            storageBucket: "flanerie-70dfd.firebasestorage.app",
+            messagingSenderId: "367532686554",
+            appId: "1:367532686554:web:0373f528284844cf5e79e3"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
+        // Check if Firebase is configured
+        if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+            console.warn('%c⚠️ FIREBASE NOT CONFIGURED YET!', 'color: orange; font-size: 20px; font-weight: bold;');
+            console.log('%cSTEPS TO SET UP FIREBASE:', 'color: cyan; font-size: 16px; font-weight: bold;');
+            console.log('1. Go to https://console.firebase.google.com/');
+            console.log('2. Create a new project (name it "flanerie")');
+            console.log('3. Click "Realtime Database" in left menu → Create Database');
+            console.log('4. Choose "Start in test mode" → Enable');
+            console.log('5. Click the gear icon → Project settings → Scroll down');
+            console.log('6. Click "Web" icon (</>) → Register app');
+            console.log('7. Copy the firebaseConfig object and replace lines 1163-1170 in this HTML');
+            console.log('%cData will only save to localStorage until Firebase is configured!', 'color: yellow;');
+        } else {
+            console.log('%c✅ Firebase is configured and ready!', 'color: green; font-size: 16px; font-weight: bold;');
+            console.log('Database URL:', firebaseConfig.databaseURL);
+        }
+        
+        // ===== DATABASE HELPER FUNCTIONS =====
+        // These wrap Firebase calls so we can easily switch databases later
+        
+        // Save event to Firebase
+        async function saveEventToFirebase(eventData) {
+            try {
+                const newEventRef = database.ref('events').push();
+                await newEventRef.set({
+                    ...eventData,
+                    id: newEventRef.key,
+                    created: new Date().toISOString()
+                });
+                console.log('Event saved to Firebase:', newEventRef.key);
+                return newEventRef.key;
+            } catch (error) {
+                console.error('Error saving event:', error);
+                showToast('Error saving event. Please try again.');
+            }
+        }
+        
+        // Save swarm to Firebase
+        async function saveSwarmToFirebase(swarmData) {
+            try {
+                const newSwarmRef = database.ref('swarms').push();
+                await newSwarmRef.set({
+                    ...swarmData,
+                    id: newSwarmRef.key,
+                    created: new Date().toISOString()
+                });
+                console.log('Swarm saved to Firebase:', newSwarmRef.key);
+                return newSwarmRef.key;
+            } catch (error) {
+                console.error('Error saving swarm:', error);
+                showToast('Error saving swarm. Please try again.');
+            }
+        }
+        
+        // Get all events from Firebase
+        async function getAllEvents() {
+            try {
+                const snapshot = await database.ref('events').once('value');
+                const events = [];
+                snapshot.forEach((childSnapshot) => {
+                    events.push({
+                        id: childSnapshot.key,
+                        ...childSnapshot.val()
+                    });
+                });
+                console.log('Loaded events from Firebase:', events.length);
+                return events;
+            } catch (error) {
+                console.error('Error loading events:', error);
+                return [];
+            }
+        }
+        
+        // Get all swarms from Firebase
+        async function getAllSwarms() {
+            try {
+                const snapshot = await database.ref('swarms').once('value');
+                const swarms = [];
+                snapshot.forEach((childSnapshot) => {
+                    swarms.push({
+                        id: childSnapshot.key,
+                        ...childSnapshot.val()
+                    });
+                });
+                console.log('Loaded swarms from Firebase:', swarms.length);
+                return swarms;
+            } catch (error) {
+                console.error('Error loading swarms:', error);
+                return [];
+            }
+        }
+        
+        // Update interest count in Firebase
+        async function updateInterestCount(type, id, newCount) {
+            try {
+                const path = type === 'swarm' ? `swarms/${id}` : `events/${id}`;
+                await database.ref(path).update({
+                    interested: newCount
+                });
+                console.log(`Updated interest count for ${type} ${id}: ${newCount}`);
+            } catch (error) {
+                console.error('Error updating interest:', error);
+            }
+        }
+        
+        // Listen for real-time updates (optional - shows changes instantly)
+        function listenForEventUpdates(callback) {
+            database.ref('events').on('value', (snapshot) => {
+                const events = [];
+                snapshot.forEach((childSnapshot) => {
+                    events.push({
+                        id: childSnapshot.key,
+                        ...childSnapshot.val()
+                    });
+                });
+                callback(events);
+            });
+        }
+        
+        function listenForSwarmUpdates(callback) {
+            database.ref('swarms').on('value', (snapshot) => {
+                const swarms = [];
+                snapshot.forEach((childSnapshot) => {
+                    swarms.push({
+                        id: childSnapshot.key,
+                        ...childSnapshot.val()
+                    });
+                });
+                callback(swarms);
+            });
+        }
+    </script>
+    
     <script>
         // Map variables
         let journeyMap = null;
@@ -1800,11 +1953,14 @@
                 description: formData.get('swarmDescription'),
                 contact: formData.get('swarmContact'),
                 duration: formData.get('swarmDuration'),
-                interested: 0,
-                created: new Date().toISOString()
+                identifier: formData.get('swarmIdentifier'),
+                interested: 0
             };
             
-            // Store in localStorage
+            // Save to Firebase (also keeps localStorage as backup)
+            saveSwarmToFirebase(swarmData);
+            
+            // Also save to localStorage as backup
             let swarms = JSON.parse(localStorage.getItem('swarms') || '[]');
             swarms.push(swarmData);
             localStorage.setItem('swarms', JSON.stringify(swarms));
@@ -1833,11 +1989,13 @@
                 website: formData.get('eventWebsite'),
                 maxParticipants: formData.get('eventMaxParticipants'),
                 postedBy: formData.get('eventPostedBy'),
-                interested: 0,
-                created: new Date().toISOString()
+                interested: 0
             };
             
-            // Store in localStorage
+            // Save to Firebase (also keeps localStorage as backup)
+            saveEventToFirebase(eventData);
+            
+            // Also save to localStorage as backup
             let events = JSON.parse(localStorage.getItem('events') || '[]');
             events.push(eventData);
             localStorage.setItem('events', JSON.stringify(events));
@@ -1861,6 +2019,11 @@
                 const newCount = currentCount + 1;
                 countElement.textContent = `👥 ${newCount} locals interested`;
                 showToast('Thanks for your interest!');
+                
+                // Update Firebase (if id is a Firebase key, not array index)
+                if (typeof id === 'string' && id.includes('-')) {
+                    updateInterestCount(type, id, newCount);
+                }
                 
                 // Also save to localStorage if this is a stored item
                 const key = type === 'swarm' ? 'swarms' : 'events';
