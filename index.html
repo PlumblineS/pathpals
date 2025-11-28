@@ -1077,7 +1077,8 @@
         
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        window.database = firebase.database();
+        const database = window.database; // Keep local reference for this script block
         
         // Check if Firebase is configured
         if (firebaseConfig.apiKey === "YOUR_API_KEY") {
@@ -1895,27 +1896,36 @@
             }
             
             const description = document.getElementById('routeDescription')?.value || '';
+            const category = document.getElementById('routeCategory')?.value || '';
             
             const routeData = {
                 name: name,
                 description: description,
+                category: category,
                 waypoints: routeCoordinates,
                 waypointCount: routeCoordinates.length,
                 created: new Date().toISOString(),
                 createdBy: 'anonymous' // Could add user auth later
             };
             
+            console.log('💾 Attempting to save route:', routeData);
+            
             // Save to Firebase
             try {
-                const routesRef = database.ref('routes');
+                if (!window.database) {
+                    throw new Error('Firebase database not initialized');
+                }
+                
+                const routesRef = window.database.ref('routes');
                 await routesRef.push(routeData);
                 console.log('✅ Route saved to Firebase:', routeData);
                 
                 document.getElementById('saveRouteModal').remove();
                 showToast(`Route "${name}" saved successfully!`);
             } catch (error) {
-                console.error('Error saving route:', error);
-                showToast('Error saving route. Please try again.');
+                console.error('❌ Error saving route:', error);
+                console.error('Route data:', routeData);
+                showToast('Error saving route: ' + error.message);
             }
         }
         
@@ -2389,7 +2399,7 @@
 
                 <div style="margin-bottom: 1.5rem;">
                     <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Website/Link (Optional)</label>
-                    <input type="url" name="eventWebsite" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="https://example.com">
+                    <input type="text" name="eventWebsite" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="www.example.com or https://example.com">
                 </div>
 
                 <div style="margin-bottom: 1.5rem;">
