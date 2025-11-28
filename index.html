@@ -1103,7 +1103,10 @@
         // Geocode address to get lat/lng coordinates
         async function geocodeAddress(address) {
             try {
-                const accessToken = 'pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg';
+                const accessToken = 'pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3cifQ.EPETOMFI41QInYccb4Cehg';
+                
+                // No proximity bias - users must be specific with city/state
+                // Examples: "Baker Neighborhood, Denver" or "Little Italy, Manhattan, NY"
                 const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${accessToken}&limit=1`;
                 
                 const response = await fetch(url);
@@ -2160,45 +2163,98 @@
         
         // ===== LOAD LISTS IN MODALS =====
         
+        let swarmsCarouselIndex = 0;
+        let swarmsCarouselData = [];
+        
         function loadSwarmsListInModal(swarms) {
             const container = document.getElementById('swarms-list-container');
             if (!container) return;
             
             // Filter swarms that have coordinates
             const validSwarms = swarms.filter(s => s.lat && s.lng);
+            swarmsCarouselData = validSwarms;
+            swarmsCarouselIndex = 0;
             
             if (validSwarms.length === 0) {
                 container.innerHTML = '<p style="color: #999; text-align: center; width: 100%; padding: 2rem;">No swarms yet. Be the first to create one!</p>';
                 return;
             }
             
-            container.innerHTML = '';
-            validSwarms.forEach(swarm => {
-                const card = document.createElement('div');
-                card.style.cssText = 'background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px; cursor: pointer; transition: transform 0.2s;';
-                card.innerHTML = `
-                    <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">${swarm.title}</h4>
-                    <p style="color: #d4d4d4; margin: 0.5rem 0;">📅 ${swarm.date} at ${swarm.time}</p>
-                    <p style="color: #d4d4d4; margin: 0.5rem 0;">📍 ${swarm.location}</p>
-                    <p style="color: var(--accent-light); font-weight: 600; margin-top: 0.8rem;">👥 ${swarm.interested || 0} interested</p>
-                `;
-                card.addEventListener('click', () => {
-                    // Find marker and open popup
-                    swarmMap.eachLayer(layer => {
-                        if (layer instanceof L.Marker) {
-                            const latlng = layer.getLatLng();
-                            if (Math.abs(latlng.lat - swarm.lat) < 0.0001 && Math.abs(latlng.lng - swarm.lng) < 0.0001) {
-                                swarmMap.setView([swarm.lat, swarm.lng], 15);
-                                layer.openPopup();
+            renderSwarmsCarousel();
+        }
+        
+        function renderSwarmsCarousel() {
+            const container = document.getElementById('swarms-list-container');
+            if (!container) return;
+            
+            const itemsPerPage = 3;
+            const totalPages = Math.ceil(swarmsCarouselData.length / itemsPerPage);
+            const currentPage = Math.floor(swarmsCarouselIndex / itemsPerPage);
+            const startIdx = currentPage * itemsPerPage;
+            const endIdx = Math.min(startIdx + itemsPerPage, swarmsCarouselData.length);
+            const visibleSwarms = swarmsCarouselData.slice(startIdx, endIdx);
+            
+            container.innerHTML = `
+                <div style="position: relative;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                        ${visibleSwarms.map(swarm => `
+                            <div class="swarm-carousel-card" data-swarm-id="${swarm.id}" style="background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px; cursor: pointer; transition: transform 0.2s;">
+                                <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">${swarm.title}</h4>
+                                <p style="color: #d4d4d4; margin: 0.5rem 0;">📅 ${swarm.date} at ${swarm.time}</p>
+                                <p style="color: #d4d4d4; margin: 0.5rem 0;">📍 ${swarm.location}</p>
+                                <p style="color: var(--accent-light); font-weight: 600; margin-top: 0.8rem;">👥 ${swarm.interested || 0} interested</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ${totalPages > 1 ? `
+                        <div style="display: flex; justify-content: center; align-items: center; gap: 1rem;">
+                            <button onclick="changeSwarmsPage(-1)" style="padding: 0.5rem 1rem; background: var(--accent-color); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600;">← Previous</button>
+                            <span style="color: var(--accent-color);">Page ${currentPage + 1} of ${totalPages}</span>
+                            <button onclick="changeSwarmsPage(1)" style="padding: 0.5rem 1rem; background: var(--accent-color); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600;">Next →</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            // Add click handlers
+            document.querySelectorAll('.swarm-carousel-card').forEach(card => {
+                const swarmId = card.getAttribute('data-swarm-id');
+                const swarm = swarmsCarouselData.find(s => s.id === swarmId);
+                if (swarm) {
+                    card.addEventListener('click', () => {
+                        swarmMap.eachLayer(layer => {
+                            if (layer instanceof L.Marker) {
+                                const latlng = layer.getLatLng();
+                                if (Math.abs(latlng.lat - swarm.lat) < 0.0001 && Math.abs(latlng.lng - swarm.lng) < 0.0001) {
+                                    swarmMap.setView([swarm.lat, swarm.lng], 15);
+                                    layer.openPopup();
+                                }
                             }
-                        }
+                        });
                     });
-                });
-                card.addEventListener('mouseenter', () => card.style.transform = 'translateY(-4px)');
-                card.addEventListener('mouseleave', () => card.style.transform = 'translateY(0)');
-                container.appendChild(card);
+                    card.addEventListener('mouseenter', () => card.style.transform = 'translateY(-4px)');
+                    card.addEventListener('mouseleave', () => card.style.transform = 'translateY(0)');
+                }
             });
         }
+        
+        function changeSwarmsPage(direction) {
+            const itemsPerPage = 3;
+            const totalItems = swarmsCarouselData.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            const currentPage = Math.floor(swarmsCarouselIndex / itemsPerPage);
+            
+            let newPage = currentPage + direction;
+            if (newPage < 0) newPage = totalPages - 1;
+            if (newPage >= totalPages) newPage = 0;
+            
+            swarmsCarouselIndex = newPage * itemsPerPage;
+            renderSwarmsCarousel();
+        }
+        window.changeSwarmsPage = changeSwarmsPage;
+        
+        let eventsCarouselIndex = 0;
+        let eventsCarouselData = [];
         
         function loadEventsListInModal(events) {
             const container = document.getElementById('events-list-container');
@@ -2206,40 +2262,87 @@
             
             // Filter events that have coordinates
             const validEvents = events.filter(e => e.lat && e.lng);
+            eventsCarouselData = validEvents;
+            eventsCarouselIndex = 0;
             
             if (validEvents.length === 0) {
                 container.innerHTML = '<p style="color: #999; text-align: center; width: 100%; padding: 2rem;">No events yet. Be the first to promote one!</p>';
                 return;
             }
             
-            container.innerHTML = '';
-            validEvents.forEach(event => {
-                const card = document.createElement('div');
-                card.style.cssText = 'background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px; cursor: pointer; transition: transform 0.2s;';
-                card.innerHTML = `
-                    <span style="display: inline-block; background: var(--accent-light); color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.75rem; margin-bottom: 0.8rem; font-weight: 600;">${event.type}</span>
-                    <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">${event.name}</h4>
-                    <p style="color: #d4d4d4; margin: 0.5rem 0;">📅 ${event.startDate} at ${event.startTime}</p>
-                    <p style="color: #d4d4d4; margin: 0.5rem 0;">📍 ${event.location}</p>
-                    <p style="color: var(--accent-light); font-weight: 600; margin-top: 0.8rem;">👥 ${event.interested || 0} interested</p>
-                `;
-                card.addEventListener('click', () => {
-                    // Find marker and open popup
-                    eventMap.eachLayer(layer => {
-                        if (layer instanceof L.Marker) {
-                            const latlng = layer.getLatLng();
-                            if (Math.abs(latlng.lat - event.lat) < 0.0001 && Math.abs(latlng.lng - event.lng) < 0.0001) {
-                                eventMap.setView([event.lat, event.lng], 15);
-                                layer.openPopup();
+            renderEventsCarousel();
+        }
+        
+        function renderEventsCarousel() {
+            const container = document.getElementById('events-list-container');
+            if (!container) return;
+            
+            const itemsPerPage = 3;
+            const totalPages = Math.ceil(eventsCarouselData.length / itemsPerPage);
+            const currentPage = Math.floor(eventsCarouselIndex / itemsPerPage);
+            const startIdx = currentPage * itemsPerPage;
+            const endIdx = Math.min(startIdx + itemsPerPage, eventsCarouselData.length);
+            const visibleEvents = eventsCarouselData.slice(startIdx, endIdx);
+            
+            container.innerHTML = `
+                <div style="position: relative;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                        ${visibleEvents.map(event => `
+                            <div class="event-carousel-card" data-event-id="${event.id}" style="background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px; cursor: pointer; transition: transform 0.2s;">
+                                <span style="display: inline-block; background: var(--accent-light); color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.75rem; margin-bottom: 0.8rem; font-weight: 600;">${event.type}</span>
+                                <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">${event.name}</h4>
+                                <p style="color: #d4d4d4; margin: 0.5rem 0;">📅 ${event.startDate} at ${event.startTime}</p>
+                                <p style="color: #d4d4d4; margin: 0.5rem 0;">📍 ${event.location}</p>
+                                <p style="color: var(--accent-light); font-weight: 600; margin-top: 0.8rem;">👥 ${event.interested || 0} interested</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ${totalPages > 1 ? `
+                        <div style="display: flex; justify-content: center; align-items: center; gap: 1rem;">
+                            <button onclick="changeEventsPage(-1)" style="padding: 0.5rem 1rem; background: var(--accent-color); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600;">← Previous</button>
+                            <span style="color: var(--accent-color);">Page ${currentPage + 1} of ${totalPages}</span>
+                            <button onclick="changeEventsPage(1)" style="padding: 0.5rem 1rem; background: var(--accent-color); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600;">Next →</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            // Add click handlers
+            document.querySelectorAll('.event-carousel-card').forEach(card => {
+                const eventId = card.getAttribute('data-event-id');
+                const event = eventsCarouselData.find(e => e.id === eventId);
+                if (event) {
+                    card.addEventListener('click', () => {
+                        eventMap.eachLayer(layer => {
+                            if (layer instanceof L.Marker) {
+                                const latlng = layer.getLatLng();
+                                if (Math.abs(latlng.lat - event.lat) < 0.0001 && Math.abs(latlng.lng - event.lng) < 0.0001) {
+                                    eventMap.setView([event.lat, event.lng], 15);
+                                    layer.openPopup();
+                                }
                             }
-                        }
+                        });
                     });
-                });
-                card.addEventListener('mouseenter', () => card.style.transform = 'translateY(-4px)');
-                card.addEventListener('mouseleave', () => card.style.transform = 'translateY(0)');
-                container.appendChild(card);
+                    card.addEventListener('mouseenter', () => card.style.transform = 'translateY(-4px)');
+                    card.addEventListener('mouseleave', () => card.style.transform = 'translateY(0)');
+                }
             });
         }
+        
+        function changeEventsPage(direction) {
+            const itemsPerPage = 3;
+            const totalItems = eventsCarouselData.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            const currentPage = Math.floor(eventsCarouselIndex / itemsPerPage);
+            
+            let newPage = currentPage + direction;
+            if (newPage < 0) newPage = totalPages - 1;
+            if (newPage >= totalPages) newPage = 0;
+            
+            eventsCarouselIndex = newPage * itemsPerPage;
+            renderEventsCarousel();
+        }
+        window.changeEventsPage = changeEventsPage;
 
         // === FINAL SAFETY CHECK - Ensure all functions are globally accessible ===
         if (typeof toggleSection !== 'undefined') window.toggleSection = toggleSection;
@@ -2276,7 +2379,12 @@
 
                 <div style="margin-bottom: 1.5rem;">
                     <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Starting Location *</label>
-                    <input type="text" name="swarmLocation" required style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="Downtown Farmers Market">
+                    <input type="text" name="swarmLocation" required style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="Baker Neighborhood, Denver">
+                    <p style="color: #999; font-size: 0.85rem; margin-top: 0.4rem; line-height: 1.4;">
+                        ⚠️ <strong style="color: var(--accent-color);">Be specific!</strong> Include neighborhood AND city.<br>
+                        ✅ Good: "Baker Neighborhood, Denver" or "Little Italy, Manhattan"<br>
+                        ❌ Bad: "Baker" or "Downtown" (too vague)
+                    </p>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
@@ -2357,7 +2465,12 @@
 
                 <div style="margin-bottom: 1.5rem;">
                     <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Location *</label>
-                    <input type="text" name="eventLocation" required style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="Highland Neighborhood">
+                    <input type="text" name="eventLocation" required style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="Highland Neighborhood, Denver">
+                    <p style="color: #999; font-size: 0.85rem; margin-top: 0.4rem; line-height: 1.4;">
+                        ⚠️ <strong style="color: var(--accent-color);">Be specific!</strong> Include neighborhood AND city.<br>
+                        ✅ Good: "Highland Neighborhood, Denver" or "Pearl Street Mall, Boulder"<br>
+                        ❌ Bad: "Highland" or "Downtown" (too vague)
+                    </p>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
