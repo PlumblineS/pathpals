@@ -879,22 +879,6 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Upcoming Shopping Swarms -->
-            <section class="upcoming-section">
-                <h2>🛍️ Upcoming Shopping Swarms</h2>
-                <div id="swarms-container" class="upcoming-cards">
-                    <p style="color: #999; text-align: center; width: 100%; padding: 2rem;">Loading swarms...</p>
-                </div>
-            </section>
-            
-            <!-- Upcoming Events -->
-            <section class="upcoming-section">
-                <h2>🎉 Upcoming Local Events</h2>
-                <div id="events-container" class="upcoming-cards">
-                    <p style="color: #999; text-align: center; width: 100%; padding: 2rem;">Loading events...</p>
-                </div>
-            </section>
         </div>
     </main>
     
@@ -1127,6 +1111,10 @@
                 
                 if (data.features && data.features.length > 0) {
                     const [lng, lat] = data.features[0].center;
+                    console.log(`🗺️ Geocoded "${address}"`);
+                    console.log(`   Mapbox returned: [lng: ${lng}, lat: ${lat}]`);
+                    console.log(`   Saving as: { lat: ${lat}, lng: ${lng} }`);
+                    console.log(`   Full address: ${data.features[0].place_name}`);
                     return { lat, lng, fullAddress: data.features[0].place_name };
                 }
                 return null;
@@ -1249,6 +1237,35 @@
                 callback(swarms);
             });
         }
+        
+        // Get all routes from Firebase
+        function getAllRoutes() {
+            return new Promise((resolve) => {
+                database.ref('routes').once('value', (snapshot) => {
+                    const routes = [];
+                    snapshot.forEach((childSnapshot) => {
+                        routes.push({
+                            id: childSnapshot.key,
+                            ...childSnapshot.val()
+                        });
+                    });
+                    resolve(routes);
+                });
+            });
+        }
+        
+        function listenForRouteUpdates(callback) {
+            database.ref('routes').on('value', (snapshot) => {
+                const routes = [];
+                snapshot.forEach((childSnapshot) => {
+                    routes.push({
+                        id: childSnapshot.key,
+                        ...childSnapshot.val()
+                    });
+                });
+                callback(routes);
+            });
+        }
     </script>
     
     <script>
@@ -1336,6 +1353,11 @@
                     </div>
                     
                     <div id="swarm-map" style="height: 500px; border-radius: 15px; margin: 1rem 0;"></div>
+                    
+                    <h3 style="color: var(--accent-color); margin: 2rem 0 1rem;">Upcoming Shopping Swarms</h3>
+                    <div id="swarms-list-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <p style="color: #999; text-align: center; width: 100%; padding: 2rem;">Loading swarms...</p>
+                    </div>
                 `;
             } else if (sectionId === 'events') {
                 content.innerHTML = `
@@ -1354,7 +1376,10 @@
                     
                     <div id="event-map" style="height: 500px; border-radius: 15px; margin: 1rem 0;"></div>
                     
-                    <div id="event-map" style="height: 500px; border-radius: 15px; margin: 1rem 0;"></div>
+                    <h3 style="color: var(--accent-color); margin: 2rem 0 1rem;">Upcoming Events</h3>
+                    <div id="events-list-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <p style="color: #999; text-align: center; width: 100%; padding: 2rem;">Loading events...</p>
+                    </div>
                 `;
             }
             
@@ -1485,7 +1510,7 @@
                                 }
                                 
                                 validCount++;
-                                console.log(`✅ Swarm "${swarm.title}" loaded at [${swarm.lat}, ${swarm.lng}]`);
+                                console.log(`✅ Swarm "${swarm.title}" at [lat: ${swarm.lat}, lng: ${swarm.lng}]`);
                                 
                                 const isHighlighted = highlightId !== null && swarm.id === highlightId;
                                 
@@ -1523,6 +1548,9 @@
                             });
                             
                             console.log(`📊 Swarms Map: ${validCount} shown, ${invalidCount} skipped (no coordinates)`);
+                            
+                            // Load swarms list below map
+                            loadSwarmsListInModal(swarms);
                         });
                         
                         // Add search autocomplete functionality for swarms
@@ -1590,7 +1618,7 @@
                                 }
                                 
                                 validCount++;
-                                console.log(`✅ Event "${event.name}" loaded at [${event.lat}, ${event.lng}]`);
+                                console.log(`✅ Event "${event.name}" at [lat: ${event.lat}, lng: ${event.lng}]`);
                                 
                                 const isHighlighted = highlightId !== null && event.id === highlightId;
                                 
@@ -1627,6 +1655,9 @@
                             });
                             
                             console.log(`📊 Events Map: ${validCount} shown, ${invalidCount} skipped (no coordinates)`);
+                            
+                            // Load events list below map
+                            loadEventsListInModal(events);
                         });
                     }
                     
@@ -1852,14 +1883,41 @@
             document.body.appendChild(modal);
         }
         
-        function confirmSaveRoute() {
+        async function confirmSaveRoute() {
             const name = document.getElementById('routeName').value;
             if (!name) {
                 showToast('Please enter a route name!');
                 return;
             }
-            document.getElementById('saveRouteModal').remove();
-            showToast(`Route "${name}" saved successfully!`);
+            
+            if (routeCoordinates.length < 2) {
+                showToast('Please add at least 2 waypoints to your route!');
+                return;
+            }
+            
+            const description = document.getElementById('routeDescription')?.value || '';
+            
+            const routeData = {
+                name: name,
+                description: description,
+                waypoints: routeCoordinates,
+                waypointCount: routeCoordinates.length,
+                created: new Date().toISOString(),
+                createdBy: 'anonymous' // Could add user auth later
+            };
+            
+            // Save to Firebase
+            try {
+                const routesRef = database.ref('routes');
+                await routesRef.push(routeData);
+                console.log('✅ Route saved to Firebase:', routeData);
+                
+                document.getElementById('saveRouteModal').remove();
+                showToast(`Route "${name}" saved successfully!`);
+            } catch (error) {
+                console.error('Error saving route:', error);
+                showToast('Error saving route. Please try again.');
+            }
         }
         
         // Make route functions globally accessible
@@ -2091,98 +2149,88 @@
             }
         }
         
-        // ===== LOAD HOMEPAGE UPCOMING SECTIONS =====
+        // ===== LOAD LISTS IN MODALS =====
         
-        async function loadHomepageSwarms() {
-            const container = document.getElementById('swarms-container');
+        function loadSwarmsListInModal(swarms) {
+            const container = document.getElementById('swarms-list-container');
             if (!container) return;
             
-            try {
-                const swarms = await getAllSwarms();
-                
-                if (swarms.length === 0) {
-                    container.innerHTML = '<p style="color: #999; text-align: center; width: 100%; padding: 2rem;">No swarms yet. Be the first to create one!</p>';
-                    return;
-                }
-                
-                // Filter swarms that have coordinates
-                const validSwarms = swarms.filter(s => s.lat && s.lng);
-                
-                if (validSwarms.length === 0) {
-                    container.innerHTML = '<p style="color: #999; text-align: center; width: 100%; padding: 2rem;">No swarms yet. Be the first to create one!</p>';
-                    return;
-                }
-                
-                container.innerHTML = '';
-                validSwarms.forEach(swarm => {
-                    const card = document.createElement('div');
-                    card.className = 'upcoming-card';
-                    card.innerHTML = `
-                        <h3>${swarm.title}</h3>
-                        <p>📅 ${swarm.date} at ${swarm.time}</p>
-                        <p>📍 ${swarm.location}</p>
-                        <p style="color: var(--accent-color); font-weight: 600;">👥 ${swarm.interested || 0} interested</p>
-                        <button onclick="toggleSection('swarms', '${swarm.id}')" class="feature-btn" style="width: 100%; margin-top: 1rem;">View on Map</button>
-                    `;
-                    container.appendChild(card);
-                });
-                
-                console.log(`Loaded ${validSwarms.length} swarms on homepage`);
-            } catch (error) {
-                console.error('Error loading homepage swarms:', error);
-                container.innerHTML = '<p style="color: #999; text-align: center; width: 100%; padding: 2rem;">Unable to load swarms. Please refresh.</p>';
+            // Filter swarms that have coordinates
+            const validSwarms = swarms.filter(s => s.lat && s.lng);
+            
+            if (validSwarms.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; width: 100%; padding: 2rem;">No swarms yet. Be the first to create one!</p>';
+                return;
             }
+            
+            container.innerHTML = '';
+            validSwarms.forEach(swarm => {
+                const card = document.createElement('div');
+                card.style.cssText = 'background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px; cursor: pointer; transition: transform 0.2s;';
+                card.innerHTML = `
+                    <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">${swarm.title}</h4>
+                    <p style="color: #d4d4d4; margin: 0.5rem 0;">📅 ${swarm.date} at ${swarm.time}</p>
+                    <p style="color: #d4d4d4; margin: 0.5rem 0;">📍 ${swarm.location}</p>
+                    <p style="color: var(--accent-light); font-weight: 600; margin-top: 0.8rem;">👥 ${swarm.interested || 0} interested</p>
+                `;
+                card.addEventListener('click', () => {
+                    // Find marker and open popup
+                    swarmMap.eachLayer(layer => {
+                        if (layer instanceof L.Marker) {
+                            const latlng = layer.getLatLng();
+                            if (Math.abs(latlng.lat - swarm.lat) < 0.0001 && Math.abs(latlng.lng - swarm.lng) < 0.0001) {
+                                swarmMap.setView([swarm.lat, swarm.lng], 15);
+                                layer.openPopup();
+                            }
+                        }
+                    });
+                });
+                card.addEventListener('mouseenter', () => card.style.transform = 'translateY(-4px)');
+                card.addEventListener('mouseleave', () => card.style.transform = 'translateY(0)');
+                container.appendChild(card);
+            });
         }
         
-        async function loadHomepageEvents() {
-            const container = document.getElementById('events-container');
+        function loadEventsListInModal(events) {
+            const container = document.getElementById('events-list-container');
             if (!container) return;
             
-            try {
-                const events = await getAllEvents();
-                
-                if (events.length === 0) {
-                    container.innerHTML = '<p style="color: #999; text-align: center; width: 100%; padding: 2rem;">No events yet. Be the first to promote one!</p>';
-                    return;
-                }
-                
-                // Filter events that have coordinates
-                const validEvents = events.filter(e => e.lat && e.lng);
-                
-                if (validEvents.length === 0) {
-                    container.innerHTML = '<p style="color: #999; text-align: center; width: 100%; padding: 2rem;">No events yet. Be the first to promote one!</p>';
-                    return;
-                }
-                
-                container.innerHTML = '';
-                validEvents.forEach(event => {
-                    const card = document.createElement('div');
-                    card.className = 'upcoming-card';
-                    card.innerHTML = `
-                        <span class="event-type">${event.type}</span>
-                        <h3>${event.name}</h3>
-                        <p>📅 ${event.startDate} at ${event.startTime}</p>
-                        <p>📍 ${event.location}</p>
-                        <p style="color: var(--accent-color); font-weight: 600;">👥 ${event.interested || 0} interested</p>
-                        <button onclick="toggleSection('events', '${event.id}')" class="feature-btn" style="width: 100%; margin-top: 1rem;">View on Map</button>
-                    `;
-                    container.appendChild(card);
-                });
-                
-                console.log(`Loaded ${validEvents.length} events on homepage`);
-            } catch (error) {
-                console.error('Error loading homepage events:', error);
-                container.innerHTML = '<p style="color: #999; text-align: center; width: 100%; padding: 2rem;">Unable to load events. Please refresh.</p>';
+            // Filter events that have coordinates
+            const validEvents = events.filter(e => e.lat && e.lng);
+            
+            if (validEvents.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; width: 100%; padding: 2rem;">No events yet. Be the first to promote one!</p>';
+                return;
             }
+            
+            container.innerHTML = '';
+            validEvents.forEach(event => {
+                const card = document.createElement('div');
+                card.style.cssText = 'background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px; cursor: pointer; transition: transform 0.2s;';
+                card.innerHTML = `
+                    <span style="display: inline-block; background: var(--accent-light); color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.75rem; margin-bottom: 0.8rem; font-weight: 600;">${event.type}</span>
+                    <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">${event.name}</h4>
+                    <p style="color: #d4d4d4; margin: 0.5rem 0;">📅 ${event.startDate} at ${event.startTime}</p>
+                    <p style="color: #d4d4d4; margin: 0.5rem 0;">📍 ${event.location}</p>
+                    <p style="color: var(--accent-light); font-weight: 600; margin-top: 0.8rem;">👥 ${event.interested || 0} interested</p>
+                `;
+                card.addEventListener('click', () => {
+                    // Find marker and open popup
+                    eventMap.eachLayer(layer => {
+                        if (layer instanceof L.Marker) {
+                            const latlng = layer.getLatLng();
+                            if (Math.abs(latlng.lat - event.lat) < 0.0001 && Math.abs(latlng.lng - event.lng) < 0.0001) {
+                                eventMap.setView([event.lat, event.lng], 15);
+                                layer.openPopup();
+                            }
+                        }
+                    });
+                });
+                card.addEventListener('mouseenter', () => card.style.transform = 'translateY(-4px)');
+                card.addEventListener('mouseleave', () => card.style.transform = 'translateY(0)');
+                container.appendChild(card);
+            });
         }
-        
-        // Load homepage sections when page loads
-        window.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                loadHomepageSwarms();
-                loadHomepageEvents();
-            }, 500);
-        });
 
         // === FINAL SAFETY CHECK - Ensure all functions are globally accessible ===
         if (typeof toggleSection !== 'undefined') window.toggleSection = toggleSection;
