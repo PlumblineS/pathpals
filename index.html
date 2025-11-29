@@ -1047,6 +1047,8 @@
         
         // Scroll to content
         function scrollToContent() {
+            document.getElementById('welcome-section').style.display = 'block';
+            document.getElementById('tagline-reveal').style.display = 'block';
             document.querySelector('.main-content').scrollIntoView({ behavior: 'smooth' });
         }
         
@@ -1501,6 +1503,11 @@
                         }).addTo(swarmCreationMap);
                         L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(swarmCreationMap);
                         
+                        // Force map to recalculate size
+                        setTimeout(() => {
+                            swarmCreationMap.invalidateSize();
+                        }, 250);
+                        
                         // Click to place pin
                         swarmCreationMap.on('click', function(e) {
                             // Remove existing marker
@@ -1522,6 +1529,11 @@
                             zoomOffset: -1
                         }).addTo(eventCreationMap);
                         L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(eventCreationMap);
+                        
+                        // Force map to recalculate size
+                        setTimeout(() => {
+                            eventCreationMap.invalidateSize();
+                        }, 250);
                         
                         // Click to place pin
                         eventCreationMap.on('click', function(e) {
