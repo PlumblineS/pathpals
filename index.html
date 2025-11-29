@@ -1503,11 +1503,14 @@
                         console.log('🔵 SWARM: Attribution added, setting up invalidateSize...');
                         
                         // Force map to recalculate size
-                        setTimeout(() => {
-                            console.log('🔵 SWARM: Calling invalidateSize()...');
-                            swarmCreationMap.invalidateSize();
-                            console.log('🔵 SWARM: invalidateSize() complete');
-                        }, 250);
+                       setTimeout(() => {
+    requestAnimationFrame(() => {
+        console.log('🔵 SWARM: Calling invalidateSize()...');
+        swarmCreationMap.invalidateSize();
+        console.log('🔵 SWARM: invalidateSize() complete');
+    });
+}, 50); // You can try 0, 50, or 100 depending on animation timing
+
                         
                         // Click to place pin
                         swarmCreationMap.on('click', function(e) {
