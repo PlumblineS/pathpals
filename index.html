@@ -2029,6 +2029,11 @@
                 }).addTo(pinCreationMap);
                 L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(pinCreationMap);
                 
+                // CRITICAL: Modal needs invalidateSize after it renders
+                setTimeout(() => {
+                    pinCreationMap.invalidateSize();
+                }, 300);
+                
                 // Address search functionality
                 let searchTimeout;
                 document.getElementById('pinMapSearch').addEventListener('input', function(e) {
@@ -2102,6 +2107,11 @@
                     zoomOffset: -1
                 }).addTo(pinCreationMap);
                 L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(pinCreationMap);
+                
+                // CRITICAL: Modal needs invalidateSize after it renders
+                setTimeout(() => {
+                    pinCreationMap.invalidateSize();
+                }, 300);
                 
                 // Address search functionality
                 let searchTimeout;
