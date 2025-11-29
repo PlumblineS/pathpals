@@ -550,11 +550,11 @@
         
         #slide-typewriter-with-image {
             justify-content: flex-start;
-            padding-top: 15%;
+            padding-top: 10%;
         }
         
         #slide-typewriter-with-image .typewriter-section {
-            margin-bottom: 3rem;
+            margin-bottom: 2.5rem;
             min-height: 120px;
             display: flex;
             flex-direction: column;
@@ -729,7 +729,7 @@
         <!-- Slide 2: Typewriter + Image -->
         <div class="slide" id="slide-typewriter-with-image">
             <div class="typewriter-section">
-                <h3 style="font-family: 'Playfair Display', serif; color: var(--accent-color); font-size: 2.8rem; margin-bottom: 3rem; text-align: center;">Take Back Your Main Street</h3>
+                <h3 style="font-family: 'Playfair Display', serif; color: var(--accent-color); font-size: 2.8rem; margin-bottom: 2.5rem; text-align: center;">Take Back Your Main Street</h3>
                 <p id="slideshow-typewriter-sentence"></p>
             </div>
             
@@ -1318,6 +1318,9 @@
             
             // Create content based on section
             if (sectionId === 'journey-map') {
+                // Clear normal padding/scrolling for fullscreen map
+                content.style.cssText = 'padding: 0; max-width: none; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column;';
+                
                 content.innerHTML = `
                     <div style="padding: 2rem; text-align: center; background: rgba(20, 20, 20, 0.98); position: relative;">
                         <h2 style="color: var(--accent-color); margin: 0 0 1rem 0;">Share Your Journey</h2>
@@ -1332,7 +1335,7 @@
                             <button class="feature-btn" onclick="showToast('Share link copied!')">Share Route</button>
                         </div>
                     </div>
-                    <div id="map" style="position: absolute; top: 14rem; left: 0; right: 0; bottom: 0;"></div>
+                    <div id="map" style="flex: 1;"></div>
                 `;
             } else if (sectionId === 'search') {
                 content.innerHTML = `
@@ -1403,10 +1406,11 @@
                     if (mapElement && !journeyMap) {
                         journeyMap = L.map(mapElement).setView([39.7392, -104.9903], 13);
                         L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
-                            attribution: '© Mapbox © OpenStreetMap',
+                            
                             tileSize: 512,
                             zoomOffset: -1
                         }).addTo(journeyMap);
+                        L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(journeyMap);
                         
                         journeyMap.on('click', function(e) {
                             addWaypoint(e.latlng);
@@ -1507,10 +1511,11 @@
                     if (mapElement && !swarmMap) {
                         swarmMap = L.map(mapElement).setView([39.7392, -104.9903], 13);
                         L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
-                            attribution: '© Mapbox © OpenStreetMap',
+                            
                             tileSize: 512,
                             zoomOffset: -1
                         }).addTo(swarmMap);
+                        L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(swarmMap);
                         
                         // Load swarms from Firebase
                         getAllSwarms().then(swarms => {
@@ -1615,10 +1620,11 @@
                     if (eventMapElement && !eventMap) {
                         eventMap = L.map(eventMapElement).setView([39.7392, -104.9903], 13);
                         L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
-                            attribution: '© Mapbox © OpenStreetMap',
+                            
                             tileSize: 512,
                             zoomOffset: -1
                         }).addTo(eventMap);
+                        L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(eventMap);
                         
                         // Load events from Firebase
                         getAllEvents().then(events => {
