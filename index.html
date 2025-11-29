@@ -2020,27 +2020,14 @@
             
             document.body.appendChild(modal);
             
-            // Initialize map with proper delay
+            // Initialize map - EXACT SAME as Share Your Journey
             setTimeout(() => {
-                pinCreationMap = L.map('pinCreationMap', {
-                    attributionControl: false // Remove default attribution
-                }).setView([39.7392, -104.9903], 11);
-                
+                pinCreationMap = L.map('pinCreationMap').setView([39.7392, -104.9903], 11);
                 L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3cifQ.EPETOMFI41QInYccb4Cehg', {
                     tileSize: 512,
                     zoomOffset: -1
                 }).addTo(pinCreationMap);
-                
-                // Add clean Mapbox attribution
-                L.control.attribution({
-                    position: 'bottomright',
-                    prefix: false
-                }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(pinCreationMap);
-                
-                // Force map to render properly after modal is visible
-                setTimeout(() => {
-                    pinCreationMap.invalidateSize();
-                }, 500);
+                L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(pinCreationMap);
                 
                 // Address search functionality
                 let searchTimeout;
@@ -2107,27 +2094,14 @@
             
             document.body.appendChild(modal);
             
-            // Initialize map with proper delay
+            // Initialize map - EXACT SAME as Share Your Journey
             setTimeout(() => {
-                pinCreationMap = L.map('pinCreationMap', {
-                    attributionControl: false // Remove default attribution
-                }).setView([39.7392, -104.9903], 11);
-                
+                pinCreationMap = L.map('pinCreationMap').setView([39.7392, -104.9903], 11);
                 L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3cifQ.EPETOMFI41QInYccb4Cehg', {
                     tileSize: 512,
                     zoomOffset: -1
                 }).addTo(pinCreationMap);
-                
-                // Add clean Mapbox attribution
-                L.control.attribution({
-                    position: 'bottomright',
-                    prefix: false
-                }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(pinCreationMap);
-                
-                // Force map to render properly after modal is visible
-                setTimeout(() => {
-                    pinCreationMap.invalidateSize();
-                }, 500);
+                L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(pinCreationMap);
                 
                 // Address search functionality
                 let searchTimeout;
