@@ -1446,78 +1446,7 @@
                             });
                         }
                     }
-               } else if (sectionId === 'swarm-creation-map') {
-                    console.log('🔵 SWARM: Entered swarm-creation-map block');
-                    const mapElement = document.getElementById('swarm-creation-map');
-                    console.log('🔵 SWARM: mapElement =', mapElement);
-                    console.log('🔵 SWARM: swarmCreationMap =', swarmCreationMap);
-                    if (mapElement && !swarmCreationMap) {
-                        console.log('🔵 SWARM: Initializing swarmCreationMap...');
-                        swarmCreationMap = L.map(mapElement).setView([39.7392, -104.9903], 13);
-                        console.log('🔵 SWARM: Map created, adding tile layer...');
-                        L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3cifQ.EPETOMFI41QInYccb4Cehg', {
-                             tileSize: 512,
-                            zoomOffset: -1
-                        }).addTo(swarmCreationMap);
-                        console.log('🔵 SWARM: Tile layer added, adding attribution...');
-                        L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(swarmCreationMap);
-                        console.log('🔵 SWARM: Attribution added, setting up invalidateSize...');
-                        
-                        // Force map to recalculate size
-                        setTimeout(() => {
-                            console.log('🔵 SWARM: Calling invalidateSize()...');
-                            swarmCreationMap.invalidateSize();
-                            console.log('🔵 SWARM: invalidateSize() complete');
-                        }, 250);
-                        
-                        // Click to place pin
-                        swarmCreationMap.on('click', function(e) {
-                            // Remove existing marker
-                            if (window.swarmMarker) {
-                                swarmCreationMap.removeLayer(window.swarmMarker);
-                            }
-                            // Place new marker
-                            window.swarmMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(swarmCreationMap);
-                            window.swarmLocation = { lat: e.latlng.lat, lng: e.latlng.lng };
-                            showToast('Location pinned! Click "Save Swarm" to continue.');
-                        });
-                    }
-                } else if (sectionId === 'event-creation-map') {
-                    console.log('🟣 EVENT: Entered event-creation-map block');
-                    const mapElement = document.getElementById('event-creation-map');
-                    console.log('🟣 EVENT: mapElement =', mapElement);
-                    console.log('🟣 EVENT: eventCreationMap =', eventCreationMap);
-                    if (mapElement && !eventCreationMap) {
-                        console.log('🟣 EVENT: Initializing eventCreationMap...');
-                        eventCreationMap = L.map(mapElement).setView([39.7392, -104.9903], 13);
-                        console.log('🟣 EVENT: Map created, adding tile layer...');
-                        L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3cifQ.EPETOMFI41QInYccb4Cehg', {
-                             tileSize: 512,
-                            zoomOffset: -1
-                        }).addTo(eventCreationMap);
-                        console.log('🟣 EVENT: Tile layer added, adding attribution...');
-                        L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(eventCreationMap);
-                        console.log('🟣 EVENT: Attribution added, setting up invalidateSize...');
-                        
-                        // Force map to recalculate size
-                        setTimeout(() => {
-                            console.log('🟣 EVENT: Calling invalidateSize()...');
-                            eventCreationMap.invalidateSize();
-                            console.log('🟣 EVENT: invalidateSize() complete');
-                        }, 250);
-                        
-                        // Click to place pin
-                        eventCreationMap.on('click', function(e) {
-                            // Remove existing marker
-                            if (window.eventMarker) {
-                                eventCreationMap.removeLayer(window.eventMarker);
-                            }
-                            // Place new marker
-                            window.eventMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(eventCreationMap);
-                            window.eventLocation = { lat: e.latlng.lat, lng: e.latlng.lng };
-                            showToast('Location pinned! Click "Save Event" to continue.');
-                        });
-                    }
+             
                 } else if (sectionId === 'search') {
                     const mapElement = document.getElementById('search-map');
                     if (mapElement && !searchMap) {
