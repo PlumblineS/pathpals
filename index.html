@@ -1439,12 +1439,23 @@
                     <h2 style="color: var(--accent-color); margin-bottom: 1rem;">Search Routes</h2>
                     <p style="color: #d4d4d4; margin-bottom: 1.5rem;">Discover community-shared walking routes and find your next adventure</p>
                     
+                    <div style="margin-bottom: 1.5rem;">
+                        <label for="categoryFilter" style="color: var(--accent-color); font-weight: 600; display: block; margin-bottom: 0.5rem;">Filter by Category:</label>
+                        <select id="categoryFilter" style="width: 100%; padding: 0.75rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif; font-size: 1rem; cursor: pointer;">
+                            <option value="all">All Categories</option>
+                            <option value="Scenic Walks">Scenic Walks</option>
+                            <option value="Shopping Districts">Shopping Districts</option>
+                            <option value="Historic Tours">Historic Tours</option>
+                            <option value="Food & Drink">Food & Drink</option>
+                            <option value="Parks & Nature">Parks & Nature</option>
+                            <option value="Art & Culture">Art & Culture</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
                     <div id="search-map" style="height: 500px; border-radius: 15px; margin: 1rem 0;"></div>
                     
-                    <h3 style="color: var(--accent-color); margin: 2rem 0 1rem;">Recently Added</h3>
-                    <div id="routes-list-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
-                        <p style="color: #999; text-align: center; width: 100%; padding: 2rem;">Loading routes...</p>
-                    </div>
+                    <p style="color: #999; font-size: 0.9rem; margin-top: 1rem; text-align: center;">💡 Click any route on the map to highlight it</p>
                 `;
             } else if (sectionId === 'swarms') {
                 content.innerHTML = `
@@ -1664,15 +1675,105 @@
                         // Add clean Mapbox attribution
                         L.control.attribution({ position: "bottomright", prefix: false }).addAttribution("© <a href=\"https://www.mapbox.com/\">Mapbox</a>").addTo(searchMap);
                         // Load routes from Firebase
+                        let allRoutesData = [];
+                        let selectedRoute = null;
+                        
                         getAllRoutes().then(routes => {
                             console.log("✅ Loaded " + routes.length + " routes from Firebase");
-                            routes.forEach(route => {
+                            
+                            routes.forEach((route, index) => {
                                 if (route.waypoints && route.waypoints.length >= 2) {
-                                    const polyline = L.polyline(route.waypoints, { color: "#8DBCC0", weight: 4, opacity: 0.7 }).addTo(searchMap);
+                                    // Create polyline
+                                    const polyline = L.polyline(route.waypoints, { 
+                                        color: "#8DBCC0", 
+                                        weight: 4, 
+                                        opacity: 0.7 
+                                    }).addTo(searchMap);
+                                    
+                                    // Create waypoint markers
+                                    const markers = [];
+                                    route.waypoints.forEach((waypoint, wpIndex) => {
+                                        const numberIcon = L.divIcon({
+                                            className: 'waypoint-number',
+                                            html: '<div style="background: rgba(107, 155, 158, 0.9); color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white;">' + (wpIndex + 1) + '</div>',
+                                            iconSize: [30, 30],
+                                            iconAnchor: [15, 15]
+                                        });
+                                        const marker = L.marker(waypoint, { icon: numberIcon }).addTo(searchMap);
+                                        markers.push(marker);
+                                    });
+                                    
+                                    // Add popup to polyline
                                     polyline.bindPopup("<strong>" + route.name + "</strong><br>" + (route.description || "") + "<br>" + (route.category ? "📁 " + route.category + "<br>" : "") + "📍 " + route.waypointCount + " waypoints");
+                                    
+                                    // Store route data
+                                    allRoutesData.push({
+                                        route: route,
+                                        polyline: polyline,
+                                        markers: markers
+                                    });
+                                    
+                                    // Click handler for highlighting
+                                    polyline.on('click', function() {
+                                        // Reset all routes to faded
+                                        allRoutesData.forEach(r => {
+                                            r.polyline.setStyle({ opacity: 0.3, weight: 3 });
+                                            r.markers.forEach(m => m.setOpacity(0.4));
+                                        });
+                                        
+                                        // Highlight selected route
+                                        polyline.setStyle({ opacity: 1, weight: 6, color: '#6B9B9E' });
+                                        markers.forEach(m => m.setOpacity(1));
+                                        selectedRoute = route;
+                                        
+                                        // Open popup
+                                        polyline.openPopup();
+                                    });
+                                    
+                                    // Also make markers clickable to highlight route
+                                    markers.forEach(marker => {
+                                        marker.on('click', function() {
+                                            polyline.fire('click');
+                                        });
+                                    });
                                 }
                             });
-                            loadRoutesListInModal(routes);
+                            
+                            // Category filter functionality
+                            const categoryFilter = document.getElementById('categoryFilter');
+                            if (categoryFilter) {
+                                categoryFilter.addEventListener('change', function() {
+                                    const selectedCategory = this.value;
+                                    
+                                    allRoutesData.forEach(routeData => {
+                                        const routeCategory = routeData.route.category || 'Other';
+                                        const shouldShow = selectedCategory === 'all' || routeCategory === selectedCategory;
+                                        
+                                        if (shouldShow) {
+                                            // Show route
+                                            searchMap.addLayer(routeData.polyline);
+                                            routeData.markers.forEach(m => searchMap.addLayer(m));
+                                        } else {
+                                            // Hide route
+                                            searchMap.removeLayer(routeData.polyline);
+                                            routeData.markers.forEach(m => searchMap.removeLayer(m));
+                                        }
+                                    });
+                                });
+                            }
+                            
+                            // Click map background to reset all routes
+                            searchMap.on('click', function(e) {
+                                // Only reset if clicking the map itself, not a route
+                                if (e.originalEvent.target.classList.contains('leaflet-container') || 
+                                    e.originalEvent.target.classList.contains('leaflet-tile')) {
+                                    allRoutesData.forEach(r => {
+                                        r.polyline.setStyle({ opacity: 0.7, weight: 4, color: '#8DBCC0' });
+                                        r.markers.forEach(m => m.setOpacity(1));
+                                    });
+                                    selectedRoute = null;
+                                }
+                            });
                         });
 
                         
