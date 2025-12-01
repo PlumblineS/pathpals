@@ -1279,11 +1279,10 @@
         let journeyMap = null;
         let searchMap = null;
         let swarmMap = null;
+        let eventMap = null;
         let swarmCreationMap = null;
         let eventCreationMap = null;
         let testMap = null;
-        let swarmMapV2 = null;
-        let eventMapV2 = null;
         let eventMap = null;
         let routeMarkers = [];
         let routePath = null;
@@ -1315,8 +1314,6 @@
                 swarmCreationMap = null;
                 eventCreationMap = null;
                 if (window.testMap) window.testMap = null;
-                swarmMapV2 = null;
-                eventMapV2 = null;
                 // Scroll back to Explore section
                 setTimeout(() => {
                     const exploreSection = document.querySelector('.features-section');
@@ -1488,13 +1485,9 @@
             
             // Initialize maps after DOM is ready
             setTimeout(() => {
-                console.log('⏱️ setTimeout fired, sectionId =', sectionId);
                 if (sectionId === 'journey-map' || sectionId === 'swarm-map-v2' || sectionId === 'event-map-v2') {
-                    console.log('🟢 MAP: Entered universal map block, mode:', mapMode);
                     const mapElement = document.getElementById('map');
-                    console.log('🟢 JOURNEY: mapElement =', mapElement);
                     if (mapElement && !journeyMap) {
-                        console.log('🟢 JOURNEY: Initializing journeyMap...');
                         journeyMap = L.map(mapElement).setView([39.7392, -104.9903], 13);
                         L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
                              tileSize: 512,
