@@ -1272,11 +1272,11 @@
                         <button class="feature-btn" onclick="showToast('Share link copied!')">Share Route</button>
                     `,
                     swarm: `
-                        <button class="feature-btn" onclick="openCreateSwarmModal()">Save Swarm</button>
+                        <button id="saveSwarmMapBtn" class="feature-btn" onclick="openCreateSwarmModal()" disabled>Save Swarm</button>
                         <button class="feature-btn" onclick="showToast('Swarm cancelled')">Cancel</button>
                     `,
                     event: `
-                        <button class="feature-btn" onclick="openCreateEventModal()">Save Event</button>
+                        <button id="saveEventMapBtn" class="feature-btn" onclick="openCreateEventModal()" disabled>Save Event</button>
                         <button class="feature-btn" onclick="showToast('Event cancelled')">Cancel</button>
                     `
                 };
@@ -1426,7 +1426,19 @@
                                     journeyMap.removeLayer(window.swarmMarker);
                                 }
                                 window.swarmMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(journeyMap);
-                                window.swarmLocation = { lat: e.latlng.lat, lng: e.latlng.lng };
+                                
+                                // Store location with reverse geocoding for address
+                                reverseGeocode(e.latlng.lat, e.latlng.lng).then(address => {
+                                    window.swarmLocation = { 
+                                        lat: e.latlng.lat, 
+                                        lng: e.latlng.lng,
+                                        address: address
+                                    };
+                                });
+                                
+                                // Enable the Save Swarm button
+                                const saveBtn = document.getElementById('saveSwarmMapBtn');
+                                if (saveBtn) saveBtn.disabled = false;
                                 showToast('Location pinned! Click "Save Swarm" to continue.');
                             });
                         } else if (mapMode === 'event') {
@@ -1435,7 +1447,19 @@
                                     journeyMap.removeLayer(window.eventMarker);
                                 }
                                 window.eventMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(journeyMap);
-                                window.eventLocation = { lat: e.latlng.lat, lng: e.latlng.lng };
+                                
+                                // Store location with reverse geocoding for address
+                                reverseGeocode(e.latlng.lat, e.latlng.lng).then(address => {
+                                    window.eventLocation = { 
+                                        lat: e.latlng.lat, 
+                                        lng: e.latlng.lng,
+                                        address: address
+                                    };
+                                });
+                                
+                                // Enable the Save Event button
+                                const saveBtn = document.getElementById('saveEventMapBtn');
+                                if (saveBtn) saveBtn.disabled = false;
                                 showToast('Location pinned! Click "Save Event" to continue.');
                             });
                         }
@@ -2018,10 +2042,45 @@
                             // Only update map if map exists
                             if (map) {
                                 map.setView([lat, lon], 15);
-                                L.marker([lat, lon])
-                                    .addTo(map)
-                                    .bindPopup(`<strong>${result.place_name}</strong>`)
-                                    .openPopup();
+                                
+                                // Check if this is for swarm or event map and store location
+                                if (map === window.swarmMap) {
+                                    // Remove old marker if exists
+                                    if (window.swarmMarker) {
+                                        map.removeLayer(window.swarmMarker);
+                                    }
+                                    // Add new marker
+                                    window.swarmMarker = L.marker([lat, lon])
+                                        .addTo(map)
+                                        .bindPopup(`<strong>${result.place_name}</strong>`)
+                                        .openPopup();
+                                    // Store location
+                                    window.swarmLocation = { lat: lat, lng: lon, address: result.place_name };
+                                    // Enable Save Swarm button
+                                    const saveBtn = document.getElementById('saveSwarmMapBtn');
+                                    if (saveBtn) saveBtn.disabled = false;
+                                } else if (map === window.eventMap) {
+                                    // Remove old marker if exists
+                                    if (window.eventMarker) {
+                                        map.removeLayer(window.eventMarker);
+                                    }
+                                    // Add new marker
+                                    window.eventMarker = L.marker([lat, lon])
+                                        .addTo(map)
+                                        .bindPopup(`<strong>${result.place_name}</strong>`)
+                                        .openPopup();
+                                    // Store location
+                                    window.eventLocation = { lat: lat, lng: lon, address: result.place_name };
+                                    // Enable Save Event button
+                                    const saveBtn = document.getElementById('saveEventMapBtn');
+                                    if (saveBtn) saveBtn.disabled = false;
+                                } else {
+                                    // Journey map or other - just add marker
+                                    L.marker([lat, lon])
+                                        .addTo(map)
+                                        .bindPopup(`<strong>${result.place_name}</strong>`)
+                                        .openPopup();
+                                }
                             }
                             
                             suggestionsDiv.style.display = 'none';
@@ -2491,7 +2550,20 @@
         }
         
         function openCreateSwarmModal() {
-            document.getElementById('createSwarmModal').style.display = 'flex';
+            // Check if location has been pinned
+            if (!window.swarmLocation || !window.swarmLocation.lat || !window.swarmLocation.lng) {
+                showToast('Please pin a location on the map first!');
+                return;
+            }
+            
+            // Reverse geocode to get address
+            reverseGeocode(window.swarmLocation.lat, window.swarmLocation.lng).then(address => {
+                openCreateSwarmModalWithLocation({
+                    lat: window.swarmLocation.lat,
+                    lng: window.swarmLocation.lng,
+                    address: address
+                });
+            });
         }
 
         function closeCreateSwarmModal() {
@@ -2506,7 +2578,20 @@
         }
 
         function openCreateEventModal() {
-            document.getElementById('createEventModal').style.display = 'flex';
+            // Check if location has been pinned
+            if (!window.eventLocation || !window.eventLocation.lat || !window.eventLocation.lng) {
+                showToast('Please pin a location on the map first!');
+                return;
+            }
+            
+            // Reverse geocode to get address
+            reverseGeocode(window.eventLocation.lat, window.eventLocation.lng).then(address => {
+                openCreateEventModalWithLocation({
+                    lat: window.eventLocation.lat,
+                    lng: window.eventLocation.lng,
+                    address: address
+                });
+            });
         }
 
         function closeCreateEventModal() {
