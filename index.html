@@ -276,7 +276,7 @@
             text-align: center;
         }
         
-        /* Feature Cards - 2x2 Grid */
+        /* Feature Cards - 3 Cards */
         .features-section {
             min-height: auto;
             padding: 2.5rem 2rem 2rem;
@@ -1203,8 +1203,6 @@
         let searchMap = null;
         let swarmMap = null;
         let eventMap = null;
-        let swarmMapV2 = null;
-        let eventMapV2 = null;
         let routeMarkers = [];
         let routePath = null;
         let routeCoordinates = [];
@@ -1232,8 +1230,6 @@
                 searchMap = null;
                 swarmMap = null;
                 eventMap = null;
-                swarmMapV2 = null;
-                eventMapV2 = null;
                 // Scroll back to Explore section
                 setTimeout(() => {
                     const exploreSection = document.querySelector('.features-section');
@@ -1776,8 +1772,9 @@
                                 
                                 // Skip past swarms
                                 if (swarm.date) {
-                                    const swarmDate = new Date(swarm.date);
-                                    swarmDate.setHours(0, 0, 0, 0);
+                                    // Parse date as local timezone, not UTC
+                                    const [year, month, day] = swarm.date.split('-');
+                                    const swarmDate = new Date(year, month - 1, day);
                                     if (swarmDate < today) {
                                         invalidCount++;
                                         return;
@@ -1812,7 +1809,7 @@
                                 
                                 const participants = swarm.interested || 0;
                                 const marker = L.marker([swarm.lat, swarm.lng], markerOptions).addTo(swarmMap)
-                                    .bindPopup(`<strong>${swarm.title}</strong><br>📍 ${swarm.location}<br>👥 ${participants} interested<br>📅 ${swarm.date} at ${swarm.time}`);
+                                    .bindPopup(`<strong>${swarm.title}</strong><br>📍 ${swarm.meetingLocation || swarm.location || 'Location TBD'}<br>👥 ${participants} interested<br>📅 ${swarm.date} at ${swarm.time}`);
                                 
                                 // Auto-open popup for highlighted swarm
                                 if (isHighlighted) {
@@ -1890,8 +1887,9 @@
                                 // Skip past events (use endDate if available, otherwise startDate)
                                 const eventDateStr = event.endDate || event.startDate;
                                 if (eventDateStr) {
-                                    const eventDate = new Date(eventDateStr);
-                                    eventDate.setHours(0, 0, 0, 0);
+                                    // Parse date as local timezone, not UTC
+                                    const [year, month, day] = eventDateStr.split('-');
+                                    const eventDate = new Date(year, month - 1, day);
                                     if (eventDate < today) {
                                         invalidCount++;
                                         return;
@@ -2523,28 +2521,12 @@
         // Modal Functions
         function openCreateSwarmModalWithLocation(location) {
             document.getElementById('createSwarmModal').style.display = 'flex';
-            // Pre-fill location field and store coordinates
-            const displayLocation = location.address || 'Selected map location';
-            document.querySelector('input[name="swarmLocation"]').value = displayLocation;
-            document.querySelector('input[name="swarmLocation"]').setAttribute('data-lat', location.lat);
-            document.querySelector('input[name="swarmLocation"]').setAttribute('data-lng', location.lng);
-            document.querySelector('input[name="swarmLocation"]').setAttribute('data-full-address', location.address || '');
-            document.querySelector('input[name="swarmLocation"]').readOnly = true;
-            document.querySelector('input[name="swarmLocation"]').style.background = 'rgba(60, 60, 60, 0.5)';
             // Enable submit button
             document.getElementById('createSwarmBtn').disabled = false;
         }
         
         function openCreateEventModalWithLocation(location) {
             document.getElementById('createEventModal').style.display = 'flex';
-            // Pre-fill location field and store coordinates
-            const displayLocation = location.address || 'Selected map location';
-            document.querySelector('input[name="eventLocation"]').value = displayLocation;
-            document.querySelector('input[name="eventLocation"]').setAttribute('data-lat', location.lat);
-            document.querySelector('input[name="eventLocation"]').setAttribute('data-lng', location.lng);
-            document.querySelector('input[name="eventLocation"]').setAttribute('data-full-address', location.address || '');
-            document.querySelector('input[name="eventLocation"]').readOnly = true;
-            document.querySelector('input[name="eventLocation"]').style.background = 'rgba(60, 60, 60, 0.5)';
             // Enable submit button
             document.getElementById('createEventBtn').disabled = false;
         }
@@ -2571,10 +2553,12 @@
             document.getElementById('createSwarmForm').reset();
             // Disable button again
             document.getElementById('createSwarmBtn').disabled = true;
-            // Clear location data
-            document.querySelector('input[name="swarmLocation"]').removeAttribute('data-lat');
-            document.querySelector('input[name="swarmLocation"]').removeAttribute('data-lng');
-            document.querySelector('input[name="swarmLocation"]').removeAttribute('data-full-address');
+            // Clear window location
+            window.swarmLocation = null;
+            if (window.swarmMarker && journeyMap) {
+                journeyMap.removeLayer(window.swarmMarker);
+                window.swarmMarker = null;
+            }
         }
 
         function openCreateEventModal() {
@@ -2600,10 +2584,12 @@
             document.getElementById('customEventTypeField').style.display = 'none';
             // Disable button again
             document.getElementById('createEventBtn').disabled = true;
-            // Clear location data
-            document.querySelector('input[name="eventLocation"]').removeAttribute('data-lat');
-            document.querySelector('input[name="eventLocation"]').removeAttribute('data-lng');
-            document.querySelector('input[name="eventLocation"]').removeAttribute('data-full-address');
+            // Clear window location
+            window.eventLocation = null;
+            if (window.eventMarker && journeyMap) {
+                journeyMap.removeLayer(window.eventMarker);
+                window.eventMarker = null;
+            }
         }
         
         function toggleCustomEventType() {
@@ -2649,23 +2635,20 @@
             event.preventDefault();
             const formData = new FormData(event.target);
             
-            const locationInput = document.querySelector('input[name="swarmLocation"]');
-            const lat = parseFloat(locationInput.getAttribute('data-lat'));
-            const lng = parseFloat(locationInput.getAttribute('data-lng'));
-            const fullAddress = locationInput.getAttribute('data-full-address');
-            const displayLocation = locationInput.value;
+            // Get coordinates from the pin
+            const lat = window.swarmLocation?.lat;
+            const lng = window.swarmLocation?.lng;
             
             if (!lat || !lng) {
-                showToast('Location coordinates missing. Please use the map to select a location.');
+                showToast('Please place a pin on the map to set the location.');
                 return;
             }
             
             const swarmData = {
                 title: formData.get('swarmTitle'),
-                location: displayLocation,
-                locationFull: fullAddress || displayLocation,
-                lat: lat,
-                lng: lng,
+                meetingLocation: formData.get('swarmMeetingLocation'), // Manual text field
+                lat: lat, // From pin
+                lng: lng, // From pin
                 date: formData.get('swarmDate'),
                 time: formData.get('swarmTime'),
                 description: formData.get('swarmDescription'),
@@ -2697,24 +2680,21 @@
                 eventType = document.getElementById('customEventType').value;
             }
             
-            const locationInput = document.querySelector('input[name="eventLocation"]');
-            const lat = parseFloat(locationInput.getAttribute('data-lat'));
-            const lng = parseFloat(locationInput.getAttribute('data-lng'));
-            const fullAddress = locationInput.getAttribute('data-full-address');
-            const displayLocation = locationInput.value;
+            // Get coordinates from the pin
+            const lat = window.eventLocation?.lat;
+            const lng = window.eventLocation?.lng;
             
             if (!lat || !lng) {
-                showToast('Location coordinates missing. Please use the map to select a location.');
+                showToast('Please place a pin on the map to set the location.');
                 return;
             }
             
             const eventData = {
                 name: formData.get('eventName'),
                 type: eventType,
-                location: displayLocation,
-                locationFull: fullAddress || displayLocation,
-                lat: lat,
-                lng: lng,
+                location: formData.get('eventLocation'), // Manual text field
+                lat: lat, // From pin
+                lng: lng, // From pin
                 startDate: formData.get('eventStartDate'),
                 startTime: formData.get('eventStartTime'),
                 endDate: formData.get('eventEndDate'),
@@ -2831,8 +2811,9 @@
                 
                 // Check if swarm date has passed
                 if (s.date) {
-                    const swarmDate = new Date(s.date);
-                    swarmDate.setHours(0, 0, 0, 0);
+                    // Parse date as local timezone, not UTC
+                    const [year, month, day] = s.date.split('-');
+                    const swarmDate = new Date(year, month - 1, day);
                     
                     // Only show swarms that are today or in the future
                     if (swarmDate < today) return false;
@@ -2870,7 +2851,7 @@
                             <div class="swarm-carousel-card" data-swarm-id="${swarm.id}" style="background: rgba(40, 40, 40, 0.8); padding: 1.5rem; border-radius: 15px; cursor: pointer; transition: transform 0.2s;">
                                 <h4 style="color: var(--accent-color); margin-bottom: 0.5rem;">${swarm.title}</h4>
                                 <p style="color: #d4d4d4; margin: 0.5rem 0;">📅 ${swarm.date} at ${swarm.time}</p>
-                                <p style="color: #d4d4d4; margin: 0.5rem 0;">📍 ${swarm.location}</p>
+                                <p style="color: #d4d4d4; margin: 0.5rem 0;">📍 ${swarm.meetingLocation || swarm.location || 'Location TBD'}</p>
                                 <p style="color: var(--accent-light); font-weight: 600; margin-top: 0.8rem;">👥 ${swarm.interested || 0} interested</p>
                             </div>
                         `).join('')}
@@ -2940,8 +2921,9 @@
                 // Check if event has passed (use endDate if available, otherwise startDate)
                 const eventDateStr = e.endDate || e.startDate;
                 if (eventDateStr) {
-                    const eventDate = new Date(eventDateStr);
-                    eventDate.setHours(0, 0, 0, 0);
+                    // Parse date as local timezone, not UTC
+                    const [year, month, day] = eventDateStr.split('-');
+                    const eventDate = new Date(year, month - 1, day);
                     
                     // Only show events that are today or in the future
                     if (eventDate < today) return false;
@@ -3110,12 +3092,6 @@
                     <input type="text" name="swarmTitle" required maxlength="60" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="Saturday Market Crawl">
                 </div>
 
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Meeting Location *</label>
-                    <input type="text" name="swarmLocation" required style="width: 100%; padding: 0.8rem; background: rgba(60, 60, 60, 0.5); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="Pin location on map first" readonly>
-                    <p style="color: #999; font-size: 0.85rem; margin-top: 0.4rem;">📍 This is where your group will meet up</p>
-                </div>
-
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
                     <div>
                         <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Date *</label>
@@ -3141,6 +3117,12 @@
                     <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Description (200 characters max)</label>
                     <p style="color: #999; font-size: 0.85rem; margin-bottom: 0.5rem;">This will be visible to others when viewing swarms</p>
                     <textarea name="swarmDescription" maxlength="200" rows="3" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem; resize: vertical;" placeholder="Hitting 3 coffee shops in the Arts District"></textarea>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Meeting Location *</label>
+                    <input type="text" name="swarmMeetingLocation" required maxlength="100" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="e.g., 'Starbucks on 16th Street' or 'Union Station entrance'">
+                    <p style="color: #999; font-size: 0.85rem; margin-top: 0.4rem;">Where should the group meet to start?</p>
                 </div>
 
                 <div style="margin-bottom: 1.5rem;">
@@ -3194,8 +3176,8 @@
 
                 <div style="margin-bottom: 1.5rem;">
                     <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Location *</label>
-                    <input type="text" name="eventLocation" required style="width: 100%; padding: 0.8rem; background: rgba(60, 60, 60, 0.5); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="Pin location on map first" readonly>
-                    <p style="color: #999; font-size: 0.85rem; margin-top: 0.4rem;">📍 This location was selected from the map</p>
+                    <input type="text" name="eventLocation" required maxlength="150" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="e.g., 'Red Rocks Amphitheatre' or '1234 Main St, Denver'">
+                    <p style="color: #999; font-size: 0.85rem; margin-top: 0.4rem;">Where will this event take place?</p>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
