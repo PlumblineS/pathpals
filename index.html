@@ -381,6 +381,19 @@
             box-shadow: 0 10px 30px rgba(107, 155, 158, 0.5);
         }
         
+        .feature-btn:disabled {
+            background: rgba(80, 80, 80, 0.5);
+            color: rgba(255, 255, 255, 0.4);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .feature-btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
    
         .event-type {
             display: inline-block;
@@ -2452,23 +2465,29 @@
         function openCreateSwarmModalWithLocation(location) {
             document.getElementById('createSwarmModal').style.display = 'flex';
             // Pre-fill location field and store coordinates
-            document.querySelector('input[name="swarmLocation"]').value = location.address || `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`;
+            const displayLocation = location.address || 'Selected map location';
+            document.querySelector('input[name="swarmLocation"]').value = displayLocation;
             document.querySelector('input[name="swarmLocation"]').setAttribute('data-lat', location.lat);
             document.querySelector('input[name="swarmLocation"]').setAttribute('data-lng', location.lng);
             document.querySelector('input[name="swarmLocation"]').setAttribute('data-full-address', location.address || '');
             document.querySelector('input[name="swarmLocation"]').readOnly = true;
             document.querySelector('input[name="swarmLocation"]').style.background = 'rgba(60, 60, 60, 0.5)';
+            // Enable submit button
+            document.getElementById('createSwarmBtn').disabled = false;
         }
         
         function openCreateEventModalWithLocation(location) {
             document.getElementById('createEventModal').style.display = 'flex';
             // Pre-fill location field and store coordinates
-            document.querySelector('input[name="eventLocation"]').value = location.address || `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`;
+            const displayLocation = location.address || 'Selected map location';
+            document.querySelector('input[name="eventLocation"]').value = displayLocation;
             document.querySelector('input[name="eventLocation"]').setAttribute('data-lat', location.lat);
             document.querySelector('input[name="eventLocation"]').setAttribute('data-lng', location.lng);
             document.querySelector('input[name="eventLocation"]').setAttribute('data-full-address', location.address || '');
             document.querySelector('input[name="eventLocation"]').readOnly = true;
             document.querySelector('input[name="eventLocation"]').style.background = 'rgba(60, 60, 60, 0.5)';
+            // Enable submit button
+            document.getElementById('createEventBtn').disabled = false;
         }
         
         function openCreateSwarmModal() {
@@ -2478,6 +2497,12 @@
         function closeCreateSwarmModal() {
             document.getElementById('createSwarmModal').style.display = 'none';
             document.getElementById('createSwarmForm').reset();
+            // Disable button again
+            document.getElementById('createSwarmBtn').disabled = true;
+            // Clear location data
+            document.querySelector('input[name="swarmLocation"]').removeAttribute('data-lat');
+            document.querySelector('input[name="swarmLocation"]').removeAttribute('data-lng');
+            document.querySelector('input[name="swarmLocation"]').removeAttribute('data-full-address');
         }
 
         function openCreateEventModal() {
@@ -2488,6 +2513,12 @@
             document.getElementById('createEventModal').style.display = 'none';
             document.getElementById('createEventForm').reset();
             document.getElementById('customEventTypeField').style.display = 'none';
+            // Disable button again
+            document.getElementById('createEventBtn').disabled = true;
+            // Clear location data
+            document.querySelector('input[name="eventLocation"]').removeAttribute('data-lat');
+            document.querySelector('input[name="eventLocation"]').removeAttribute('data-lng');
+            document.querySelector('input[name="eventLocation"]').removeAttribute('data-full-address');
         }
         
         function toggleCustomEventType() {
@@ -2995,9 +3026,9 @@
                 </div>
 
                 <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Starting Location *</label>
+                    <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Meeting Location *</label>
                     <input type="text" name="swarmLocation" required style="width: 100%; padding: 0.8rem; background: rgba(60, 60, 60, 0.5); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="Pin location on map first" readonly>
-                    <p style="color: #999; font-size: 0.85rem; margin-top: 0.4rem;">📍 This location was selected from the map</p>
+                    <p style="color: #999; font-size: 0.85rem; margin-top: 0.4rem;">📍 This is where your group will meet up</p>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
@@ -3038,7 +3069,7 @@
                     <input type="text" name="swarmContact" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="email@example.com or phone">
                 </div>
 
-                <button type="submit" class="feature-btn" style="width: 100%; margin-top: 1rem;">Create Swarm</button>
+                <button type="submit" id="createSwarmBtn" class="feature-btn" style="width: 100%; margin-top: 1rem;" disabled>Create Swarm</button>
             </form>
         </div>
     </div>
@@ -3129,7 +3160,7 @@
                     <input type="number" name="eventMaxParticipants" min="1" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="Leave blank for unlimited">
                 </div>
 
-                <button type="submit" class="feature-btn" style="width: 100%; margin-top: 1rem;">Create Event</button>
+                <button type="submit" id="createEventBtn" class="feature-btn" style="width: 100%; margin-top: 1rem;" disabled>Create Event</button>
             </form>
         </div>
     </div>
