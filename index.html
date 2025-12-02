@@ -1770,9 +1770,21 @@
                                     return;
                                 }
                                 
-                                // Skip past swarms
-                                if (swarm.date) {
-                                    // Parse date as local timezone, not UTC
+                                // Skip past swarms (check date AND time)
+                                if (swarm.date && swarm.time) {
+                                    // Combine date and time into full datetime
+                                    const [year, month, day] = swarm.date.split('-');
+                                    const [hours, minutes] = swarm.time.split(':');
+                                    const swarmDateTime = new Date(year, month - 1, day, hours, minutes);
+                                    
+                                    // Compare to current moment (not just today at midnight)
+                                    const now = new Date();
+                                    if (swarmDateTime < now) {
+                                        invalidCount++;
+                                        return;
+                                    }
+                                } else if (swarm.date) {
+                                    // If no time specified, just check date
                                     const [year, month, day] = swarm.date.split('-');
                                     const swarmDate = new Date(year, month - 1, day);
                                     if (swarmDate < today) {
@@ -1884,13 +1896,40 @@
                                     return;
                                 }
                                 
-                                // Skip past events (use endDate if available, otherwise startDate)
-                                const eventDateStr = event.endDate || event.startDate;
-                                if (eventDateStr) {
-                                    // Parse date as local timezone, not UTC
-                                    const [year, month, day] = eventDateStr.split('-');
-                                    const eventDate = new Date(year, month - 1, day);
-                                    if (eventDate < today) {
+                                // Skip past events (check end time first, then start time)
+                                const now = new Date();
+                                
+                                if (event.endDate && event.endTime) {
+                                    // Event has end date+time - use that
+                                    const [year, month, day] = event.endDate.split('-');
+                                    const [hours, minutes] = event.endTime.split(':');
+                                    const endDateTime = new Date(year, month - 1, day, hours, minutes);
+                                    if (endDateTime < now) {
+                                        invalidCount++;
+                                        return;
+                                    }
+                                } else if (event.endDate) {
+                                    // Event has end date only
+                                    const [year, month, day] = event.endDate.split('-');
+                                    const endDate = new Date(year, month - 1, day);
+                                    if (endDate < today) {
+                                        invalidCount++;
+                                        return;
+                                    }
+                                } else if (event.startDate && event.startTime) {
+                                    // No end date - use start date+time
+                                    const [year, month, day] = event.startDate.split('-');
+                                    const [hours, minutes] = event.startTime.split(':');
+                                    const startDateTime = new Date(year, month - 1, day, hours, minutes);
+                                    if (startDateTime < now) {
+                                        invalidCount++;
+                                        return;
+                                    }
+                                } else if (event.startDate) {
+                                    // Only start date, no times
+                                    const [year, month, day] = event.startDate.split('-');
+                                    const startDate = new Date(year, month - 1, day);
+                                    if (startDate < today) {
                                         invalidCount++;
                                         return;
                                     }
@@ -2809,9 +2848,18 @@
             const validSwarms = swarms.filter(s => {
                 if (!s.lat || !s.lng) return false;
                 
-                // Check if swarm date has passed
-                if (s.date) {
-                    // Parse date as local timezone, not UTC
+                // Check if swarm has passed (check date AND time)
+                if (s.date && s.time) {
+                    // Combine date and time into full datetime
+                    const [year, month, day] = s.date.split('-');
+                    const [hours, minutes] = s.time.split(':');
+                    const swarmDateTime = new Date(year, month - 1, day, hours, minutes);
+                    
+                    // Compare to current moment
+                    const now = new Date();
+                    if (swarmDateTime < now) return false;
+                } else if (s.date) {
+                    // If no time specified, just check date
                     const [year, month, day] = s.date.split('-');
                     const swarmDate = new Date(year, month - 1, day);
                     
@@ -2918,15 +2966,31 @@
             const validEvents = events.filter(e => {
                 if (!e.lat || !e.lng) return false;
                 
-                // Check if event has passed (use endDate if available, otherwise startDate)
-                const eventDateStr = e.endDate || e.startDate;
-                if (eventDateStr) {
-                    // Parse date as local timezone, not UTC
-                    const [year, month, day] = eventDateStr.split('-');
-                    const eventDate = new Date(year, month - 1, day);
-                    
-                    // Only show events that are today or in the future
-                    if (eventDate < today) return false;
+                // Check if event has passed (check end time first, then start time)
+                const now = new Date();
+                
+                if (e.endDate && e.endTime) {
+                    // Event has end date+time - use that
+                    const [year, month, day] = e.endDate.split('-');
+                    const [hours, minutes] = e.endTime.split(':');
+                    const endDateTime = new Date(year, month - 1, day, hours, minutes);
+                    if (endDateTime < now) return false;
+                } else if (e.endDate) {
+                    // Event has end date only
+                    const [year, month, day] = e.endDate.split('-');
+                    const endDate = new Date(year, month - 1, day);
+                    if (endDate < today) return false;
+                } else if (e.startDate && e.startTime) {
+                    // No end date - use start date+time
+                    const [year, month, day] = e.startDate.split('-');
+                    const [hours, minutes] = e.startTime.split(':');
+                    const startDateTime = new Date(year, month - 1, day, hours, minutes);
+                    if (startDateTime < now) return false;
+                } else if (e.startDate) {
+                    // Only start date, no times
+                    const [year, month, day] = e.startDate.split('-');
+                    const startDate = new Date(year, month - 1, day);
+                    if (startDate < today) return false;
                 }
                 
                 return true;
