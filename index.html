@@ -1291,13 +1291,52 @@
                         <label for="categoryFilter" style="color: var(--accent-color); font-weight: 600; display: block; margin-bottom: 0.5rem;">Filter by Category:</label>
                         <select id="categoryFilter" style="width: 100%; padding: 0.75rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif; font-size: 1rem; cursor: pointer;">
                             <option value="all">All Categories</option>
-                            <option value="Scenic Walks">Scenic Walks</option>
-                            <option value="Shopping Districts">Shopping Districts</option>
-                            <option value="Historic Tours">Historic Tours</option>
-                            <option value="Food & Drink">Food & Drink</option>
-                            <option value="Parks & Nature">Parks & Nature</option>
-                            <option value="Art & Culture">Art & Culture</option>
-                            <option value="Other">Other</option>
+                            <option value="Coffee Shops">☕ Coffee Shops</option>
+                            <option value="Tacos">🌮 Tacos</option>
+                            <option value="Pizza">🍕 Pizza</option>
+                            <option value="Burgers">🍔 Burgers</option>
+                            <option value="Asian Cuisine">🍜 Asian Cuisine</option>
+                            <option value="Italian">🍝 Italian</option>
+                            <option value="Bakeries & Cafes">🥐 Bakeries & Cafes</option>
+                            <option value="Bars & Breweries">🍺 Bars & Breweries</option>
+                            <option value="Cocktail Bars">🍸 Cocktail Bars</option>
+                            <option value="Wine Bars">🍷 Wine Bars</option>
+                            <option value="Live Music Venues">🎵 Live Music Venues</option>
+                            <option value="Nightlife">🌃 Nightlife</option>
+                            <option value="Shopping Districts">🛍️ Shopping Districts</option>
+                            <option value="Fashion & Boutiques">👕 Fashion & Boutiques</option>
+                            <option value="Bookstores">📚 Bookstores</option>
+                            <option value="Art Galleries">🎨 Art Galleries</option>
+                            <option value="Theater & Performance">🎭 Theater & Performance</option>
+                            <option value="Museums">🏛️ Museums</option>
+                            <option value="Historic Sites">🏺 Historic Sites</option>
+                            <option value="Architecture">⛪ Architecture</option>
+                            <option value="Parks & Gardens">🌳 Parks & Gardens</option>
+                            <option value="Scenic Walks">🏞️ Scenic Walks</option>
+                            <option value="Hiking Trails">🚶 Hiking Trails</option>
+                            <option value="Bike Routes">🚴 Bike Routes</option>
+                            <option value="Waterfront">🏖️ Waterfront</option>
+                            <option value="Seasonal">🌸 Seasonal (Cherry Blossoms, Fall Colors, etc.)</option>
+                            <option value="Photo Spots">📸 Photo Spots</option>
+                            <option value="Spooky & Ghost Tours">🎃 Spooky & Ghost Tours</option>
+                            <option value="Holiday Themed">🎄 Holiday Themed</option>
+                            <option value="Neighborhood Tours">🏠 Neighborhood Tours</option>
+                            <option value="Hidden Gems">💎 Hidden Gems</option>
+                            <option value="Street Art">🎪 Street Art</option>
+                            <option value="Markets & Bazaars">🛒 Markets & Bazaars</option>
+                            <option value="Cultural Districts">🌍 Cultural Districts</option>
+                            <option value="Religious Sites">🕌 Religious Sites</option>
+                            <option value="Castles & Landmarks">🏰 Castles & Landmarks</option>
+                            <option value="Entertainment Districts">🎡 Entertainment Districts</option>
+                            <option value="Fitness & Sports">🏋️ Fitness & Sports</option>
+                            <option value="Wellness & Yoga">🧘 Wellness & Yoga</option>
+                            <option value="Family Friendly">👶 Family Friendly</option>
+                            <option value="Dog Friendly">🐕 Dog Friendly</option>
+                            <option value="Accessible Routes">♿ Accessible Routes</option>
+                            <option value="Educational Tours">🎓 Educational Tours</option>
+                            <option value="Business Districts">🏢 Business Districts</option>
+                            <option value="Bridge Walks">🌉 Bridge Walks</option>
+                            <option value="Other">✨ Other</option>
                         </select>
                     </div>
                     
@@ -1921,20 +1960,59 @@
                     </div>
                     <div style="margin-bottom: 1.5rem;">
                         <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 500;">Category</label>
-                        <select id="routeCategory" style="width: 100%; padding: 0.8rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif;">
+                        <select id="routeCategory" onchange="toggleCustomRouteCategory()" style="width: 100%; padding: 0.8rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif;">
                             <option value="">Select a category...</option>
-                            <option value="coffee">☕ Coffee Shops</option>
-                            <option value="tacos">🌮 Tacos & Mexican</option>
-                            <option value="food">🍴 Food & Dining</option>
-                            <option value="bars">🍺 Bars & Nightlife</option>
-                            <option value="bookstores">📚 Bookstores</option>
-                            <option value="shopping">🛍️ Shopping & Boutiques</option>
-                            <option value="clothing">👕 Clothing & Fashion</option>
-                            <option value="art">🎨 Art & Culture</option>
-                            <option value="parks">🌳 Parks & Nature</option>
-                            <option value="historic">🏛️ Historic Sites</option>
-                            <option value="other">✨ Other</option>
+                            <option value="Coffee Shops">☕ Coffee Shops</option>
+                            <option value="Tacos">🌮 Tacos</option>
+                            <option value="Pizza">🍕 Pizza</option>
+                            <option value="Burgers">🍔 Burgers</option>
+                            <option value="Asian Cuisine">🍜 Asian Cuisine</option>
+                            <option value="Italian">🍝 Italian</option>
+                            <option value="Bakeries & Cafes">🥐 Bakeries & Cafes</option>
+                            <option value="Bars & Breweries">🍺 Bars & Breweries</option>
+                            <option value="Cocktail Bars">🍸 Cocktail Bars</option>
+                            <option value="Wine Bars">🍷 Wine Bars</option>
+                            <option value="Live Music Venues">🎵 Live Music Venues</option>
+                            <option value="Nightlife">🌃 Nightlife</option>
+                            <option value="Shopping Districts">🛍️ Shopping Districts</option>
+                            <option value="Fashion & Boutiques">👕 Fashion & Boutiques</option>
+                            <option value="Bookstores">📚 Bookstores</option>
+                            <option value="Art Galleries">🎨 Art Galleries</option>
+                            <option value="Theater & Performance">🎭 Theater & Performance</option>
+                            <option value="Museums">🏛️ Museums</option>
+                            <option value="Historic Sites">🏺 Historic Sites</option>
+                            <option value="Architecture">⛪ Architecture</option>
+                            <option value="Parks & Gardens">🌳 Parks & Gardens</option>
+                            <option value="Scenic Walks">🏞️ Scenic Walks</option>
+                            <option value="Hiking Trails">🚶 Hiking Trails</option>
+                            <option value="Bike Routes">🚴 Bike Routes</option>
+                            <option value="Waterfront">🏖️ Waterfront</option>
+                            <option value="Seasonal">🌸 Seasonal (Cherry Blossoms, Fall Colors, etc.)</option>
+                            <option value="Photo Spots">📸 Photo Spots</option>
+                            <option value="Spooky & Ghost Tours">🎃 Spooky & Ghost Tours</option>
+                            <option value="Holiday Themed">🎄 Holiday Themed</option>
+                            <option value="Neighborhood Tours">🏠 Neighborhood Tours</option>
+                            <option value="Hidden Gems">💎 Hidden Gems</option>
+                            <option value="Street Art">🎪 Street Art</option>
+                            <option value="Markets & Bazaars">🛒 Markets & Bazaars</option>
+                            <option value="Cultural Districts">🌍 Cultural Districts</option>
+                            <option value="Religious Sites">🕌 Religious Sites</option>
+                            <option value="Castles & Landmarks">🏰 Castles & Landmarks</option>
+                            <option value="Entertainment Districts">🎡 Entertainment Districts</option>
+                            <option value="Fitness & Sports">🏋️ Fitness & Sports</option>
+                            <option value="Wellness & Yoga">🧘 Wellness & Yoga</option>
+                            <option value="Family Friendly">👶 Family Friendly</option>
+                            <option value="Dog Friendly">🐕 Dog Friendly</option>
+                            <option value="Accessible Routes">♿ Accessible Routes</option>
+                            <option value="Educational Tours">🎓 Educational Tours</option>
+                            <option value="Business Districts">🏢 Business Districts</option>
+                            <option value="Bridge Walks">🌉 Bridge Walks</option>
+                            <option value="Other">✨ Other</option>
                         </select>
+                    </div>
+                    <div id="customRouteCategoryField" style="margin-bottom: 1.5rem; display: none;">
+                        <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 500;">Custom Category</label>
+                        <input type="text" id="customRouteCategory" maxlength="50" style="width: 100%; padding: 0.8rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif;" placeholder="Enter custom category (e.g., Horror Walk, Vintage Shops)">
                     </div>
                     <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
                         <button onclick="document.getElementById('saveRouteModal').remove()" style="padding: 0.8rem 2rem; border: none; border-radius: 25px; cursor: pointer; font-weight: 600; background: rgba(60, 60, 60, 0.9); color: #d4d4d4;">Cancel</button>
@@ -1959,7 +2037,18 @@
             }
             
             const description = document.getElementById('routeDescription')?.value || '';
-            const category = document.getElementById('routeCategory')?.value || '';
+            let category = document.getElementById('routeCategory')?.value || '';
+            
+            // If "Other" is selected, use the custom category input
+            if (category === 'Other') {
+                const customCategory = document.getElementById('customRouteCategory')?.value.trim();
+                if (customCategory) {
+                    category = customCategory;
+                } else {
+                    showToast('Please enter a custom category!');
+                    return;
+                }
+            }
             
             const routeData = {
                 name: name,
@@ -2280,12 +2369,28 @@
             }
         }
         
+        function toggleCustomRouteCategory() {
+            const select = document.getElementById('routeCategory');
+            const customField = document.getElementById('customRouteCategoryField');
+            const customInput = document.getElementById('customRouteCategory');
+            
+            if (select.value === 'Other') {
+                customField.style.display = 'block';
+                customInput.required = true;
+            } else {
+                customField.style.display = 'none';
+                customInput.required = false;
+                customInput.value = '';
+            }
+        }
+        
         // Make modal functions globally accessible
         window.openCreateSwarmModal = openCreateSwarmModal;
         window.closeCreateSwarmModal = closeCreateSwarmModal;
         window.openCreateEventModal = openCreateEventModal;
         window.closeCreateEventModal = closeCreateEventModal;
         window.toggleCustomEventType = toggleCustomEventType;
+        window.toggleCustomRouteCategory = toggleCustomRouteCategory;
 
         // Submit handlers
         async function submitSwarm(event) {
@@ -2700,6 +2805,7 @@
         if (typeof openSaveRouteModal !== 'undefined') window.openSaveRouteModal = openSaveRouteModal;
         if (typeof confirmSaveRoute !== 'undefined') window.confirmSaveRoute = confirmSaveRoute;
         if (typeof toggleCustomEventType !== 'undefined') window.toggleCustomEventType = toggleCustomEventType;
+        if (typeof toggleCustomRouteCategory !== 'undefined') window.toggleCustomRouteCategory = toggleCustomRouteCategory;
     </script>
 
     <!-- Create Swarm Modal -->
