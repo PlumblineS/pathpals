@@ -1336,7 +1336,7 @@
                             <option value="Educational Tours">🎓 Educational Tours</option>
                             <option value="Business Districts">🏢 Business Districts</option>
                             <option value="Bridge Walks">🌉 Bridge Walks</option>
-                            <option value="Other">✨ Other</option>
+                            <option value="User Added">✨ User Added</option>
                         </select>
                     </div>
                     
@@ -1531,12 +1531,37 @@
                             // Category filter functionality
                             const categoryFilter = document.getElementById('categoryFilter');
                             if (categoryFilter) {
+                                // Define all predefined categories
+                                const predefinedCategories = [
+                                    'Coffee Shops', 'Tacos', 'Pizza', 'Burgers', 'Asian Cuisine', 'Italian',
+                                    'Bakeries & Cafes', 'Bars & Breweries', 'Cocktail Bars', 'Wine Bars',
+                                    'Live Music Venues', 'Nightlife', 'Shopping Districts', 'Fashion & Boutiques',
+                                    'Bookstores', 'Art Galleries', 'Theater & Performance', 'Museums',
+                                    'Historic Sites', 'Architecture', 'Parks & Gardens', 'Scenic Walks',
+                                    'Hiking Trails', 'Bike Routes', 'Waterfront', 'Seasonal', 'Photo Spots',
+                                    'Spooky & Ghost Tours', 'Holiday Themed', 'Neighborhood Tours', 'Hidden Gems',
+                                    'Street Art', 'Markets & Bazaars', 'Cultural Districts', 'Religious Sites',
+                                    'Castles & Landmarks', 'Entertainment Districts', 'Fitness & Sports',
+                                    'Wellness & Yoga', 'Family Friendly', 'Dog Friendly', 'Accessible Routes',
+                                    'Educational Tours', 'Business Districts', 'Bridge Walks'
+                                ];
+                                
                                 categoryFilter.addEventListener('change', function() {
                                     const selectedCategory = this.value;
                                     
                                     allRoutesData.forEach(routeData => {
-                                        const routeCategory = routeData.route.category || 'Other';
-                                        const shouldShow = selectedCategory === 'all' || routeCategory === selectedCategory;
+                                        const routeCategory = routeData.route.category || '';
+                                        let shouldShow = false;
+                                        
+                                        if (selectedCategory === 'all') {
+                                            shouldShow = true;
+                                        } else if (selectedCategory === 'User Added') {
+                                            // Show routes with custom categories (not in predefined list)
+                                            shouldShow = routeCategory && !predefinedCategories.includes(routeCategory);
+                                        } else {
+                                            // Show routes matching the selected category
+                                            shouldShow = routeCategory === selectedCategory;
+                                        }
                                         
                                         if (shouldShow) {
                                             // Show route
@@ -1616,6 +1641,10 @@
                                 return;
                             }
                             
+                            // Get today's date for comparison
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            
                             let validCount = 0;
                             let invalidCount = 0;
                             
@@ -1624,6 +1653,16 @@
                                 if (!swarm.lat || !swarm.lng) {
                                     invalidCount++;
                                     return;
+                                }
+                                
+                                // Skip past swarms
+                                if (swarm.date) {
+                                    const swarmDate = new Date(swarm.date);
+                                    swarmDate.setHours(0, 0, 0, 0);
+                                    if (swarmDate < today) {
+                                        invalidCount++;
+                                        return;
+                                    }
                                 }
                                 
                                 validCount++;
@@ -1715,6 +1754,10 @@
                                 return;
                             }
                             
+                            // Get today's date for comparison
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            
                             let validCount = 0;
                             let invalidCount = 0;
                             
@@ -1723,6 +1766,17 @@
                                 if (!event.lat || !event.lng) {
                                     invalidCount++;
                                     return;
+                                }
+                                
+                                // Skip past events (use endDate if available, otherwise startDate)
+                                const eventDateStr = event.endDate || event.startDate;
+                                if (eventDateStr) {
+                                    const eventDate = new Date(eventDateStr);
+                                    eventDate.setHours(0, 0, 0, 0);
+                                    if (eventDate < today) {
+                                        invalidCount++;
+                                        return;
+                                    }
                                 }
                                 
                                 validCount++;
@@ -2569,8 +2623,26 @@
             const container = document.getElementById('swarms-list-container');
             if (!container) return;
             
-            // Filter swarms that have coordinates
-            const validSwarms = swarms.filter(s => s.lat && s.lng);
+            // Get today's date for comparison
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            // Filter swarms that have coordinates AND haven't passed yet
+            const validSwarms = swarms.filter(s => {
+                if (!s.lat || !s.lng) return false;
+                
+                // Check if swarm date has passed
+                if (s.date) {
+                    const swarmDate = new Date(s.date);
+                    swarmDate.setHours(0, 0, 0, 0);
+                    
+                    // Only show swarms that are today or in the future
+                    if (swarmDate < today) return false;
+                }
+                
+                return true;
+            });
+            
             swarmsCarouselData = validSwarms;
             swarmsCarouselIndex = 0;
             
@@ -2659,8 +2731,27 @@
             const container = document.getElementById('events-list-container');
             if (!container) return;
             
-            // Filter events that have coordinates
-            const validEvents = events.filter(e => e.lat && e.lng);
+            // Get today's date for comparison
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            // Filter events that have coordinates AND haven't passed yet
+            const validEvents = events.filter(e => {
+                if (!e.lat || !e.lng) return false;
+                
+                // Check if event has passed (use endDate if available, otherwise startDate)
+                const eventDateStr = e.endDate || e.startDate;
+                if (eventDateStr) {
+                    const eventDate = new Date(eventDateStr);
+                    eventDate.setHours(0, 0, 0, 0);
+                    
+                    // Only show events that are today or in the future
+                    if (eventDate < today) return false;
+                }
+                
+                return true;
+            });
+            
             eventsCarouselData = validEvents;
             eventsCarouselIndex = 0;
             
