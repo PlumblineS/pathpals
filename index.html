@@ -1584,6 +1584,13 @@
                                         markers.forEach(m => m.setOpacity(1));
                                         selectedRoute = route;
                                         
+                                        // Check if user already liked this route
+                                        const storageKey = `flanerie_liked_routes_${route.id}`;
+                                        const alreadyLiked = localStorage.getItem(storageKey);
+                                        const btnState = alreadyLiked ? 
+                                            `<button id="route-like-btn-${route.id}" style="background: rgba(107, 155, 158, 0.5); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: default; font-size: 0.9rem;" disabled>❤️ Liked</button>` :
+                                            `<button id="route-like-btn-${route.id}" onclick="toggleLike('routes', '${route.id}')" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">❤️ Like Route</button>`;
+                                        
                                         // Populate info panel
                                         const infoPanel = document.getElementById('searchInfoPanel');
                                         const infoContent = document.getElementById('searchInfoContent');
@@ -1607,6 +1614,10 @@
                                                 </div>
                                                 ${route.description ? `<p style="color: #d4d4d4; margin-top: 0.5rem; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word;">${route.description}</p>` : ''}
                                                 ${waypointsHTML}
+                                                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(107, 155, 158, 0.2);">
+                                                    <p id="route-like-count-${route.id}" style="color: var(--accent-light); font-weight: 600; margin: 0;">❤️ ${route.likes || 0} likes</p>
+                                                    ${btnState}
+                                                </div>
                                             `;
                                             infoPanel.style.display = 'block';
                                             // Auto-scroll into view
@@ -2472,6 +2483,7 @@
                 waypoints: routeCoordinates,
                 waypointLabels: waypointLabels, // Save custom labels
                 waypointCount: routeCoordinates.length,
+                likes: 0, // Initialize likes counter
                 created: new Date().toISOString(),
                 createdBy: 'anonymous' // Could add user auth later
             };
@@ -2548,6 +2560,56 @@
             }
         }
         window.toggleInterest = toggleInterest;
+        
+        // Like Button Handler (for routes)
+        async function toggleLike(type, id) {
+            const storageKey = `flanerie_liked_${type}_${id}`;
+            const alreadyLiked = localStorage.getItem(storageKey);
+            
+            if (alreadyLiked) {
+                showToast('You already liked this route!');
+                return;
+            }
+            
+            try {
+                if (!window.database) {
+                    throw new Error('Firebase database not initialized');
+                }
+                
+                // Get current count and increment
+                const itemRef = window.database.ref(`${type}/${id}/likes`);
+                const snapshot = await itemRef.once('value');
+                const currentCount = snapshot.val() || 0;
+                const newCount = currentCount + 1;
+                
+                // Update Firebase
+                await itemRef.set(newCount);
+                
+                // Update displayed count
+                const countElement = document.getElementById(`${type.slice(0, -1)}-like-count-${id}`);
+                if (countElement) {
+                    countElement.textContent = `❤️ ${newCount} likes`;
+                }
+                
+                // Update button
+                const btnElement = document.getElementById(`${type.slice(0, -1)}-like-btn-${id}`);
+                if (btnElement) {
+                    btnElement.textContent = '❤️ Liked';
+                    btnElement.style.background = 'rgba(107, 155, 158, 0.5)';
+                    btnElement.style.cursor = 'default';
+                    btnElement.disabled = true;
+                }
+                
+                // Save to localStorage to prevent duplicates
+                localStorage.setItem(storageKey, 'true');
+                
+                showToast('Route liked! Thanks for exploring! ❤️');
+            } catch (error) {
+                console.error('Error updating likes:', error);
+                showToast('Error updating likes');
+            }
+        }
+        window.toggleLike = toggleLike;
         
         // Toast Notification
         function showToast(message) {
