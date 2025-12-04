@@ -1682,7 +1682,7 @@
                                                 ${route.description ? `<p style="color: #d4d4d4; margin-top: 0.5rem; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word;">${route.description}</p>` : ''}
                                                 ${waypointsHTML}
                                                 <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(107, 155, 158, 0.2);">
-                                                    <p id="route-like-count-${route.id}" style="color: var(--accent-light); font-weight: 600; margin: 0;">❤️ ${route.likes || 0} likes</p>
+                                                    <p id="route-like-count-${route.id}" style="color: var(--accent-light); font-weight: 600; margin: 0;">❤️ ${route.likes || 0} flâneurs like this route</p>
                                                     ${btnState}
                                                 </div>
                                             `;
@@ -2017,7 +2017,7 @@
                                             ${swarm.identifier ? `<p style="color: #d4d4d4; margin: 0.8rem 0 0 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">🔍 Look for:</strong> ${swarm.identifier}</p>` : ''}
                                             ${swarm.contact ? `<p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">📧 Contact:</strong> ${swarm.contact}</p>` : ''}
                                             <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(107, 155, 158, 0.2);">
-                                                <p id="swarm-interest-count-${swarm.id}" style="color: var(--accent-light); font-weight: 600; margin: 0;">👥 ${participants} interested</p>
+                                                <p id="swarm-interest-count-${swarm.id}" style="color: var(--accent-light); font-weight: 600; margin: 0;">👥 ${participants} flâneurs interested</p>
                                                 ${btnState}
                                             </div>
                                         `;
@@ -2203,7 +2203,7 @@
                                             ${event.website ? `<p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">🔗 Website:</strong> <a href="${event.website}" target="_blank" style="color: var(--accent-light); word-break: break-all;">${event.website}</a></p>` : ''}
                                             ${event.maxParticipants ? `<p style="color: #d4d4d4; margin: 0.5rem 0;"><strong style="color: var(--accent-light);">👥 Max Participants:</strong> ${event.maxParticipants}</p>` : ''}
                                             <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(107, 155, 158, 0.2);">
-                                                <p id="event-interest-count-${event.id}" style="color: var(--accent-light); font-weight: 600; margin: 0;">👥 ${event.interested || 0} interested</p>
+                                                <p id="event-interest-count-${event.id}" style="color: var(--accent-light); font-weight: 600; margin: 0;">👥 ${event.interested || 0} flâneurs interested</p>
                                                 ${btnState}
                                             </div>
                                         `;
@@ -2713,7 +2713,7 @@
                 // Update displayed count
                 const countElement = document.getElementById(`${type.slice(0, -1)}-interest-count-${id}`);
                 if (countElement) {
-                    countElement.textContent = `👥 ${newCount} interested`;
+                    countElement.textContent = `👥 ${newCount} flâneurs interested`;
                 }
                 
                 // Update button
@@ -2763,7 +2763,7 @@
                 // Update displayed count
                 const countElement = document.getElementById(`${type.slice(0, -1)}-like-count-${id}`);
                 if (countElement) {
-                    countElement.textContent = `❤️ ${newCount} likes`;
+                    countElement.textContent = `❤️ ${newCount} flâneurs like this route`;
                 }
                 
                 // Update button
@@ -3416,7 +3416,7 @@
                 const currentText = countElement.textContent;
                 const currentCount = parseInt(currentText.match(/\d+/)[0]) || 0;
                 const newCount = currentCount + 1;
-                countElement.textContent = `👥 ${newCount} locals interested`;
+                countElement.textContent = `👥 ${newCount} flâneurs interested`;
                 showToast('Thanks for your interest!');
                 
                 // Update Firebase (if id is a Firebase key, not array index)
