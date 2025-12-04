@@ -980,7 +980,17 @@
             startSlideshow();
         });
         
-        startSlideshow();
+        // Only start slideshow if no hash or hash is #home
+        const currentHash = window.location.hash;
+        if (!currentHash || currentHash === '' || currentHash === '#home') {
+            startSlideshow();
+        } else {
+            // Skip slideshow, hide overlay immediately
+            const slideshowOverlay = document.getElementById('slideshow-overlay');
+            if (slideshowOverlay) {
+                slideshowOverlay.style.display = 'none';
+            }
+        }
         
         // Rotating hero phrases
         let currentHeroTextIndex = 0;
