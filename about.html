@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flânerie - For Businesses</title>
+    <title>About Flânerie</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700;800&display=swap" rel="stylesheet">
     
@@ -24,75 +25,161 @@
         
         /* Navigation */
         nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
             background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 1.5rem 2rem;
+            padding: 1.5rem 0;
+            position: sticky;
+            top: 0;
             z-index: 1000;
-            border-bottom: 1px solid rgba(107, 155, 158, 0.2);
+            border-bottom: 2px solid rgba(107, 155, 158, 0.3);
         }
         
         .nav-container {
             max-width: 1400px;
             margin: 0 auto;
+            padding: 0 2rem;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
+        }
+        
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: var(--accent-color);
         }
         
         .nav-links {
             display: flex;
-            gap: 3rem;
             list-style: none;
+            gap: 2.5rem;
         }
         
         .nav-links a {
+            color: #e0e0e0;
             text-decoration: none;
-            color: var(--accent-light);
             font-weight: 500;
-            font-size: 1.1rem;
             transition: color 0.3s ease;
         }
         
         .nav-links a:hover {
-            color: #ffffff;
+            color: var(--accent-color);
         }
         
-        /* Hero Section */
         .hero {
-            min-height: 60vh;
+            min-height: 50vh;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 8rem 2rem 4rem;
+            padding: 4rem 2rem;
             background: linear-gradient(135deg, rgba(107, 155, 158, 0.1), rgba(10, 10, 10, 0.9));
         }
         
-        .hero-content h1 {
+        .hero h1 {
             font-family: 'Playfair Display', serif;
             font-size: 4rem;
             color: var(--accent-color);
-            margin-bottom: 1.5rem;
-            line-height: 1.2;
+            margin-bottom: 1rem;
         }
         
-        .hero-content p {
+        .hero p {
             font-size: 1.5rem;
             color: #d4d4d4;
-            max-width: 800px;
-            margin: 0 auto 2rem;
-            line-height: 1.6;
+            font-style: italic;
         }
         
-        .cta-buttons {
-            display: flex;
-            gap: 1.5rem;
-            justify-content: center;
-            margin-top: 2rem;
-            flex-wrap: wrap;
+        .content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+        
+        .story-section {
+            margin-bottom: 4rem;
+        }
+        
+        .story-section h2 {
+            font-family: 'Playfair Display', serif;
+            color: var(--accent-color);
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .story-section p {
+            color: #d4d4d4;
+            line-height: 2;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .pull-quote {
+            background: linear-gradient(135deg, rgba(107, 155, 158, 0.15), rgba(141, 188, 192, 0.15));
+            border-left: 4px solid var(--accent-color);
+            padding: 2rem 2.5rem;
+            margin: 3rem 0;
+            border-radius: 10px;
+        }
+        
+        .pull-quote p {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--accent-light);
+            font-style: italic;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .mission-box {
+            background: rgba(30, 30, 30, 0.9);
+            border: 2px solid rgba(107, 155, 158, 0.3);
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 4rem 0;
+            text-align: center;
+        }
+        
+        .mission-box h3 {
+            color: var(--accent-color);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .mission-box p {
+            color: #d4d4d4;
+            line-height: 2;
+            font-size: 1.1rem;
+        }
+        
+        .signature {
+            text-align: right;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(107, 155, 158, 0.3);
+        }
+        
+        .signature p {
+            color: var(--accent-light);
+            font-size: 1.3rem;
+            font-style: italic;
+            margin: 0;
+        }
+        
+        .cta-section {
+            background: linear-gradient(135deg, rgba(107, 155, 158, 0.1), rgba(10, 10, 10, 0.9));
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        
+        .cta-section h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            margin-bottom: 2rem;
         }
         
         .btn-primary {
@@ -107,6 +194,7 @@
             transition: all 0.3s ease;
             text-decoration: none;
             display: inline-block;
+            margin: 0.5rem;
         }
         
         .btn-primary:hover {
@@ -114,479 +202,110 @@
             box-shadow: 0 10px 30px rgba(107, 155, 158, 0.4);
         }
         
-        .btn-secondary {
-            background: transparent;
-            color: var(--accent-color);
-            padding: 1rem 2.5rem;
-            border: 2px solid var(--accent-color);
-            border-radius: 30px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
-        
-        .btn-secondary:hover {
-            background: var(--accent-color);
-            color: white;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 4rem 2rem;
-        }
-        
-        .section-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
-            color: var(--accent-color);
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-        
-        .section-subtitle {
-            text-align: center;
-            color: #d4d4d4;
-            font-size: 1.2rem;
-            margin-bottom: 3rem;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        /* How It Works Section */
-        .how-it-works {
-            background: rgba(20, 20, 20, 0.8);
-            padding: 4rem 2rem;
-        }
-        
-        .steps-container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        
-        .step {
-            display: flex;
-            gap: 2rem;
-            margin-bottom: 3rem;
-            align-items: start;
-        }
-        
-        .step-number {
-            background: linear-gradient(135deg, var(--accent-color), #f7a399);
-            color: white;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-        
-        .step-content h3 {
-            color: var(--accent-light);
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .step-content p {
-            color: #d4d4d4;
-            line-height: 1.8;
-        }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2.5rem;
-            margin-bottom: 4rem;
-        }
-        
-        @media (max-width: 968px) {
-            .nav-links {
-                gap: 1.5rem;
-                font-size: 0.95rem;
-            }
-            
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .step {
-                flex-direction: column;
-            }
-        }
-        
-        .feature-card {
-            background: rgba(30, 30, 30, 0.9);
-            border-radius: 20px;
-            padding: 2.5rem;
-            border: 2px solid rgba(107, 155, 158, 0.2);
-            transition: all 0.3s ease;
-        }
-        
-        .feature-card:hover {
-            border-color: var(--accent-color);
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(107, 155, 158, 0.3);
-        }
-        
-        .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .feature-card h3 {
-            color: var(--accent-light);
-            font-size: 1.8rem;
-            margin-bottom: 1rem;
-        }
-        
-        .feature-card p {
-            color: #d4d4d4;
-            line-height: 1.8;
-            font-size: 1.05rem;
-        }
-        
-        /* Social Proof Box */
-        .social-proof {
-            background: linear-gradient(135deg, rgba(107, 155, 158, 0.1), rgba(10, 10, 10, 0.8));
-            border: 2px solid rgba(107, 155, 158, 0.3);
-            border-radius: 20px;
-            padding: 3rem;
-            margin: 4rem auto;
-            max-width: 900px;
-        }
-        
-        .social-proof h3 {
-            color: var(--accent-color);
-            font-size: 2rem;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-        
-        .proof-list {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .proof-list li {
-            color: #d4d4d4;
-            padding: 1rem 0;
-            padding-left: 2rem;
-            position: relative;
-            font-size: 1.1rem;
-            line-height: 1.8;
-        }
-        
-        .proof-list li:before {
-            content: "✓";
-            position: absolute;
-            left: 0;
-            color: var(--accent-color);
-            font-weight: bold;
-            font-size: 1.4rem;
-        }
-        
-        /* Why Different Section */
-        .why-different {
-            padding: 4rem 2rem;
-            background: rgba(20, 20, 20, 0.5);
-        }
-        
-        .comparison-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-        
         @media (max-width: 768px) {
-            .comparison-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .comparison-card {
-            background: rgba(30, 30, 30, 0.8);
-            border-radius: 15px;
-            padding: 2rem;
-        }
-        
-        .comparison-card.bad {
-            border-left: 4px solid #d9534f;
-        }
-        
-        .comparison-card.good {
-            border-left: 4px solid var(--accent-color);
-        }
-        
-        .comparison-card h4 {
-            margin-bottom: 1.5rem;
-            font-size: 1.3rem;
-        }
-        
-        .comparison-card.bad h4 {
-            color: #d9534f;
-        }
-        
-        .comparison-card.good h4 {
-            color: var(--accent-color);
-        }
-        
-        .comparison-card ul {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .comparison-card li {
-            color: #d4d4d4;
-            padding: 0.5rem 0;
-            padding-left: 1.5rem;
-            position: relative;
-        }
-        
-        .comparison-card.bad li:before {
-            content: "✗";
-            position: absolute;
-            left: 0;
-            color: #d9534f;
-        }
-        
-        .comparison-card.good li:before {
-            content: "✓";
-            position: absolute;
-            left: 0;
-            color: var(--accent-color);
-        }
-        
-        /* Sticker Section */
-        .sticker-section {
-            background: linear-gradient(135deg, rgba(107, 155, 158, 0.15), rgba(141, 188, 192, 0.15));
-            border: 2px solid rgba(107, 155, 158, 0.3);
-            border-radius: 25px;
-            padding: 3rem;
-            margin: 4rem auto;
-            max-width: 800px;
-            text-align: center;
-        }
-        
-        .sticker-section img {
-            max-width: 300px;
-            margin: 2rem auto;
-            display: block;
-            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
-        }
-        
-        .sticker-section h3 {
-            color: var(--accent-color);
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
-        
-        .sticker-section p {
-            color: #d4d4d4;
-            font-size: 1.1rem;
-            line-height: 1.8;
-            margin-bottom: 2rem;
-        }
-        
-        /* Final CTA */
-        .final-cta {
-            text-align: center;
-            padding: 4rem 2rem;
-            background: linear-gradient(135deg, rgba(107, 155, 158, 0.1), rgba(10, 10, 10, 0.9));
-        }
-        
-        .final-cta h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 3rem;
-            color: var(--accent-color);
-            margin-bottom: 1.5rem;
-        }
-        
-        .final-cta p {
-            font-size: 1.3rem;
-            color: #d4d4d4;
-            margin-bottom: 2rem;
-        }
-        
-        @media (max-width: 768px) {
-            .hero-content h1 {
+            .hero h1 {
                 font-size: 2.5rem;
             }
             
-            .hero-content p {
+            .hero p {
                 font-size: 1.2rem;
             }
             
-            .section-title {
-                font-size: 2rem;
+            .nav-links {
+                gap: 1rem;
+                font-size: 0.9rem;
             }
             
-            .notice-banner {
-                padding: 1.5rem 1rem;
+            .pull-quote p {
+                font-size: 1.3rem;
             }
             
-            .notice-content h3 {
-                font-size: 1.1rem;
-            }
-            
-            .notice-content p {
-                font-size: 0.95rem;
+            .content {
+                padding: 2rem 1.5rem;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Navigation -->
     <nav>
         <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <img src="character-logo.png" alt="Flânerie" style="height: 60px; width: 60px; object-fit: contain;">
+                Flânerie
+            </a>
             <ul class="nav-links">
-                <li><a href="index.html#home">Home</a></li>
+                <li><a href="index.html">Home</a></li>
                 <li><a href="index.html#features-content">Explore</a></li>
+                <li><a href="for-businesses.html">For Businesses</a></li>
                 <li><a href="about.html">About</a></li>
             </ul>
         </div>
     </nav>
     
-    
-    <!-- Hero Section -->
+    <!-- Hero -->
     <section class="hero">
-        <div class="hero-content">
-            <h1>Get discovered by people<br>already walking past your door.</h1>
-            <p>Search engines show the biggest advertisers. Flânerie helps locals discover your business because someone they trust put you on their walking route. Not ads. Not algorithms. Just neighbors sharing what they love.</p>
+        <div>
+            <h1>About Flânerie</h1>
+            <p>One person. One mission. Bring neighborhoods back to life.</p>
         </div>
     </section>
     
-    <!-- How It Works Section -->
-    <section id="how-it-works" class="how-it-works">
-        <div class="container">
-            <h2 class="section-title">How It Works</h2>
-            <p class="section-subtitle">Word-of-mouth, but mapped.</p>
+    <!-- Main Content -->
+    <div class="content">
+        <section class="story-section">
+            <h2>The Story</h2>
+            <p>Growing up, I didn’t have much.</p>
             
-            <div class="steps-container">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <h3>A regular customer creates a route</h3>
-                        <p>"Best Coffee & Bookstores Walk" or "Sunday Brunch Crawl"</p>
-                    </div>
-                </div>
-                
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
-                        <h3>They add your shop as a stop</h3>
-                        <p>Because they actually love your place and want others to find it</p>
-                    </div>
-                </div>
-                
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <h3>Other locals follow that route</h3>
-                        <p>They're walking with intention, not rushing to a destination</p>
-                    </div>
-                </div>
-                
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <div class="step-content">
-                        <h3>New customers walk through your door</h3>
-                        <p>Discovered organically by people who value local businesses</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Features Section -->
-    <section class="container">
-        <h2 class="section-title">What You Get (All Free)</h2>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">📍</div>
-                <h3>Your Business on the Map</h3>
-                <p>Free verified listing with photos and hours. Show up when locals create walking routes. See how many routes include your business and track how many "flâneurs" have visited. No fees. No subscriptions. Ever.</p>
-            </div>
+            <p>During summer break, I’d collect pop cans, trade them in, and use the fifty cents each way to ride the bus to somewhere—anywhere—I’d never been. Whatever money I had left, I’d see what small thing it could get me: a used book, a cheap toy, something to bring home as a little souvenir from the adventure that day.</p>
             
-            <div class="feature-card">
-                <div class="feature-icon">🛍️</div>
-                <h3>Host Shopping Swarms</h3>
-                <p>Organize group walks that bring 20-50 people to your door. Free to create and promote. Build your community of regulars. Turn one-time visitors into loyal customers. We handle the platform, you handle the coffee.</p>
-            </div>
+            <p>That wandering stayed with me. Even as an adult, I’d take the long or different way home just to see what I might stumble into: coffee shops with mismatched furniture, bookstores with cats sleeping on the counter, taquerías with menus fully in Spanish and salsa that could wake the dead.</p>
             
-            <div class="feature-card">
-                <div class="feature-icon">📅</div>
-                <h3>Promote Your Events</h3>
-                <p>Sidewalk sales, tastings, workshops, live music—free event calendar listing. Automatically suggest routes to your event. Reach locals who actually explore neighborhoods. Build buzz without buying ads.</p>
-            </div>
+            <p>But something's changed.</p>
+            
+            <p>Neighborhoods—real, walkable, lived-in neighborhoods—are fading. Downtowns feel hollow. The small lights that used to glow on every block are going dark. I miss the feeling of stumbling onto life—porch conversations drifting through summer air, kids playing in the street, the hum of a city that felt alive on foot.</p>
+        </section>
+        
+        <div class="pull-quote">
+            <p>When we stop driving past our neighborhoods, we start seeing them.</p>
         </div>
         
-        <!-- Social Proof Box -->
-        <div class="social-proof">
-            <h3>What This Actually Looks Like</h3>
-            <ul class="proof-list">
-                <li>Photos, hours, what makes you special</li>
-                <li>"Included in 47 walking routes"</li>
-                <li>"234 flâneurs have been here"</li>
-                <li>Your upcoming events and swarms</li>
-                <li>Customer routes that feature you: "Sunday Coffee Ritual," "Best Main Street Walk"</li>
-            </ul>
+        <section class="story-section">
+            <h2>Why This Exists</h2>
+            <p>This is a one-person project for real neighborhoods—not corporations. There’s no marketing team, no developers, no glossy launch. Just me, trying to come up with something to keep the places we love from fading away.</p>
+
+<p>Every time you skip the chain and choose a local coffee shop, you’re voting. Every time you walk instead of drive, you’re paying attention. Every time you wander down a new block, you’re proving your neighborhood still has life in it.</p>
+
+<p>Flânerie is my attempt to answer a simple question: <em>How do we get people to care about their neighborhoods again?</em></p>
+
+<p>I’m not a marketing guy, and I’m definitely not a developer. Honestly, this whole thing might look a little broken at times—as I panic-search the web on how to fix it—but that’s kind of the point. It’s handmade. It’s local. It’s alive.</p>
+
+<p>Here’s what we do:</p>
+
+<p>We point out the good stuff before it’s gone.<br>
+We make exploring easy, even if you’ve lived here your whole life.<br>
+We celebrate the walkers, the wanderers—the <strong>flâneurs</strong>—who still show up for local spots.<br>
+We remind each other that neighborhoods don’t fade on their own—they fade when we stop showing up.<br><br>
+And we can bring them back, one walk at a time.</p>
+        </section>
+        
+        <div class="mission-box">
+            <h3>Your neighborhood needs you.</h3>
+            <p>Not your money. Not your platform following. Just your feet, your eyes, and your willingness to look around.</p>
+            <p><strong>Walk slower. Notice more. Share what you find.</strong></p>
         </div>
-    </section>
-    
-    <!-- Why Different Section -->
-    <section class="why-different">
-        <div class="container">
-            <h2 class="section-title">Why It's Different</h2>
-            <div class="comparison-grid">
-                <div class="comparison-card bad">
-                    <h4>Most discovery tools favor:</h4>
-                    <ul>
-                        <li>Whoever pays the most for ads</li>
-                        <li>National chains with big budgets</li>
-                        <li>Businesses gaming algorithms</li>
-                    </ul>
-                </div>
-                
-                <div class="comparison-card good">
-                    <h4>Flânerie favors:</h4>
-                    <ul>
-                        <li>Businesses that locals actually love</li>
-                        <li>Word-of-mouth, but mapped</li>
-                        <li>Real foot traffic, not click farms</li>
-                        <li>Community over corporations</li>
-                    </ul>
-                </div>
-            </div>
+        
+        <div class="signature">
+            <p>— Bobby</p>
+            <p style="font-size: 0.9rem; color: #999; font-style: normal;">Founder, the entire Flânerie "team"</p>
         </div>
-    </section>
+    </div>
     
-    <!-- Free Window Sticker Section -->
-    <section class="container">
-        <div class="sticker-section">
-            <h3>💡 Want a Free Window Sticker?</h3>
-            <img src="flanerie-sticker-transparent.png" alt="Flânerie Window Sticker">
-            <p>Let customers know you're on Flânerie with a window decal. Show your support for local discovery and help spread the word!</p>
-            <a href="/cdn-cgi/l/email-protection#690a06071d080a1d290f0508070c1b000c470a0604561a1c0b030c0a1d542f1b0c0c493e00070d061e493a1d000a020c1b493b0c181c0c1a1d" class="btn-primary">Contact Us for Your Free Sticker</a>
-        </div>
-    </section>
-    
-    
-    <!-- Final CTA -->
-    <section id="claim" class="final-cta">
-        <h2>Ready to be discovered?</h2>
-        <p>Join hundreds of local businesses bringing their neighborhoods back to life.</p>
-        <div class="cta-buttons">
-            <a href="index.html#features-content" class="btn-primary">Plot Your Own Location</a>
-        </div>
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <h2>Ready to wander?</h2>
+        <a href="index.html" class="btn-primary">Start Exploring</a>
+        <a href="for-businesses.html" class="btn-primary">I'm a Business Owner</a>
     </section>
 </body>
 </html>
