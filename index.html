@@ -893,7 +893,7 @@
                             <div class="feature-icon">🛍️</div>
                             <h3>Shopping Swarms</h3>
                             <p>Create or join community walks</p>
-                            <button class="feature-btn" onclick="toggleSection('swarm-map-v2')" style="margin-bottom: 0.75rem;">Create Shopping Swarm</button>
+                            <button class="feature-btn" onclick="toggleSection('swarm-map')" style="margin-bottom: 0.75rem;">Create Shopping Swarm</button>
                             <button class="feature-btn" onclick="toggleSection('swarms')">View Swarms</button>
                         </div>
                     </div>
@@ -904,7 +904,7 @@
                             <div class="feature-icon">🎉</div>
                             <h3>Local Events</h3>
                             <p>Promote events or discover celebrations</p>
-                            <button class="feature-btn" onclick="toggleSection('event-map-v2')" style="margin-bottom: 0.75rem;">Promote Your Event</button>
+                            <button class="feature-btn" onclick="toggleSection('event-map')" style="margin-bottom: 0.75rem;">Promote Your Event</button>
                             <button class="feature-btn" onclick="toggleSection('events')">Browse Events</button>
                         </div>
                     </div>
@@ -1975,7 +1975,7 @@
         // Toggle Sections - Opens fullscreen modal with maps
         function toggleSection(sectionId, highlightId = null) {
             // Check auth for creation sections (not browsing)
-            const creationSections = ['journey-map', 'swarm-map', 'event-map', 'swarm-map-v2', 'event-map-v2'];
+            const creationSections = ['journey-map', 'swarm-map', 'event-map'];
             if (creationSections.includes(sectionId)) {
                 if (!checkAuthAndVerification()) {
                     return; // Stop if not authorized
@@ -2018,7 +2018,7 @@
             // Create content based on section
             const mapMode = sectionId.includes('swarm') ? 'swarm' : sectionId.includes('event') ? 'event' : 'journey';
             
-            if (sectionId === 'journey-map' || sectionId === 'swarm-map-v2' || sectionId === 'event-map-v2') {
+            if (sectionId === 'journey-map' || sectionId === 'swarm-map' || sectionId === 'event-map') {
                 // Universal map section - changes based on mode
                 content.style.cssText = 'padding: 0; max-width: none; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column;';
                 
@@ -2221,7 +2221,7 @@
             
             // Initialize maps after DOM is ready
             setTimeout(() => {
-                if (sectionId === 'journey-map' || sectionId === 'swarm-map-v2' || sectionId === 'event-map-v2') {
+                if (sectionId === 'journey-map' || sectionId === 'swarm-map' || sectionId === 'event-map') {
                     const mapElement = document.getElementById('map');
                     if (mapElement && !journeyMap) {
                         journeyMap = L.map(mapElement).setView([39.7392, -104.9903], 13);
