@@ -964,6 +964,9 @@
                 slideshowOverlay.style.display = 'none';
                 document.body.classList.remove('choreography-active');
             }, 500);
+            
+            // Mark slideshow as seen
+            sessionStorage.setItem('flanerie-slideshow-seen', 'true');
         });
         
         document.getElementById('pause-btn').addEventListener('click', function() {
@@ -980,12 +983,12 @@
             startSlideshow();
         });
         
-        // Only start slideshow if no hash or hash is #home
-        const currentHash = window.location.hash;
-        if (!currentHash || currentHash === '' || currentHash === '#home') {
+        // Only show slideshow once per browser session
+        if (!sessionStorage.getItem('flanerie-slideshow-seen')) {
             startSlideshow();
+            sessionStorage.setItem('flanerie-slideshow-seen', 'true');
         } else {
-            // Skip slideshow, hide overlay immediately
+            // Skip slideshow - hide overlay immediately
             const slideshowOverlay = document.getElementById('slideshow-overlay');
             if (slideshowOverlay) {
                 slideshowOverlay.style.display = 'none';
