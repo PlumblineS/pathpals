@@ -1206,21 +1206,46 @@
         }
         
         // Sign up with Email/Password
-        function signUpWithEmail(event) {
+        async function signUpWithEmail(event) {
             event.preventDefault();
             
             const email = document.getElementById('signUpEmail').value;
             const password = document.getElementById('signUpPassword').value;
-            const displayName = document.getElementById('signUpDisplayName').value;
+            const displayName = document.getElementById('signUpDisplayName').value.trim();
             
+            // Validate username format
+            if (!/^[a-zA-Z0-9_]+$/.test(displayName)) {
+                showToast('Username can only contain letters, numbers, and underscores');
+                return;
+            }
+            
+            if (displayName.length < 3 || displayName.length > 20) {
+                showToast('Username must be 3-20 characters');
+                return;
+            }
+            
+            // Check username availability one more time
+            const usernameLower = displayName.toLowerCase();
+            const usernameCheck = await database.ref('usernames/' + usernameLower).once('value');
+            if (usernameCheck.exists()) {
+                showToast('Username is already taken!');
+                return;
+            }
+            
+            // Create account
             auth.createUserWithEmailAndPassword(email, password)
                 .then((userCredential) => {
+                    const user = userCredential.user;
+                    
                     // Set display name
-                    return userCredential.user.updateProfile({
+                    return user.updateProfile({
                         displayName: displayName
                     }).then(() => {
+                        // Save username to database
+                        return database.ref('usernames/' + usernameLower).set(user.uid);
+                    }).then(() => {
                         // Send verification email
-                        return userCredential.user.sendEmailVerification();
+                        return user.sendEmailVerification();
                     });
                 })
                 .then(() => {
@@ -1234,6 +1259,98 @@
                         showToast('Password must be at least 6 characters');
                     } else {
                         showToast('Error creating account');
+                    }
+                });
+        }
+        
+        // Check username availability (live)
+        let usernameCheckTimeout = null;
+        async function checkUsernameAvailability() {
+            const usernameInput = document.getElementById('signUpDisplayName');
+            const statusElement = document.getElementById('usernameStatus');
+            const username = usernameInput.value.trim();
+            
+            // Clear previous timeout
+            if (usernameCheckTimeout) {
+                clearTimeout(usernameCheckTimeout);
+            }
+            
+            // Validate format
+            if (username.length === 0) {
+                statusElement.textContent = '';
+                statusElement.style.color = '#999';
+                return;
+            }
+            
+            if (username.length < 3) {
+                statusElement.textContent = '✗ Too short (min 3 characters)';
+                statusElement.style.color = '#d9534f';
+                return;
+            }
+            
+            if (username.length > 20) {
+                statusElement.textContent = '✗ Too long (max 20 characters)';
+                statusElement.style.color = '#d9534f';
+                return;
+            }
+            
+            if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                statusElement.textContent = '✗ Only letters, numbers, and underscore allowed';
+                statusElement.style.color = '#d9534f';
+                return;
+            }
+            
+            // Show checking status
+            statusElement.textContent = '⏳ Checking...';
+            statusElement.style.color = '#999';
+            
+            // Debounce the database check
+            usernameCheckTimeout = setTimeout(async () => {
+                try {
+                    const usernameLower = username.toLowerCase();
+                    const snapshot = await database.ref('usernames/' + usernameLower).once('value');
+                    
+                    if (snapshot.exists()) {
+                        statusElement.textContent = '✗ Username already taken';
+                        statusElement.style.color = '#d9534f';
+                    } else {
+                        statusElement.textContent = '✓ Username available!';
+                        statusElement.style.color = 'var(--accent-color)';
+                    }
+                } catch (error) {
+                    console.error('Error checking username:', error);
+                    statusElement.textContent = '⚠ Error checking availability';
+                    statusElement.style.color = '#999';
+                }
+            }, 500); // Wait 500ms after user stops typing
+        }
+        
+        // Password reset functions
+        function showForgotPasswordModal() {
+            document.getElementById('signInModal').style.display = 'none';
+            document.getElementById('forgotPasswordModal').style.display = 'flex';
+        }
+        
+        function closeForgotPasswordModal() {
+            document.getElementById('forgotPasswordModal').style.display = 'none';
+            document.getElementById('forgotPasswordForm').reset();
+        }
+        
+        function sendPasswordResetEmail(event) {
+            event.preventDefault();
+            const email = document.getElementById('resetEmail').value;
+            
+            auth.sendPasswordResetEmail(email)
+                .then(() => {
+                    showToast('Password reset email sent! Check your inbox.');
+                    closeForgotPasswordModal();
+                })
+                .catch((error) => {
+                    console.error('Password reset error:', error);
+                    if (error.code === 'auth/user-not-found') {
+                        showToast('No account found with this email');
+                    } else {
+                        showToast('Error sending reset email');
                     }
                 });
         }
@@ -1330,6 +1447,10 @@
         window.switchAuthTab = switchAuthTab;
         window.checkAuthAndVerification = checkAuthAndVerification;
         window.resendVerificationEmail = resendVerificationEmail;
+        window.checkUsernameAvailability = checkUsernameAvailability;
+        window.showForgotPasswordModal = showForgotPasswordModal;
+        window.closeForgotPasswordModal = closeForgotPasswordModal;
+        window.sendPasswordResetEmail = sendPasswordResetEmail;
         
         // ===== DATABASE HELPER FUNCTIONS =====
         // These wrap Firebase calls so we can easily switch databases later
@@ -2943,6 +3064,9 @@
                 }
             }
             
+            const user = auth.currentUser;
+            const displayName = user.displayName || user.email.split('@')[0];
+            
             const routeData = {
                 name: name,
                 description: description,
@@ -2952,7 +3076,9 @@
                 waypointCount: routeCoordinates.length,
                 likes: 0, // Initialize likes counter
                 created: new Date().toISOString(),
-                createdBy: 'anonymous' // Could add user auth later
+                createdBy: user.uid,
+                createdByName: displayName,
+                createdByEmail: user.email
             };
             
             // Save to Firebase
@@ -3618,6 +3744,8 @@
             }
             
             const primaryLocation = window.swarmLocations[0];
+            const user = auth.currentUser;
+            const displayName = user.displayName || user.email.split('@')[0];
             
             const swarmData = {
                 title: formData.get('swarmTitle'),
@@ -3633,7 +3761,11 @@
                 contact: formData.get('swarmContact'),
                 duration: formData.get('swarmDuration'),
                 identifier: formData.get('swarmIdentifier'),
-                interested: 0
+                interested: 0,
+                created: new Date().toISOString(),
+                createdBy: user.uid,
+                createdByName: displayName,
+                createdByEmail: user.email
             };
             
             // Save to Firebase (also keeps localStorage as backup)
@@ -3670,6 +3802,9 @@
                 return;
             }
             
+            const user = auth.currentUser;
+            const displayName = user.displayName || user.email.split('@')[0];
+            
             const eventData = {
                 name: formData.get('eventName'),
                 type: eventType,
@@ -3685,7 +3820,11 @@
                 website: formData.get('eventWebsite'),
                 maxParticipants: formData.get('eventMaxParticipants'),
                 postedBy: formData.get('eventPostedBy'),
-                interested: 0
+                interested: 0,
+                created: new Date().toISOString(),
+                createdBy: user.uid,
+                createdByName: displayName,
+                createdByEmail: user.email
             };
             
             // Save to Firebase (also keeps localStorage as backup)
@@ -4027,6 +4166,7 @@
                 <div style="margin-bottom: 1.5rem;">
                     <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Password</label>
                     <input type="password" id="signInPassword" required style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;">
+                    <a href="javascript:void(0)" onclick="showForgotPasswordModal()" style="display: block; margin-top: 0.5rem; color: var(--accent-light); font-size: 0.9rem; text-decoration: none;">Forgot Password?</a>
                 </div>
                 <button type="submit" class="feature-btn" style="width: 100%;">Sign In</button>
             </form>
@@ -4042,13 +4182,33 @@
                     <input type="password" id="signUpPassword" required minlength="6" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;">
                 </div>
                 <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Display Name</label>
-                    <input type="text" id="signUpDisplayName" required style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="How you'll appear on the map">
+                    <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Username</label>
+                    <input type="text" id="signUpDisplayName" required oninput="checkUsernameAvailability()" pattern="[a-zA-Z0-9_]+" minlength="3" maxlength="20" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="Letters, numbers, underscore only">
+                    <p id="usernameStatus" style="margin-top: 0.5rem; font-size: 0.85rem; color: #999;"></p>
                 </div>
                 <button type="submit" class="feature-btn" style="width: 100%;">Sign Up</button>
                 <p style="color: #999; font-size: 0.85rem; margin-top: 1rem; text-align: center;">
                     You'll receive a verification email after signing up
                 </p>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 450px;">
+            <span class="close" onclick="closeForgotPasswordModal()">&times;</span>
+            <h2 style="text-align: center; color: var(--accent-color); margin-bottom: 1.5rem;">Reset Password</h2>
+            <p style="color: #d4d4d4; margin-bottom: 1.5rem; text-align: center;">
+                Enter your email address and we'll send you a link to reset your password.
+            </p>
+            
+            <form id="forgotPasswordForm" onsubmit="sendPasswordResetEmail(event); return false;">
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Email</label>
+                    <input type="email" id="resetEmail" required style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;">
+                </div>
+                <button type="submit" class="feature-btn" style="width: 100%;">Send Reset Link</button>
             </form>
         </div>
     </div>
