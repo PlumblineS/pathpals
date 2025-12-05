@@ -1533,6 +1533,7 @@
                                 📅 ${new Date(route.created).toLocaleDateString()}
                             </p>
                             <div style="display: flex; gap: 0.5rem;">
+                                <button onclick="viewRouteFromDashboard('${route.id}')" style="flex: 1; padding: 0.5rem; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">View on Map</button>
                                 <button onclick="deleteRoute('${route.id}')" style="padding: 0.5rem 1rem; background: #d9534f; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Delete</button>
                             </div>
                         </div>
@@ -1579,6 +1580,7 @@
                                 ⏱️ ${swarm.duration || 'TBD'}
                             </p>
                             <div style="display: flex; gap: 0.5rem;">
+                                <button onclick="viewSwarmFromDashboard('${swarm.id}')" style="flex: 1; padding: 0.5rem; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">View on Map</button>
                                 <button onclick="deleteSwarm('${swarm.id}')" style="padding: 0.5rem 1rem; background: #d9534f; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Delete</button>
                             </div>
                         </div>
@@ -1625,6 +1627,7 @@
                                 👥 ${event.interested || 0} flâneurs interested
                             </p>
                             <div style="display: flex; gap: 0.5rem;">
+                                <button onclick="viewEventFromDashboard('${event.id}')" style="flex: 1; padding: 0.5rem; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">View on Map</button>
                                 <button onclick="deleteEvent('${event.id}')" style="padding: 0.5rem 1rem; background: #d9534f; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Delete</button>
                             </div>
                         </div>
@@ -1650,7 +1653,7 @@
                 if (key.startsWith('flanerie_liked_') || key.startsWith('flanerie_interested_')) {
                     const value = localStorage.getItem(key);
                     if (value === 'true') {
-                        const match = key.match(/flanerie_(liked|interested)_(route|swarm|event)_(.+)/);
+                        const match = key.match(/flanerie_(liked|interested)_(routes|swarms|events)_(.+)/);
                         if (match) {
                             likedItems.push({
                                 action: match[1],
@@ -1667,35 +1670,65 @@
                 return;
             }
             
-            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">';
-            
+            // Fetch all liked items first
+            const fetchedItems = [];
             for (const item of likedItems) {
                 try {
-                    const snapshot = await database.ref(`${item.type}s/${item.id}`).once('value');
+                    const snapshot = await database.ref(`${item.type}/${item.id}`).once('value');
                     const data = snapshot.val();
-                    
                     if (data) {
-                        const emoji = item.type === 'route' ? '🚶' : item.type === 'swarm' ? '🛍️' : '🎉';
-                        const actionText = item.action === 'liked' ? 'Liked' : 'Interested in';
-                        
-                        html += `
-                            <div style="background: rgba(30, 30, 30, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; padding: 1.5rem;">
-                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                    <span style="font-size: 1.5rem;">${emoji}</span>
-                                    <span style="color: #999; font-size: 0.85rem;">${actionText}</span>
-                                </div>
-                                <h3 style="color: var(--accent-light); margin-bottom: 0.5rem;">${data.name || data.title}</h3>
-                                <p style="color: #d4d4d4; font-size: 0.9rem; margin-bottom: 1rem;">${data.description || 'No description'}</p>
-                            </div>
-                        `;
+                        fetchedItems.push({
+                            ...item,
+                            data: data
+                        });
                     }
                 } catch (error) {
                     console.error('Error loading liked item:', error);
                 }
             }
             
+            if (fetchedItems.length === 0) {
+                contentDiv.innerHTML = '<p style="text-align: center; color: #999;">No liked items found.</p>';
+                return;
+            }
+            
+            // Now render all items
+            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">';
+            
+            fetchedItems.forEach(item => {
+                const emoji = item.type === 'routes' ? '🚶' : item.type === 'swarms' ? '🛍️' : '🎉';
+                const actionText = item.action === 'liked' ? 'Liked' : 'Interested in';
+                
+                html += `
+                    <div style="background: rgba(30, 30, 30, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; padding: 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span style="font-size: 1.5rem;">${emoji}</span>
+                            <span style="color: #999; font-size: 0.85rem;">${actionText}</span>
+                        </div>
+                        <h3 style="color: var(--accent-light); margin-bottom: 0.5rem;">${item.data.name || item.data.title}</h3>
+                        <p style="color: #d4d4d4; font-size: 0.9rem; margin-bottom: 1rem;">${item.data.description || 'No description'}</p>
+                    </div>
+                `;
+            });
+            
             html += '</div>';
             contentDiv.innerHTML = html;
+        }
+        
+        // View items from dashboard on map
+        function viewRouteFromDashboard(routeId) {
+            closeDashboard();
+            toggleSection('search', routeId);
+        }
+        
+        function viewSwarmFromDashboard(swarmId) {
+            closeDashboard();
+            toggleSection('swarms', swarmId);
+        }
+        
+        function viewEventFromDashboard(eventId) {
+            closeDashboard();
+            toggleSection('events', eventId);
         }
         
         // Delete route
@@ -1746,6 +1779,24 @@
             }
         }
         
+        // View route from dashboard
+        function viewRouteFromDashboard(routeId) {
+            closeDashboard();
+            toggleSection('search', routeId);
+        }
+        
+        // View swarm from dashboard
+        function viewSwarmFromDashboard(swarmId) {
+            closeDashboard();
+            toggleSection('swarms', swarmId);
+        }
+        
+        // View event from dashboard
+        function viewEventFromDashboard(eventId) {
+            closeDashboard();
+            toggleSection('events', eventId);
+        }
+        
         // Make dashboard functions globally accessible
         window.openDashboard = openDashboard;
         window.closeDashboard = closeDashboard;
@@ -1757,6 +1808,12 @@
         window.deleteRoute = deleteRoute;
         window.deleteSwarm = deleteSwarm;
         window.deleteEvent = deleteEvent;
+        window.viewRouteFromDashboard = viewRouteFromDashboard;
+        window.viewSwarmFromDashboard = viewSwarmFromDashboard;
+        window.viewEventFromDashboard = viewEventFromDashboard;
+        window.viewRouteFromDashboard = viewRouteFromDashboard;
+        window.viewSwarmFromDashboard = viewSwarmFromDashboard;
+        window.viewEventFromDashboard = viewEventFromDashboard;
         
         // ===== DATABASE HELPER FUNCTIONS =====
         // These wrap Firebase calls so we can easily switch databases later
@@ -2302,24 +2359,25 @@
                         selectedRoute = null; // Reset
                         
                         getAllRoutes().then(routes => {
+                            allRoutesData = []; // Reset global array
                             
                             routes.forEach((route, index) => {
                                 if (route.waypoints && route.waypoints.length >= 2) {
-                                    // Create polyline
+                                    // Create polyline (don't add to map yet)
                                     const polyline = L.polyline(route.waypoints, { 
                                         color: "#8DBCC0", 
                                         weight: 4, 
                                         opacity: 0.7 
-                                    }).addTo(searchMap);
+                                    });
                                     
-                                    // Create plain pin for initial display (first waypoint only)
+                                    // Create plain pin for initial display (first waypoint only) (don't add to map yet)
                                     const plainPinIcon = L.divIcon({
                                         className: 'route-pin',
                                         html: '<div style="background: #0056b3; color: white; border-radius: 50% 50% 50% 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; transform: rotate(-45deg); box-shadow: 0 2px 8px rgba(0,0,0,0.3);"><span style="transform: rotate(45deg);">📍</span></div>',
                                         iconSize: [28, 28],
                                         iconAnchor: [14, 28]
                                     });
-                                    const plainPin = L.marker(route.waypoints[0], { icon: plainPinIcon }).addTo(searchMap);
+                                    const plainPin = L.marker(route.waypoints[0], { icon: plainPinIcon });
                                     
                                     // Create numbered waypoint markers (don't add to map initially)
                                     const markers = [];
@@ -2428,6 +2486,28 @@
                                     });
                                 }
                             });
+                            
+                            // Initially show all routes on map (filter default is "all")
+                            allRoutesData.forEach(routeData => {
+                                routeData.polyline.addTo(searchMap);
+                                routeData.plainPin.addTo(searchMap);
+                            });
+                            
+                            // If we have a highlightId, filter to show only that route
+                            if (highlightId) {
+                                allRoutesData.forEach(routeData => {
+                                    if (routeData.route.id === highlightId) {
+                                        // Keep this route visible and highlighted
+                                        routeData.polyline.fire('click');
+                                    } else {
+                                        // Hide other routes
+                                        searchMap.removeLayer(routeData.polyline);
+                                        if (searchMap.hasLayer(routeData.plainPin)) {
+                                            searchMap.removeLayer(routeData.plainPin);
+                                        }
+                                    }
+                                });
+                            }
                             
                             // Category filter functionality
                             const categoryFilter = document.getElementById('categoryFilter');
@@ -3390,6 +3470,12 @@
         
         // Interest Button Handler
         async function toggleInterest(type, id) {
+            // Check if user is signed in
+            if (!auth.currentUser) {
+                showSignInModal();
+                return;
+            }
+            
             const storageKey = `flanerie_interested_${type}_${id}`;
             const alreadyInterested = localStorage.getItem(storageKey);
             
@@ -3440,6 +3526,12 @@
         
         // Like Button Handler (for routes)
         async function toggleLike(type, id) {
+            // Check if user is signed in
+            if (!auth.currentUser) {
+                showSignInModal();
+                return;
+            }
+            
             const storageKey = `flanerie_liked_${type}_${id}`;
             const alreadyLiked = localStorage.getItem(storageKey);
             
