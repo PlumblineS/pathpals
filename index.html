@@ -1534,6 +1534,7 @@
                             </p>
                             <div style="display: flex; gap: 0.5rem;">
                                 <button onclick="viewRouteFromDashboard('${route.id}')" style="flex: 1; padding: 0.5rem; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">View on Map</button>
+                                <button onclick="editRoute('${route.id}')" style="padding: 0.5rem 1rem; background: #5bc0de; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Edit</button>
                                 <button onclick="deleteRoute('${route.id}')" style="padding: 0.5rem 1rem; background: #d9534f; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Delete</button>
                             </div>
                         </div>
@@ -1581,6 +1582,7 @@
                             </p>
                             <div style="display: flex; gap: 0.5rem;">
                                 <button onclick="viewSwarmFromDashboard('${swarm.id}')" style="flex: 1; padding: 0.5rem; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">View on Map</button>
+                                <button onclick="editSwarm('${swarm.id}')" style="padding: 0.5rem 1rem; background: #5bc0de; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Edit</button>
                                 <button onclick="deleteSwarm('${swarm.id}')" style="padding: 0.5rem 1rem; background: #d9534f; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Delete</button>
                             </div>
                         </div>
@@ -1628,6 +1630,7 @@
                             </p>
                             <div style="display: flex; gap: 0.5rem;">
                                 <button onclick="viewEventFromDashboard('${event.id}')" style="flex: 1; padding: 0.5rem; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">View on Map</button>
+                                <button onclick="editEvent('${event.id}')" style="padding: 0.5rem 1rem; background: #5bc0de; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Edit</button>
                                 <button onclick="deleteEvent('${event.id}')" style="padding: 0.5rem 1rem; background: #d9534f; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Delete</button>
                             </div>
                         </div>
@@ -1797,6 +1800,34 @@
             toggleSection('events', eventId);
         }
         
+        // Edit functions (placeholder - to be implemented)
+        function editRoute(routeId) {
+            showToast('Edit functionality coming soon! For now, you can delete and recreate the route.');
+            // TODO: Implement route editing
+            // 1. Fetch route data from Firebase
+            // 2. Open journey creation map
+            // 3. Pre-fill form with existing data
+            // 4. Update instead of create new
+        }
+        
+        function editSwarm(swarmId) {
+            showToast('Edit functionality coming soon! For now, you can delete and recreate the swarm.');
+            // TODO: Implement swarm editing
+            // 1. Fetch swarm data from Firebase
+            // 2. Open swarm creation map
+            // 3. Pre-fill form and markers with existing data
+            // 4. Update instead of create new
+        }
+        
+        function editEvent(eventId) {
+            showToast('Edit functionality coming soon! For now, you can delete and recreate the event.');
+            // TODO: Implement event editing
+            // 1. Fetch event data from Firebase
+            // 2. Open event creation map
+            // 3. Pre-fill form and marker with existing data
+            // 4. Update instead of create new
+        }
+        
         // Make dashboard functions globally accessible
         window.openDashboard = openDashboard;
         window.closeDashboard = closeDashboard;
@@ -1808,6 +1839,9 @@
         window.deleteRoute = deleteRoute;
         window.deleteSwarm = deleteSwarm;
         window.deleteEvent = deleteEvent;
+        window.editRoute = editRoute;
+        window.editSwarm = editSwarm;
+        window.editEvent = editEvent;
         window.viewRouteFromDashboard = viewRouteFromDashboard;
         window.viewSwarmFromDashboard = viewSwarmFromDashboard;
         window.viewEventFromDashboard = viewEventFromDashboard;
@@ -2034,7 +2068,7 @@
             };
             
             const content = document.createElement('div');
-            content.style.cssText = 'padding: 3rem; max-width: 1600px; margin: 0 auto; padding-bottom: 4rem; height: 100vh; overflow-y: auto;';
+            content.style.cssText = 'padding: 3rem; max-width: 1600px; margin: 0 auto; padding-bottom: 4rem; height: 100vh; overflow: hidden;';
             
             // Create content based on section
             const mapMode = sectionId.includes('swarm') ? 'swarm' : sectionId.includes('event') ? 'event' : 'journey';
@@ -2258,12 +2292,10 @@
                                 addWaypoint(e.latlng);
                             });
                         } else if (mapMode === 'swarm') {
-                            // Initialize swarm markers array
-                            if (!window.swarmMarkers) {
-                                window.swarmMarkers = [];
-                                window.swarmLocations = [];
-                                window.swarmBusinessLabels = [];
-                            }
+                            // Always reset swarm markers array when opening creation map
+                            window.swarmMarkers = [];
+                            window.swarmLocations = [];
+                            window.swarmBusinessLabels = [];
                             
                             // Reset multi-business mode flag
                             window.swarmMultiBusinessMode = false;
@@ -4143,7 +4175,7 @@
             };
             
             // Save to Firebase (also keeps localStorage as backup)
-            saveSwarmToFirebase(swarmData);
+            const newSwarmId = await saveSwarmToFirebase(swarmData);
             
             // Also save to localStorage as backup
             let swarms = JSON.parse(localStorage.getItem('swarms') || '[]');
@@ -4155,6 +4187,21 @@
                 'Shopping Swarm created successfully!';
             showToast(locationText);
             closeCreateSwarmModal();
+            
+            // Close the creation map and open browse swarms with the new swarm highlighted
+            if (newSwarmId) {
+                // Close creation section
+                const modal = document.getElementById('fullscreen-swarm-map-v2');
+                if (modal) {
+                    modal.remove();
+                    document.body.classList.remove('choreography-active');
+                    journeyMap = null;
+                }
+                // Open browse swarms with new swarm highlighted
+                setTimeout(() => {
+                    toggleSection('swarms', newSwarmId);
+                }, 300);
+            }
         }
 
         async function submitEvent(event) {
@@ -4202,7 +4249,7 @@
             };
             
             // Save to Firebase (also keeps localStorage as backup)
-            saveEventToFirebase(eventData);
+            const newEventId = await saveEventToFirebase(eventData);
             
             // Also save to localStorage as backup
             let events = JSON.parse(localStorage.getItem('events') || '[]');
@@ -4211,7 +4258,21 @@
             
             showToast('Event created successfully!');
             closeCreateEventModal();
-            // Don't auto-navigate - user can manually go to events to see it
+            
+            // Close the creation map and open browse events with the new event highlighted
+            if (newEventId) {
+                // Close creation section
+                const modal = document.getElementById('fullscreen-event-map-v2');
+                if (modal) {
+                    modal.remove();
+                    document.body.classList.remove('choreography-active');
+                    journeyMap = null;
+                }
+                // Open browse events with new event highlighted
+                setTimeout(() => {
+                    toggleSection('events', newEventId);
+                }, 300);
+            }
         }
 
         // Interest counter
