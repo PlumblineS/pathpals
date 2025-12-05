@@ -2483,7 +2483,7 @@
                                     });
                                     
                                     // Click handler for highlighting and showing info
-                                    polyline.on('click', function() {
+                                    polyline.on('click', async function() {
                                         // Hide all plain pins and numbered markers from all routes, fade polylines
                                         allRoutesData.forEach(r => {
                                             r.polyline.setStyle({ opacity: 0.3, weight: 3 });
