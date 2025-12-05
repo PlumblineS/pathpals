@@ -2509,9 +2509,18 @@
                                         });
                                         selectedRoute = route;
                                         
-                                        // Check if user already liked this route
-                                        const storageKey = `flanerie_liked_routes_${route.id}`;
-                                        const alreadyLiked = localStorage.getItem(storageKey);
+                                        // Check if user already liked this route in Firebase
+                                        const user = auth.currentUser;
+                                        let alreadyLiked = false;
+                                        if (user) {
+                                            try {
+                                                const likeSnapshot = await database.ref(`userLikes/${user.uid}/routes/${route.id}`).once('value');
+                                                alreadyLiked = likeSnapshot.exists();
+                                            } catch (error) {
+                                                console.error('Error checking like status:', error);
+                                            }
+                                        }
+                                        
                                         const btnState = alreadyLiked ? 
                                             `<button id="route-like-btn-${route.id}" style="background: rgba(107, 155, 158, 0.5); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: default; font-size: 0.9rem;" disabled>❤️ Liked</button>` :
                                             `<button id="route-like-btn-${route.id}" onclick="toggleLike('routes', '${route.id}')" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">❤️ Like Route</button>`;
@@ -2870,14 +2879,23 @@
                                 }
                                 
                                 // Click handler to populate info panel
-                                marker.on('click', function() {
+                                marker.on('click', async function() {
                                     const infoPanel = document.getElementById('swarmInfoPanel');
                                     const infoContent = document.getElementById('swarmInfoContent');
                                     
                                     if (infoPanel && infoContent) {
-                                        // Check if user already marked interest
-                                        const storageKey = `flanerie_interested_swarms_${swarm.id}`;
-                                        const alreadyInterested = localStorage.getItem(storageKey);
+                                        // Check if user already marked interest in Firebase
+                                        const user = auth.currentUser;
+                                        let alreadyInterested = false;
+                                        if (user) {
+                                            try {
+                                                const interestSnapshot = await database.ref(`userInterests/${user.uid}/swarms/${swarm.id}`).once('value');
+                                                alreadyInterested = interestSnapshot.exists();
+                                            } catch (error) {
+                                                console.error('Error checking interest status:', error);
+                                            }
+                                        }
+                                        
                                         const btnState = alreadyInterested ? 
                                             `<button id="swarm-interest-btn-${swarm.id}" style="background: rgba(107, 155, 158, 0.5); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: default; font-size: 0.9rem;" disabled>✓ Interested</button>` :
                                             `<button id="swarm-interest-btn-${swarm.id}" onclick="toggleInterest('swarms', '${swarm.id}')" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">I'm Interested</button>`;
@@ -3049,7 +3067,7 @@
                                 const marker = L.marker([event.lat, event.lng], { icon: eventPinIcon }).addTo(eventMap);
                                 
                                 // Click handler to populate info panel
-                                marker.on('click', function() {
+                                marker.on('click', async function() {
                                     const infoPanel = document.getElementById('eventInfoPanel');
                                     const infoContent = document.getElementById('eventInfoContent');
                                     
@@ -3059,9 +3077,18 @@
                                             dateTimeStr += ` - ${event.endDate || event.startDate}${event.endTime ? ' at ' + event.endTime : ''}`;
                                         }
                                         
-                                        // Check if user already marked interest
-                                        const storageKey = `flanerie_interested_events_${event.id}`;
-                                        const alreadyInterested = localStorage.getItem(storageKey);
+                                        // Check if user already marked interest in Firebase
+                                        const user = auth.currentUser;
+                                        let alreadyInterested = false;
+                                        if (user) {
+                                            try {
+                                                const interestSnapshot = await database.ref(`userInterests/${user.uid}/events/${event.id}`).once('value');
+                                                alreadyInterested = interestSnapshot.exists();
+                                            } catch (error) {
+                                                console.error('Error checking interest status:', error);
+                                            }
+                                        }
+                                        
                                         const btnState = alreadyInterested ? 
                                             `<button id="event-interest-btn-${event.id}" style="background: rgba(107, 155, 158, 0.5); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: default; font-size: 0.9rem;" disabled>✓ Interested</button>` :
                                             `<button id="event-interest-btn-${event.id}" onclick="toggleInterest('events', '${event.id}')" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">I'm Interested</button>`;
