@@ -1862,15 +1862,16 @@
             fetchedItems.forEach(item => {
                 const emoji = item.type === 'routes' ? '🚶' : item.type === 'swarms' ? '🛍️' : '🎉';
                 const actionText = item.action === 'liked' ? 'Liked' : 'Interested in';
+                const sectionMap = { 'routes': 'search', 'swarms': 'swarms', 'events': 'events' };
                 
                 html += `
-                    <div style="background: rgba(30, 30, 30, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; padding: 1.5rem;">
+                    <div onclick="closeDashboard(); toggleSection('${sectionMap[item.type]}', '${item.id}')" style="background: rgba(30, 30, 30, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; padding: 1.5rem; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--accent-color)'" onmouseout="this.style.borderColor='rgba(107, 155, 158, 0.3)'">
                         <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                             <span style="font-size: 1.5rem;">${emoji}</span>
                             <span style="color: #999; font-size: 0.85rem;">${actionText}</span>
                         </div>
                         <h3 style="color: var(--accent-light); margin-bottom: 0.5rem;">${item.data.name || item.data.title}</h3>
-                        <p style="color: #d4d4d4; font-size: 0.9rem; margin-bottom: 1rem;">${item.data.description || 'No description'}</p>
+                        <p style="color: #d4d4d4; font-size: 0.9rem; margin-bottom: 0;">${item.data.description || 'No description'}</p>
                     </div>
                 `;
             });
@@ -2652,12 +2653,12 @@
                                                 waypointsHTML = `<p style="color: #999; margin-top: 1rem;">📍 ${route.waypointCount} waypoints</p>`;
                                             }
                                             
-                                            // Get route count for this user
-                                            const routeCount = await getUserRouteCount(route.createdBy);
+                                            // Get total content count for this user (routes + swarms + events)
+                                            const totalCount = await getUserTotalContentCount(route.createdBy);
                                             const username = await getUsernameFromId(route.createdBy);
                                             const userDisplay = username === 'Deleted User' ? 
                                                 `<span style="color: #999; font-size: 0.85rem;">👤 Deleted User</span>` :
-                                                `<span style="color: var(--accent-light); font-size: 0.85rem; cursor: pointer; text-decoration: underline;" onclick="viewUserRoutes('${route.createdBy}', '${username}')" title="View all routes by ${username}">👤 ${username}(${routeCount})</span>`;
+                                                `<span style="color: var(--accent-light); font-size: 0.85rem; cursor: pointer; text-decoration: underline;" onclick="viewUserRoutes('${route.createdBy}', '${username}')" title="View all content by ${username}">👤 ${username}(${totalCount})</span>`;
                                             
                                             infoContent.innerHTML = `
                                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 2px solid rgba(107, 155, 158, 0.3);">
@@ -3019,12 +3020,12 @@
                                             `<button id="swarm-interest-btn-${swarm.id}" style="background: rgba(107, 155, 158, 0.5); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: default; font-size: 0.9rem;" disabled>✓ Interested</button>` :
                                             `<button id="swarm-interest-btn-${swarm.id}" onclick="toggleInterest('swarms', '${swarm.id}')" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">I'm Interested</button>`;
                                         
-                                        // Get swarm count for this user
-                                        const swarmCount = await getUserSwarmCount(swarm.createdBy);
+                                        // Get total content count for this user (routes + swarms + events)
+                                        const totalCount = await getUserTotalContentCount(swarm.createdBy);
                                         const username = await getUsernameFromId(swarm.createdBy);
                                         const userDisplay = username === 'Deleted User' ? 
                                             `<p style="color: #999; font-size: 0.85rem; margin: 0.5rem 0;">👤 Deleted User</p>` :
-                                            `<p style="color: var(--accent-light); font-size: 0.85rem; margin: 0.5rem 0; cursor: pointer; text-decoration: underline;" onclick="showToast('Filtering by user coming soon!')" title="View all swarms by ${username}">👤 Organized by: ${username}(${swarmCount})</p>`;
+                                            `<p style="color: var(--accent-light); font-size: 0.85rem; margin: 0.5rem 0; cursor: pointer; text-decoration: underline;" onclick="showToast('View all content by ${username} coming soon!')" title="View all content by ${username}">👤 Organized by: ${username}(${totalCount})</p>`;
                                         
                                         infoContent.innerHTML = `
                                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 2px solid rgba(107, 155, 158, 0.3);">
@@ -3220,12 +3221,12 @@
                                             `<button id="event-interest-btn-${event.id}" style="background: rgba(107, 155, 158, 0.5); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: default; font-size: 0.9rem;" disabled>✓ Interested</button>` :
                                             `<button id="event-interest-btn-${event.id}" onclick="toggleInterest('events', '${event.id}')" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">I'm Interested</button>`;
                                         
-                                        // Get event count for this user
-                                        const eventCount = await getUserEventCount(event.createdBy);
+                                        // Get total content count for this user (routes + swarms + events)
+                                        const totalCount = await getUserTotalContentCount(event.createdBy);
                                         const username = await getUsernameFromId(event.createdBy);
                                         const userDisplay = username === 'Deleted User' ? 
                                             `<p style="color: #999; font-size: 0.85rem; margin: 0.5rem 0;">👤 Deleted User</p>` :
-                                            `<p style="color: var(--accent-light); font-size: 0.85rem; margin: 0.5rem 0; cursor: pointer; text-decoration: underline;" onclick="showToast('Filtering by user coming soon!')" title="View all events by ${username}">👤 Posted by: ${username}(${eventCount})</p>`;
+                                            `<p style="color: var(--accent-light); font-size: 0.85rem; margin: 0.5rem 0; cursor: pointer; text-decoration: underline;" onclick="showToast('View all content by ${username} coming soon!')" title="View all content by ${username}">👤 Posted by: ${username}(${totalCount})</p>`;
                                         
                                         infoContent.innerHTML = `
                                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 2px solid rgba(107, 155, 158, 0.3);">
@@ -3239,8 +3240,8 @@
                                             <p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">📍 Location:</strong> ${event.location}</p>
                                             <p style="color: #d4d4d4; margin: 0.5rem 0;"><strong style="color: var(--accent-light);">📅 When:</strong> ${dateTimeStr}</p>
                                             ${event.description ? `<p style="color: #d4d4d4; margin: 0.8rem 0; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word;">${event.description}</p>` : ''}
-                                            ${event.postedBy ? `<p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">📢 Posted by:</strong> ${event.postedBy}</p>` : ''}
-                                            ${event.contact ? `<p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">📧 Contact:</strong> ${event.contact}</p>` : ''}
+                                            ${event.postedBy ? `<p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">👤 Contact Name:</strong> ${event.postedBy}</p>` : ''}
+                                            ${event.contact ? `<p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">📧 Contact Email:</strong> ${event.contact}</p>` : ''}
                                             ${event.website ? `<p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">🔗 Website:</strong> <a href="${event.website}" target="_blank" style="color: var(--accent-light); word-break: break-all;">${event.website}</a></p>` : ''}
                                             ${event.maxParticipants ? `<p style="color: #d4d4d4; margin: 0.5rem 0;"><strong style="color: var(--accent-light);">👥 Max Participants:</strong> ${event.maxParticipants}</p>` : ''}
                                             <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(107, 155, 158, 0.2);">
@@ -3733,13 +3734,25 @@
                 }
                 
                 const routesRef = window.database.ref('routes');
-                await routesRef.push(routeData);
+                const newRouteRef = await routesRef.push(routeData);
+                const newRouteId = newRouteRef.key;
                 
                 document.getElementById('saveRouteModal').remove();
                 showToast(`Route "${name}" saved successfully!`);
                 
-                // Lock the map from further editing
-                lockMapAfterSave('journey');
+                // Close the creation map and open browse routes with the new route highlighted
+                if (newRouteId) {
+                    // Close creation section
+                    const modal = document.getElementById('fullscreen-journey-map');
+                    if (modal) {
+                        modal.style.display = 'none';
+                        modal.remove();
+                        document.body.classList.remove('choreography-active');
+                        journeyMap = null;
+                    }
+                    // Open browse routes immediately showing the new route
+                    toggleSection('search', newRouteId);
+                }
             } catch (error) {
                 console.error('❌ Error saving route:', error);
                 console.error('Route data:', routeData);
@@ -3753,42 +3766,6 @@
         window.clearEvent = clearEvent;
         window.openSaveRouteModal = openSaveRouteModal;
         window.confirmSaveRoute = confirmSaveRoute;
-        
-        // Lock map after successful save to prevent confusion
-        function lockMapAfterSave(mapType) {
-            if (mapType === 'journey') {
-                // Disable map click event
-                if (journeyMap) {
-                    journeyMap.off('click');
-                }
-                
-                // Hide Save and Clear buttons
-                const saveBtn = document.querySelector('#fullscreen-journey-map .feature-btn[onclick*="openSaveRouteModal"]');
-                const clearBtn = document.querySelector('#fullscreen-journey-map .feature-btn[onclick*="clearRoute"]');
-                
-                if (saveBtn) saveBtn.style.display = 'none';
-                if (clearBtn) clearBtn.style.display = 'none';
-                
-                // Add a "Done" button to close the map
-                const controlPanel = document.querySelector('#fullscreen-journey-map .feature-btn')?.parentElement;
-                if (controlPanel) {
-                    const doneBtn = document.createElement('button');
-                    doneBtn.className = 'feature-btn';
-                    doneBtn.textContent = 'Done';
-                    doneBtn.style.cssText = 'background: linear-gradient(135deg, var(--accent-color), var(--accent-light)); color: white;';
-                    doneBtn.onclick = () => {
-                        const modal = document.getElementById('fullscreen-journey-map');
-                        if (modal) {
-                            modal.remove();
-                            document.body.classList.remove('choreography-active');
-                            journeyMap = null;
-                        }
-                    };
-                    controlPanel.appendChild(doneBtn);
-                }
-            }
-        }
-        window.lockMapAfterSave = lockMapAfterSave;
         
         // Helper function to get username from userId
         async function getUsernameFromId(userId) {
@@ -3817,6 +3794,27 @@
                 return count;
             } catch (error) {
                 console.error('Error counting routes:', error);
+                return 0;
+            }
+        }
+        
+        // Helper function to get TOTAL content count (routes + swarms + events)
+        async function getUserTotalContentCount(userId) {
+            try {
+                const [routes, swarms, events] = await Promise.all([
+                    database.ref('routes').orderByChild('createdBy').equalTo(userId).once('value'),
+                    database.ref('swarms').orderByChild('createdBy').equalTo(userId).once('value'),
+                    database.ref('events').orderByChild('createdBy').equalTo(userId).once('value')
+                ]);
+                
+                let totalCount = 0;
+                routes.forEach(() => totalCount++);
+                swarms.forEach(() => totalCount++);
+                events.forEach(() => totalCount++);
+                
+                return totalCount;
+            } catch (error) {
+                console.error('Error counting total content:', error);
                 return 0;
             }
         }
