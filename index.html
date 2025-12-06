@@ -687,7 +687,7 @@
         /* Modal Styles */
         .modal {
             position: fixed;
-            z-index: 3000;
+            z-index: 2000;
             left: 0;
             top: 0;
             width: 100%;
@@ -797,7 +797,6 @@
                 <button id="sign-in-btn" class="auth-btn" onclick="showSignInModal()">Sign In</button>
                 <div id="user-info" style="display: none;">
                     <span id="user-name" style="color: var(--accent-light); margin-right: 1rem;">Hi, User!</span>
-                    <button class="auth-btn" onclick="openDashboard()" style="margin-right: 0.5rem;">Dashboard</button>
                     <button id="sign-out-btn" class="auth-btn" onclick="signOut()">Sign Out</button>
                 </div>
             </div>
@@ -807,9 +806,8 @@
     <!-- Email Verification Banner -->
     <div id="verification-banner" style="display: none; position: fixed; top: 80px; left: 0; right: 0; background: linear-gradient(135deg, rgba(255, 152, 0, 0.95), rgba(255, 193, 7, 0.95)); padding: 1rem 2rem; text-align: center; z-index: 999; border-bottom: 2px solid rgba(255, 152, 0, 0.5);">
         <p style="margin: 0; color: #000; font-weight: 600; font-size: 1rem;">
-            ✅ You're signed in! 📧 Check your email and click the verification link to start posting. 
-            <a href="javascript:void(0)" onclick="checkVerificationStatus()" style="color: #000; text-decoration: underline; font-weight: 700; cursor: pointer; margin-left: 1rem;">↻ Refresh Status</a> | 
-            <a href="javascript:void(0)" onclick="resendVerificationEmail()" style="color: #000; text-decoration: underline; font-weight: 700; cursor: pointer;">Resend email</a>
+            📧 Please verify your email to start posting. 
+            <a href="javascript:void(0)" onclick="resendVerificationEmail()" style="color: #000; text-decoration: underline; font-weight: 700; cursor: pointer;">Resend verification email</a>
         </p>
     </div>
     
@@ -1134,7 +1132,7 @@
         // ===== FIREBASE AUTHENTICATION =====
         
         // Auth state listener - runs when user signs in/out
-        auth.onAuthStateChanged(async function(user) {
+        auth.onAuthStateChanged(function(user) {
             if (user) {
                 // User is signed in
                 console.log('User signed in:', user.email);
@@ -1143,9 +1141,9 @@
                 document.getElementById('sign-in-btn').style.display = 'none';
                 document.getElementById('user-info').style.display = 'flex';
                 
-                // Show username instead of email
-                const username = await getUsernameFromId(user.uid);
-                document.getElementById('user-name').textContent = `Hi, ${username}!`;
+                // Show display name or email
+                const displayName = user.displayName || user.email.split('@')[0];
+                document.getElementById('user-name').textContent = `Hi, ${displayName}!`;
                 
                 // Show verification banner if email not verified (only for email/password users)
                 const isEmailPasswordUser = user.providerData[0].providerId === 'password';
@@ -1168,27 +1166,6 @@
                 
                 // Hide verification banner
                 document.getElementById('verification-banner').style.display = 'none';
-            }
-        });
-        
-        // Refresh auth state when user returns to tab (to detect email verification)
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden && auth.currentUser) {
-                // Tab became visible, reload the user's auth state
-                auth.currentUser.reload().then(() => {
-                    const user = auth.currentUser;
-                    const isEmailPasswordUser = user.providerData[0].providerId === 'password';
-                    const verificationBanner = document.getElementById('verification-banner');
-                    
-                    // Update verification banner based on current state
-                    if (isEmailPasswordUser && !user.emailVerified) {
-                        verificationBanner.style.display = 'block';
-                    } else {
-                        verificationBanner.style.display = 'none';
-                    }
-                }).catch(error => {
-                    console.error('Error reloading user:', error);
-                });
             }
         });
         
@@ -1268,13 +1245,11 @@
                         return database.ref('usernames/' + usernameLower).set(user.uid);
                     }).then(() => {
                         // Send verification email
-                        console.log('Sending verification email to:', user.email);
                         return user.sendEmailVerification();
                     });
                 })
                 .then(() => {
-                    console.log('Sign-up complete, verification email sent');
-                    showToast('Account created! You\'re signed in. Check your email for verification link.');
+                    showToast('Account created! Please check your email to verify.');
                 })
                 .catch((error) => {
                     console.error('Sign-up error:', error);
@@ -1332,16 +1307,7 @@
             // Debounce the database check
             usernameCheckTimeout = setTimeout(async () => {
                 try {
-                    // Check if database is initialized
-                    if (!database) {
-                        console.error('Firebase database not initialized');
-                        statusElement.textContent = '⚠ Database not connected';
-                        statusElement.style.color = '#d9534f';
-                        return;
-                    }
-                    
                     const usernameLower = username.toLowerCase();
-                    console.log('Checking username:', usernameLower);
                     const snapshot = await database.ref('usernames/' + usernameLower).once('value');
                     
                     if (snapshot.exists()) {
@@ -1353,9 +1319,8 @@
                     }
                 } catch (error) {
                     console.error('Error checking username:', error);
-                    console.error('Error details:', error.message, error.code);
-                    statusElement.textContent = '⚠ Error: ' + (error.message || 'Connection failed');
-                    statusElement.style.color = '#d9534f';
+                    statusElement.textContent = '⚠ Error checking availability';
+                    statusElement.style.color = '#999';
                 }
             }, 500); // Wait 500ms after user stops typing
         }
@@ -1437,52 +1402,16 @@
         function resendVerificationEmail() {
             const user = auth.currentUser;
             if (user && !user.emailVerified) {
-                console.log('Attempting to send verification email to:', user.email);
                 user.sendEmailVerification()
                     .then(() => {
-                        console.log('Verification email sent successfully');
                         showToast('Verification email sent! Check your inbox.');
                     })
                     .catch((error) => {
                         console.error('Error sending verification:', error);
-                        console.error('Error code:', error.code);
-                        console.error('Error message:', error.message);
-                        showToast('Error: ' + (error.message || 'Failed to send verification email'));
+                        showToast('Error sending verification email');
                     });
-            } else if (user && user.emailVerified) {
-                console.log('User is already verified');
-                showToast('Email already verified!');
-            } else {
-                console.error('No user found');
-                showToast('Please sign in first');
             }
         }
-        
-        // Check verification status manually
-        function checkVerificationStatus() {
-            const user = auth.currentUser;
-            if (!user) {
-                showToast('Please sign in first');
-                return;
-            }
-            
-            showToast('Checking verification status...');
-            user.reload().then(() => {
-                const updatedUser = auth.currentUser;
-                const verificationBanner = document.getElementById('verification-banner');
-                
-                if (updatedUser.emailVerified) {
-                    verificationBanner.style.display = 'none';
-                    showToast('✅ Email verified! You can now start posting.');
-                } else {
-                    showToast('Email not yet verified. Please check your inbox and click the link.');
-                }
-            }).catch((error) => {
-                console.error('Error checking verification:', error);
-                showToast('Error checking verification status');
-            });
-        }
-        window.checkVerificationStatus = checkVerificationStatus;
         
         // Switch between Sign In and Sign Up tabs
         function switchAuthTab(tab) {
@@ -1522,430 +1451,6 @@
         window.showForgotPasswordModal = showForgotPasswordModal;
         window.closeForgotPasswordModal = closeForgotPasswordModal;
         window.sendPasswordResetEmail = sendPasswordResetEmail;
-        
-        // ===== DASHBOARD FUNCTIONS =====
-        
-        // Open dashboard
-        async function openDashboard() {
-            const user = auth.currentUser;
-            if (!user) {
-                showSignInModal();
-                return;
-            }
-            
-            document.getElementById('dashboardModal').style.display = 'flex';
-            switchDashboardTab('routes');
-        }
-        
-        // Close dashboard
-        function closeDashboard() {
-            document.getElementById('dashboardModal').style.display = 'none';
-        }
-        
-        // Switch dashboard tabs
-        function switchDashboardTab(tab) {
-            // Update tab buttons
-            document.querySelectorAll('.dashboard-tab').forEach(btn => {
-                btn.style.color = '#999';
-                btn.style.borderBottom = '3px solid transparent';
-            });
-            document.getElementById(tab + 'Tab').style.color = 'var(--accent-light)';
-            document.getElementById(tab + 'Tab').style.borderBottom = '3px solid var(--accent-color)';
-            
-            // Update content sections
-            document.querySelectorAll('.dashboard-section').forEach(section => {
-                section.style.display = 'none';
-            });
-            document.getElementById(tab + 'Content').style.display = 'block';
-            
-            // Load content based on tab
-            if (tab === 'routes') {
-                loadMyRoutes();
-            } else if (tab === 'swarms') {
-                loadMySwarms();
-            } else if (tab === 'events') {
-                loadMyEvents();
-            } else if (tab === 'likes') {
-                loadMyLikes();
-            }
-        }
-        
-        // Load user's routes
-        async function loadMyRoutes() {
-            const user = auth.currentUser;
-            if (!user) return;
-            
-            const contentDiv = document.getElementById('routesContent');
-            contentDiv.innerHTML = '<p style="text-align: center; color: #999;">Loading...</p>';
-            
-            try {
-                const snapshot = await database.ref('routes').orderByChild('createdBy').equalTo(user.uid).once('value');
-                const routes = [];
-                snapshot.forEach(child => {
-                    routes.push({ id: child.key, ...child.val() });
-                });
-                
-                if (routes.length === 0) {
-                    contentDiv.innerHTML = '<p style="text-align: center; color: #999;">You haven\'t created any routes yet.</p>';
-                    return;
-                }
-                
-                let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">';
-                routes.forEach(route => {
-                    html += `
-                        <div style="background: rgba(30, 30, 30, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; padding: 1.5rem;">
-                            <h3 style="color: var(--accent-light); margin-bottom: 0.5rem;">${route.name}</h3>
-                            <p style="color: #d4d4d4; font-size: 0.9rem; margin-bottom: 0.5rem;">${route.description || 'No description'}</p>
-                            <p style="color: #999; font-size: 0.85rem; margin-bottom: 1rem;">
-                                📍 ${route.waypointCount} waypoints<br>
-                                🗂️ ${route.category || 'Uncategorized'}<br>
-                                ❤️ ${route.likes || 0} flâneurs like this route<br>
-                                📅 ${new Date(route.created).toLocaleDateString()}
-                            </p>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button onclick="viewRouteFromDashboard('${route.id}')" style="flex: 1; padding: 0.5rem; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">View on Map</button>
-                                <button onclick="editRoute('${route.id}')" style="padding: 0.5rem 1rem; background: #5bc0de; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Edit</button>
-                                <button onclick="deleteRoute('${route.id}')" style="padding: 0.5rem 1rem; background: #d9534f; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Delete</button>
-                            </div>
-                        </div>
-                    `;
-                });
-                html += '</div>';
-                contentDiv.innerHTML = html;
-            } catch (error) {
-                console.error('Error loading routes:', error);
-                contentDiv.innerHTML = '<p style="text-align: center; color: #d9534f;">Error loading routes</p>';
-            }
-        }
-        
-        // Load user's swarms
-        async function loadMySwarms() {
-            const user = auth.currentUser;
-            if (!user) return;
-            
-            const contentDiv = document.getElementById('swarmsContent');
-            contentDiv.innerHTML = '<p style="text-align: center; color: #999;">Loading...</p>';
-            
-            try {
-                const snapshot = await database.ref('swarms').orderByChild('createdBy').equalTo(user.uid).once('value');
-                const swarms = [];
-                snapshot.forEach(child => {
-                    swarms.push({ id: child.key, ...child.val() });
-                });
-                
-                if (swarms.length === 0) {
-                    contentDiv.innerHTML = '<p style="text-align: center; color: #999;">You haven\'t created any swarms yet.</p>';
-                    return;
-                }
-                
-                let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">';
-                swarms.forEach(swarm => {
-                    html += `
-                        <div style="background: rgba(30, 30, 30, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; padding: 1.5rem;">
-                            <h3 style="color: var(--accent-light); margin-bottom: 0.5rem;">${swarm.title}</h3>
-                            <p style="color: #d4d4d4; font-size: 0.9rem; margin-bottom: 0.5rem;">${swarm.description || 'No description'}</p>
-                            <p style="color: #999; font-size: 0.85rem; margin-bottom: 1rem;">
-                                📍 ${swarm.locationCount || 1} location${swarm.locationCount > 1 ? 's' : ''}<br>
-                                📅 ${swarm.date} at ${swarm.time}<br>
-                                👥 ${swarm.interested || 0} flâneurs interested<br>
-                                ⏱️ ${swarm.duration || 'TBD'}
-                            </p>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button onclick="viewSwarmFromDashboard('${swarm.id}')" style="flex: 1; padding: 0.5rem; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">View on Map</button>
-                                <button onclick="editSwarm('${swarm.id}')" style="padding: 0.5rem 1rem; background: #5bc0de; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Edit</button>
-                                <button onclick="deleteSwarm('${swarm.id}')" style="padding: 0.5rem 1rem; background: #d9534f; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Delete</button>
-                            </div>
-                        </div>
-                    `;
-                });
-                html += '</div>';
-                contentDiv.innerHTML = html;
-            } catch (error) {
-                console.error('Error loading swarms:', error);
-                contentDiv.innerHTML = '<p style="text-align: center; color: #d9534f;">Error loading swarms</p>';
-            }
-        }
-        
-        // Load user's events
-        async function loadMyEvents() {
-            const user = auth.currentUser;
-            if (!user) return;
-            
-            const contentDiv = document.getElementById('eventsContent');
-            contentDiv.innerHTML = '<p style="text-align: center; color: #999;">Loading...</p>';
-            
-            try {
-                const snapshot = await database.ref('events').orderByChild('createdBy').equalTo(user.uid).once('value');
-                const events = [];
-                snapshot.forEach(child => {
-                    events.push({ id: child.key, ...child.val() });
-                });
-                
-                if (events.length === 0) {
-                    contentDiv.innerHTML = '<p style="text-align: center; color: #999;">You haven\'t created any events yet.</p>';
-                    return;
-                }
-                
-                let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">';
-                events.forEach(event => {
-                    html += `
-                        <div style="background: rgba(30, 30, 30, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; padding: 1.5rem;">
-                            <h3 style="color: var(--accent-light); margin-bottom: 0.5rem;">${event.name}</h3>
-                            <p style="color: #d4d4d4; font-size: 0.9rem; margin-bottom: 0.5rem;">${event.description || 'No description'}</p>
-                            <p style="color: #999; font-size: 0.85rem; margin-bottom: 1rem;">
-                                🏷️ ${event.type}<br>
-                                📍 ${event.location}<br>
-                                📅 ${event.startDate} at ${event.startTime}<br>
-                                👥 ${event.interested || 0} flâneurs interested
-                            </p>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button onclick="viewEventFromDashboard('${event.id}')" style="flex: 1; padding: 0.5rem; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">View on Map</button>
-                                <button onclick="editEvent('${event.id}')" style="padding: 0.5rem 1rem; background: #5bc0de; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Edit</button>
-                                <button onclick="deleteEvent('${event.id}')" style="padding: 0.5rem 1rem; background: #d9534f; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Delete</button>
-                            </div>
-                        </div>
-                    `;
-                });
-                html += '</div>';
-                contentDiv.innerHTML = html;
-            } catch (error) {
-                console.error('Error loading events:', error);
-                contentDiv.innerHTML = '<p style="text-align: center; color: #d9534f;">Error loading events</p>';
-            }
-        }
-        
-        // Load user's likes
-        async function loadMyLikes() {
-            const contentDiv = document.getElementById('likesContent');
-            contentDiv.innerHTML = '<div style="text-align: center; color: #999;"><p>Loading your likes...</p></div>';
-            
-            const user = auth.currentUser;
-            if (!user) {
-                contentDiv.innerHTML = '<p style="text-align: center; color: #d9534f;">Please sign in to view your likes</p>';
-                return;
-            }
-            
-            const userId = user.uid;
-            const likedItems = [];
-            
-            try {
-                // Get user's likes from Firebase
-                const likesSnapshot = await database.ref(`userLikes/${userId}`).once('value');
-                if (likesSnapshot.exists()) {
-                    likesSnapshot.forEach((typeSnapshot) => {
-                        const type = typeSnapshot.key; // routes, swarms, events
-                        typeSnapshot.forEach((itemSnapshot) => {
-                            const itemId = itemSnapshot.key;
-                            likedItems.push({
-                                action: 'liked',
-                                type: type,
-                                id: itemId
-                            });
-                        });
-                    });
-                }
-                
-                // Get user's interests from Firebase
-                const interestsSnapshot = await database.ref(`userInterests/${userId}`).once('value');
-                if (interestsSnapshot.exists()) {
-                    interestsSnapshot.forEach((typeSnapshot) => {
-                        const type = typeSnapshot.key; // swarms, events
-                        typeSnapshot.forEach((itemSnapshot) => {
-                            const itemId = itemSnapshot.key;
-                            likedItems.push({
-                                action: 'interested',
-                                type: type,
-                                id: itemId
-                            });
-                        });
-                    });
-                }
-            } catch (error) {
-                console.error('Error loading user likes:', error);
-                contentDiv.innerHTML = '<p style="text-align: center; color: #d9534f;">Error loading likes</p>';
-                return;
-            }
-            
-            if (likedItems.length === 0) {
-                contentDiv.innerHTML = '<p style="text-align: center; color: #999;">You haven\'t liked anything yet. Explore and like routes, swarms, or events!</p>';
-                return;
-            }
-            
-            // Fetch all liked items first
-            const fetchedItems = [];
-            for (const item of likedItems) {
-                try {
-                    const snapshot = await database.ref(`${item.type}/${item.id}`).once('value');
-                    const data = snapshot.val();
-                    if (data) {
-                        fetchedItems.push({
-                            ...item,
-                            data: data
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error loading liked item:', error);
-                }
-            }
-            
-            if (fetchedItems.length === 0) {
-                contentDiv.innerHTML = '<p style="text-align: center; color: #999;">No liked items found.</p>';
-                return;
-            }
-            
-            // Now render all items
-            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">';
-            
-            fetchedItems.forEach(item => {
-                const emoji = item.type === 'routes' ? '🚶' : item.type === 'swarms' ? '🛍️' : '🎉';
-                const actionText = item.action === 'liked' ? 'Liked' : 'Interested in';
-                
-                html += `
-                    <div style="background: rgba(30, 30, 30, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; padding: 1.5rem;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <span style="font-size: 1.5rem;">${emoji}</span>
-                            <span style="color: #999; font-size: 0.85rem;">${actionText}</span>
-                        </div>
-                        <h3 style="color: var(--accent-light); margin-bottom: 0.5rem;">${item.data.name || item.data.title}</h3>
-                        <p style="color: #d4d4d4; font-size: 0.9rem; margin-bottom: 1rem;">${item.data.description || 'No description'}</p>
-                    </div>
-                `;
-            });
-            
-            html += '</div>';
-            contentDiv.innerHTML = html;
-        }
-        
-        // View items from dashboard on map
-        function viewRouteFromDashboard(routeId) {
-            closeDashboard();
-            toggleSection('search', routeId);
-        }
-        
-        function viewSwarmFromDashboard(swarmId) {
-            closeDashboard();
-            toggleSection('swarms', swarmId);
-        }
-        
-        function viewEventFromDashboard(eventId) {
-            closeDashboard();
-            toggleSection('events', eventId);
-        }
-        
-        // Delete route
-        async function deleteRoute(routeId) {
-            if (!confirm('Are you sure you want to delete this route? This cannot be undone.')) {
-                return;
-            }
-            
-            try {
-                await database.ref(`routes/${routeId}`).remove();
-                showToast('Route deleted successfully');
-                loadMyRoutes();
-            } catch (error) {
-                console.error('Error deleting route:', error);
-                showToast('Error deleting route');
-            }
-        }
-        
-        // Delete swarm
-        async function deleteSwarm(swarmId) {
-            if (!confirm('Are you sure you want to delete this swarm? This cannot be undone.')) {
-                return;
-            }
-            
-            try {
-                await database.ref(`swarms/${swarmId}`).remove();
-                showToast('Swarm deleted successfully');
-                loadMySwarms();
-            } catch (error) {
-                console.error('Error deleting swarm:', error);
-                showToast('Error deleting swarm');
-            }
-        }
-        
-        // Delete event
-        async function deleteEvent(eventId) {
-            if (!confirm('Are you sure you want to delete this event? This cannot be undone.')) {
-                return;
-            }
-            
-            try {
-                await database.ref(`events/${eventId}`).remove();
-                showToast('Event deleted successfully');
-                loadMyEvents();
-            } catch (error) {
-                console.error('Error deleting event:', error);
-                showToast('Error deleting event');
-            }
-        }
-        
-        // View route from dashboard
-        function viewRouteFromDashboard(routeId) {
-            closeDashboard();
-            toggleSection('search', routeId);
-        }
-        
-        // View swarm from dashboard
-        function viewSwarmFromDashboard(swarmId) {
-            closeDashboard();
-            toggleSection('swarms', swarmId);
-        }
-        
-        // View event from dashboard
-        function viewEventFromDashboard(eventId) {
-            closeDashboard();
-            toggleSection('events', eventId);
-        }
-        
-        // Edit functions (placeholder - to be implemented)
-        function editRoute(routeId) {
-            showToast('Edit functionality coming soon! For now, you can delete and recreate the route.');
-            // TODO: Implement route editing
-            // 1. Fetch route data from Firebase
-            // 2. Open journey creation map
-            // 3. Pre-fill form with existing data
-            // 4. Update instead of create new
-        }
-        
-        function editSwarm(swarmId) {
-            showToast('Edit functionality coming soon! For now, you can delete and recreate the swarm.');
-            // TODO: Implement swarm editing
-            // 1. Fetch swarm data from Firebase
-            // 2. Open swarm creation map
-            // 3. Pre-fill form and markers with existing data
-            // 4. Update instead of create new
-        }
-        
-        function editEvent(eventId) {
-            showToast('Edit functionality coming soon! For now, you can delete and recreate the event.');
-            // TODO: Implement event editing
-            // 1. Fetch event data from Firebase
-            // 2. Open event creation map
-            // 3. Pre-fill form and marker with existing data
-            // 4. Update instead of create new
-        }
-        
-        // Make dashboard functions globally accessible
-        window.openDashboard = openDashboard;
-        window.closeDashboard = closeDashboard;
-        window.switchDashboardTab = switchDashboardTab;
-        window.loadMyRoutes = loadMyRoutes;
-        window.loadMySwarms = loadMySwarms;
-        window.loadMyEvents = loadMyEvents;
-        window.loadMyLikes = loadMyLikes;
-        window.deleteRoute = deleteRoute;
-        window.deleteSwarm = deleteSwarm;
-        window.deleteEvent = deleteEvent;
-        window.editRoute = editRoute;
-        window.editSwarm = editSwarm;
-        window.editEvent = editEvent;
-        window.viewRouteFromDashboard = viewRouteFromDashboard;
-        window.viewSwarmFromDashboard = viewSwarmFromDashboard;
-        window.viewEventFromDashboard = viewEventFromDashboard;
-        window.viewRouteFromDashboard = viewRouteFromDashboard;
-        window.viewSwarmFromDashboard = viewSwarmFromDashboard;
-        window.viewEventFromDashboard = viewEventFromDashboard;
         
         // ===== DATABASE HELPER FUNCTIONS =====
         // These wrap Firebase calls so we can easily switch databases later
@@ -2128,7 +1633,7 @@
         // Toggle Sections - Opens fullscreen modal with maps
         function toggleSection(sectionId, highlightId = null) {
             // Check auth for creation sections (not browsing)
-            const creationSections = ['journey-map', 'swarm-map', 'event-map', 'swarm-map-v2', 'event-map-v2'];
+            const creationSections = ['journey-map', 'swarm-map', 'event-map'];
             if (creationSections.includes(sectionId)) {
                 if (!checkAuthAndVerification()) {
                     return; // Stop if not authorized
@@ -2166,7 +1671,7 @@
             };
             
             const content = document.createElement('div');
-            content.style.cssText = 'padding: 3rem; max-width: 1600px; margin: 0 auto; padding-bottom: 4rem; height: 100vh; overflow: hidden;';
+            content.style.cssText = 'padding: 3rem; max-width: 1600px; margin: 0 auto; padding-bottom: 4rem; height: 100vh; overflow-y: auto;';
             
             // Create content based on section
             const mapMode = sectionId.includes('swarm') ? 'swarm' : sectionId.includes('event') ? 'event' : 'journey';
@@ -2236,7 +1741,7 @@
                     
                     <!-- Waypoint Labels (only shows for journey mode) -->
                     <div id="waypointLabelsContainer" style="display: none; padding: 1rem 2rem; background: rgba(25, 25, 25, 0.95); max-height: 200px; overflow-y: auto;">
-                        <h4 style="color: var(--accent-color); margin-bottom: 0.75rem; font-size: 0.95rem;">📍 Label Your Stops *</h4>
+                        <h4 style="color: var(--accent-color); margin-bottom: 0.75rem; font-size: 0.95rem;">📍 Label Your Stops (Optional)</h4>
                         <div id="waypointLabelsList" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
                     </div>
                     
@@ -2390,10 +1895,12 @@
                                 addWaypoint(e.latlng);
                             });
                         } else if (mapMode === 'swarm') {
-                            // Always reset swarm markers array when opening creation map
-                            window.swarmMarkers = [];
-                            window.swarmLocations = [];
-                            window.swarmBusinessLabels = [];
+                            // Initialize swarm markers array
+                            if (!window.swarmMarkers) {
+                                window.swarmMarkers = [];
+                                window.swarmLocations = [];
+                                window.swarmBusinessLabels = [];
+                            }
                             
                             // Reset multi-business mode flag
                             window.swarmMultiBusinessMode = false;
@@ -2489,25 +1996,24 @@
                         selectedRoute = null; // Reset
                         
                         getAllRoutes().then(routes => {
-                            allRoutesData = []; // Reset global array
                             
                             routes.forEach((route, index) => {
                                 if (route.waypoints && route.waypoints.length >= 2) {
-                                    // Create polyline (don't add to map yet)
+                                    // Create polyline
                                     const polyline = L.polyline(route.waypoints, { 
                                         color: "#8DBCC0", 
                                         weight: 4, 
                                         opacity: 0.7 
-                                    });
+                                    }).addTo(searchMap);
                                     
-                                    // Create plain pin for initial display (first waypoint only) (don't add to map yet)
+                                    // Create plain pin for initial display (first waypoint only)
                                     const plainPinIcon = L.divIcon({
                                         className: 'route-pin',
                                         html: '<div style="background: #0056b3; color: white; border-radius: 50% 50% 50% 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; transform: rotate(-45deg); box-shadow: 0 2px 8px rgba(0,0,0,0.3);"><span style="transform: rotate(45deg);">📍</span></div>',
                                         iconSize: [28, 28],
                                         iconAnchor: [14, 28]
                                     });
-                                    const plainPin = L.marker(route.waypoints[0], { icon: plainPinIcon });
+                                    const plainPin = L.marker(route.waypoints[0], { icon: plainPinIcon }).addTo(searchMap);
                                     
                                     // Create numbered waypoint markers (don't add to map initially)
                                     const markers = [];
@@ -2531,7 +2037,7 @@
                                     });
                                     
                                     // Click handler for highlighting and showing info
-                                    polyline.on('click', async function() {
+                                    polyline.on('click', function() {
                                         // Hide all plain pins and numbered markers from all routes, fade polylines
                                         allRoutesData.forEach(r => {
                                             r.polyline.setStyle({ opacity: 0.3, weight: 3 });
@@ -2557,18 +2063,9 @@
                                         });
                                         selectedRoute = route;
                                         
-                                        // Check if user already liked this route in Firebase
-                                        const user = auth.currentUser;
-                                        let alreadyLiked = false;
-                                        if (user) {
-                                            try {
-                                                const likeSnapshot = await database.ref(`userLikes/${user.uid}/routes/${route.id}`).once('value');
-                                                alreadyLiked = likeSnapshot.exists();
-                                            } catch (error) {
-                                                console.error('Error checking like status:', error);
-                                            }
-                                        }
-                                        
+                                        // Check if user already liked this route
+                                        const storageKey = `flanerie_liked_routes_${route.id}`;
+                                        const alreadyLiked = localStorage.getItem(storageKey);
                                         const btnState = alreadyLiked ? 
                                             `<button id="route-like-btn-${route.id}" style="background: rgba(107, 155, 158, 0.5); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: default; font-size: 0.9rem;" disabled>❤️ Liked</button>` :
                                             `<button id="route-like-btn-${route.id}" onclick="toggleLike('routes', '${route.id}')" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">❤️ Like Route</button>`;
@@ -2589,13 +2086,6 @@
                                                 waypointsHTML = `<p style="color: #999; margin-top: 1rem;">📍 ${route.waypointCount} waypoints</p>`;
                                             }
                                             
-                                            // Get route count for this user
-                                            const routeCount = await getUserRouteCount(route.createdBy);
-                                            const username = await getUsernameFromId(route.createdBy);
-                                            const userDisplay = username === 'Deleted User' ? 
-                                                `<span style="color: #999; font-size: 0.85rem;">👤 Deleted User</span>` :
-                                                `<span style="color: var(--accent-light); font-size: 0.85rem; cursor: pointer; text-decoration: underline;" onclick="viewUserRoutes('${route.createdBy}', '${username}')" title="View all routes by ${username}">👤 ${username}(${routeCount})</span>`;
-                                            
                                             infoContent.innerHTML = `
                                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 2px solid rgba(107, 155, 158, 0.3);">
                                                     <h3 style="color: var(--accent-color); margin: 0; word-wrap: break-word; word-break: break-word; flex: 1;">${route.name}</h3>
@@ -2604,7 +2094,6 @@
                                                         <button onclick="closeRouteInfo()" style="background: rgba(255, 255, 255, 0.1); border: none; color: var(--accent-light); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0;" onmouseover="this.style.background='rgba(107, 155, 158, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 158, 0.1)'">✕</button>
                                                     </div>
                                                 </div>
-                                                <div style="margin-bottom: 0.5rem;">${userDisplay}</div>
                                                 ${route.description ? `<p style="color: #d4d4d4; margin-top: 0.5rem; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word;">${route.description}</p>` : ''}
                                                 ${waypointsHTML}
                                                 <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(107, 155, 158, 0.2);">
@@ -2633,28 +2122,6 @@
                                     });
                                 }
                             });
-                            
-                            // Initially show all routes on map (filter default is "all")
-                            allRoutesData.forEach(routeData => {
-                                routeData.polyline.addTo(searchMap);
-                                routeData.plainPin.addTo(searchMap);
-                            });
-                            
-                            // If we have a highlightId, filter to show only that route
-                            if (highlightId) {
-                                allRoutesData.forEach(routeData => {
-                                    if (routeData.route.id === highlightId) {
-                                        // Keep this route visible and highlighted
-                                        routeData.polyline.fire('click');
-                                    } else {
-                                        // Hide other routes
-                                        searchMap.removeLayer(routeData.polyline);
-                                        if (searchMap.hasLayer(routeData.plainPin)) {
-                                            searchMap.removeLayer(routeData.plainPin);
-                                        }
-                                    }
-                                });
-                            }
                             
                             // Category filter functionality
                             const categoryFilter = document.getElementById('categoryFilter');
@@ -2840,25 +2307,15 @@
                     }
                 } else if (sectionId === 'swarms') {
                     const mapElement = document.getElementById('swarm-map');
-                    if (mapElement) {
-                        // Initialize map if it doesn't exist
-                        if (!swarmMap) {
-                            swarmMap = L.map(mapElement).setView([39.7392, -104.9903], 13);
-                            L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
-                                 tileSize: 512,
-                                zoomOffset: -1
-                            }).addTo(swarmMap);
-                            L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(swarmMap);
-                        } else {
-                            // Map exists - clear all existing markers before reloading
-                            swarmMap.eachLayer(function (layer) {
-                                if (layer instanceof L.Marker) {
-                                    swarmMap.removeLayer(layer);
-                                }
-                            });
-                        }
+                    if (mapElement && !swarmMap) {
+                        swarmMap = L.map(mapElement).setView([39.7392, -104.9903], 13);
+                        L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
+                             tileSize: 512,
+                            zoomOffset: -1
+                        }).addTo(swarmMap);
+                        L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(swarmMap);
                         
-                        // Always load/reload swarms from Firebase (even if map already exists)
+                        // Load swarms from Firebase
                         getAllSwarms().then(swarms => {
                             
                             if (swarms.length === 0) {
@@ -2906,18 +2363,30 @@
                                 
                                 const isHighlighted = highlightId !== null && swarm.id === highlightId;
                                 
-                                // Create custom dark blue pushpin icon
-                                const swarmPinIcon = L.divIcon({
-                                    className: 'swarm-browse-pin',
-                                    html: isHighlighted ? 
-                                        '<div style="background: #0056b3; color: white; border-radius: 50% 50% 50% 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 3px solid #FFD700; transform: rotate(-45deg); box-shadow: 0 4px 12px rgba(0,0,0,0.5);"><span style="transform: rotate(45deg); font-size: 1.2rem;">🛍️</span></div>' :
-                                        '<div style="background: #0056b3; color: white; border-radius: 50% 50% 50% 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; transform: rotate(-45deg); box-shadow: 0 2px 8px rgba(0,0,0,0.3);"><span style="transform: rotate(45deg);">🛍️</span></div>',
-                                    iconSize: isHighlighted ? [40, 40] : [32, 32],
-                                    iconAnchor: isHighlighted ? [20, 40] : [16, 32]
-                                });
+                                // Create custom icon for highlighted swarm
+                                const markerOptions = {};
+                                if (isHighlighted) {
+                                    markerOptions.icon = L.icon({
+                                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                                        iconSize: [25, 41],
+                                        iconAnchor: [12, 41],
+                                        popupAnchor: [1, -34],
+                                        shadowSize: [41, 41]
+                                    });
+                                } else {
+                                    markerOptions.icon = L.icon({
+                                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                                        iconSize: [25, 41],
+                                        iconAnchor: [12, 41],
+                                        popupAnchor: [1, -34],
+                                        shadowSize: [41, 41]
+                                    });
+                                }
                                 
                                 const participants = swarm.interested || 0;
-                                const marker = L.marker([swarm.lat, swarm.lng], { icon: swarmPinIcon }).addTo(swarmMap);
+                                const marker = L.marker([swarm.lat, swarm.lng], markerOptions).addTo(swarmMap);
                                 
                                 // Add additional markers if multiple locations exist
                                 if (swarm.locations && swarm.locations.length > 1) {
@@ -2935,33 +2404,17 @@
                                 }
                                 
                                 // Click handler to populate info panel
-                                marker.on('click', async function() {
+                                marker.on('click', function() {
                                     const infoPanel = document.getElementById('swarmInfoPanel');
                                     const infoContent = document.getElementById('swarmInfoContent');
                                     
                                     if (infoPanel && infoContent) {
-                                        // Check if user already marked interest in Firebase
-                                        const user = auth.currentUser;
-                                        let alreadyInterested = false;
-                                        if (user) {
-                                            try {
-                                                const interestSnapshot = await database.ref(`userInterests/${user.uid}/swarms/${swarm.id}`).once('value');
-                                                alreadyInterested = interestSnapshot.exists();
-                                            } catch (error) {
-                                                console.error('Error checking interest status:', error);
-                                            }
-                                        }
-                                        
+                                        // Check if user already marked interest
+                                        const storageKey = `flanerie_interested_swarms_${swarm.id}`;
+                                        const alreadyInterested = localStorage.getItem(storageKey);
                                         const btnState = alreadyInterested ? 
                                             `<button id="swarm-interest-btn-${swarm.id}" style="background: rgba(107, 155, 158, 0.5); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: default; font-size: 0.9rem;" disabled>✓ Interested</button>` :
                                             `<button id="swarm-interest-btn-${swarm.id}" onclick="toggleInterest('swarms', '${swarm.id}')" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">I'm Interested</button>`;
-                                        
-                                        // Get swarm count for this user
-                                        const swarmCount = await getUserSwarmCount(swarm.createdBy);
-                                        const username = await getUsernameFromId(swarm.createdBy);
-                                        const userDisplay = username === 'Deleted User' ? 
-                                            `<p style="color: #999; font-size: 0.85rem; margin: 0.5rem 0;">👤 Deleted User</p>` :
-                                            `<p style="color: var(--accent-light); font-size: 0.85rem; margin: 0.5rem 0; cursor: pointer; text-decoration: underline;" onclick="showToast('Filtering by user coming soon!')" title="View all swarms by ${username}">👤 Organized by: ${username}(${swarmCount})</p>`;
                                         
                                         infoContent.innerHTML = `
                                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 2px solid rgba(107, 155, 158, 0.3);">
@@ -2971,7 +2424,6 @@
                                                     <button onclick="closeSwarmInfo()" style="background: rgba(255, 255, 255, 0.1); border: none; color: var(--accent-light); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0;" onmouseover="this.style.background='rgba(107, 155, 158, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'">✕</button>
                                                 </div>
                                             </div>
-                                            ${userDisplay}
                                             <p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">📍 Meeting Location:</strong> ${swarm.meetingLocation || swarm.location || 'Location TBD'}</p>
                                             ${swarm.locationCount && swarm.locationCount > 1 ? `<p style="color: var(--accent-color); margin: 0.5rem 0; font-weight: 600;"><strong>🎯 Multi-Business Swarm:</strong> ${swarm.locationCount} locations</p>` : ''}
                                             <p style="color: #d4d4d4; margin: 0.5rem 0;"><strong style="color: var(--accent-light);">📅 When:</strong> ${swarm.date} at ${swarm.time}</p>
@@ -3036,25 +2488,15 @@
                 } else if (sectionId === 'events') {
                     // Initialize event map
                     const eventMapElement = document.getElementById('event-map');
-                    if (eventMapElement) {
-                        // Initialize map if it doesn't exist
-                        if (!eventMap) {
-                            eventMap = L.map(eventMapElement).setView([39.7392, -104.9903], 13);
+                    if (eventMapElement && !eventMap) {
+                        eventMap = L.map(eventMapElement).setView([39.7392, -104.9903], 13);
                         L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
                              tileSize: 512,
                             zoomOffset: -1
                         }).addTo(eventMap);
                         L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(eventMap);
-                        } else {
-                            // Map exists - clear all existing markers before reloading
-                            eventMap.eachLayer(function (layer) {
-                                if (layer instanceof L.Marker) {
-                                    eventMap.removeLayer(layer);
-                                }
-                            });
-                        }
                         
-                        // Always load/reload events from Firebase (even if map already exists)
+                        // Load events from Firebase
                         getAllEvents().then(events => {
                             
                             if (events.length === 0) {
@@ -3118,20 +2560,32 @@
                                 
                                 const isHighlighted = highlightId !== null && event.id === highlightId;
                                 
-                                // Create custom dark blue pushpin icon
-                                const eventPinIcon = L.divIcon({
-                                    className: 'event-browse-pin',
-                                    html: isHighlighted ? 
-                                        '<div style="background: #0056b3; color: white; border-radius: 50% 50% 50% 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 3px solid #FFD700; transform: rotate(-45deg); box-shadow: 0 4px 12px rgba(0,0,0,0.5);"><span style="transform: rotate(45deg); font-size: 1.2rem;">🎉</span></div>' :
-                                        '<div style="background: #0056b3; color: white; border-radius: 50% 50% 50% 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; transform: rotate(-45deg); box-shadow: 0 2px 8px rgba(0,0,0,0.3);"><span style="transform: rotate(45deg);">🎉</span></div>',
-                                    iconSize: isHighlighted ? [40, 40] : [32, 32],
-                                    iconAnchor: isHighlighted ? [20, 40] : [16, 32]
-                                });
+                                // Create custom icon for highlighted event
+                                const markerOptions = {};
+                                if (isHighlighted) {
+                                    markerOptions.icon = L.icon({
+                                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                                        iconSize: [25, 41],
+                                        iconAnchor: [12, 41],
+                                        popupAnchor: [1, -34],
+                                        shadowSize: [41, 41]
+                                    });
+                                } else {
+                                    markerOptions.icon = L.icon({
+                                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                                        iconSize: [25, 41],
+                                        iconAnchor: [12, 41],
+                                        popupAnchor: [1, -34],
+                                        shadowSize: [41, 41]
+                                    });
+                                }
                                 
-                                const marker = L.marker([event.lat, event.lng], { icon: eventPinIcon }).addTo(eventMap);
+                                const marker = L.marker([event.lat, event.lng], markerOptions).addTo(eventMap);
                                 
                                 // Click handler to populate info panel
-                                marker.on('click', async function() {
+                                marker.on('click', function() {
                                     const infoPanel = document.getElementById('eventInfoPanel');
                                     const infoContent = document.getElementById('eventInfoContent');
                                     
@@ -3141,28 +2595,12 @@
                                             dateTimeStr += ` - ${event.endDate || event.startDate}${event.endTime ? ' at ' + event.endTime : ''}`;
                                         }
                                         
-                                        // Check if user already marked interest in Firebase
-                                        const user = auth.currentUser;
-                                        let alreadyInterested = false;
-                                        if (user) {
-                                            try {
-                                                const interestSnapshot = await database.ref(`userInterests/${user.uid}/events/${event.id}`).once('value');
-                                                alreadyInterested = interestSnapshot.exists();
-                                            } catch (error) {
-                                                console.error('Error checking interest status:', error);
-                                            }
-                                        }
-                                        
+                                        // Check if user already marked interest
+                                        const storageKey = `flanerie_interested_events_${event.id}`;
+                                        const alreadyInterested = localStorage.getItem(storageKey);
                                         const btnState = alreadyInterested ? 
                                             `<button id="event-interest-btn-${event.id}" style="background: rgba(107, 155, 158, 0.5); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: default; font-size: 0.9rem;" disabled>✓ Interested</button>` :
                                             `<button id="event-interest-btn-${event.id}" onclick="toggleInterest('events', '${event.id}')" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">I'm Interested</button>`;
-                                        
-                                        // Get event count for this user
-                                        const eventCount = await getUserEventCount(event.createdBy);
-                                        const username = await getUsernameFromId(event.createdBy);
-                                        const userDisplay = username === 'Deleted User' ? 
-                                            `<p style="color: #999; font-size: 0.85rem; margin: 0.5rem 0;">👤 Deleted User</p>` :
-                                            `<p style="color: var(--accent-light); font-size: 0.85rem; margin: 0.5rem 0; cursor: pointer; text-decoration: underline;" onclick="showToast('Filtering by user coming soon!')" title="View all events by ${username}">👤 Posted by: ${username}(${eventCount})</p>`;
                                         
                                         infoContent.innerHTML = `
                                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 2px solid rgba(107, 155, 158, 0.3);">
@@ -3172,7 +2610,6 @@
                                                     <button onclick="closeEventInfo()" style="background: rgba(255, 255, 255, 0.1); border: none; color: var(--accent-light); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0;" onmouseover="this.style.background='rgba(107, 155, 158, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'">✕</button>
                                                 </div>
                                             </div>
-                                            ${userDisplay}
                                             <p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">📍 Location:</strong> ${event.location}</p>
                                             <p style="color: #d4d4d4; margin: 0.5rem 0;"><strong style="color: var(--accent-light);">📅 When:</strong> ${dateTimeStr}</p>
                                             ${event.description ? `<p style="color: #d4d4d4; margin: 0.8rem 0; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word;">${event.description}</p>` : ''}
@@ -3669,109 +3106,19 @@
         window.openSaveRouteModal = openSaveRouteModal;
         window.confirmSaveRoute = confirmSaveRoute;
         
-        // Helper function to get username from userId
-        async function getUsernameFromId(userId) {
-            try {
-                // Search usernames database for this userId
-                const snapshot = await database.ref('usernames').once('value');
-                let foundUsername = null;
-                snapshot.forEach((child) => {
-                    if (child.val() === userId) {
-                        foundUsername = child.key;
-                    }
-                });
-                return foundUsername || 'Unknown User';
-            } catch (error) {
-                console.error('Error getting username:', error);
-                return 'Unknown User';
-            }
-        }
-        
-        // Helper function to count user's total routes
-        async function getUserRouteCount(userId) {
-            try {
-                const snapshot = await database.ref('routes').orderByChild('createdBy').equalTo(userId).once('value');
-                let count = 0;
-                snapshot.forEach(() => count++);
-                return count;
-            } catch (error) {
-                console.error('Error counting routes:', error);
-                return 0;
-            }
-        }
-        
-        // Filter routes by creator
-        function viewUserRoutes(userId, username) {
-            // Hide all routes except ones by this user
-            allRoutesData.forEach(routeData => {
-                if (routeData.route.createdBy === userId) {
-                    // Show this route
-                    if (!searchMap.hasLayer(routeData.polyline)) {
-                        routeData.polyline.addTo(searchMap);
-                    }
-                    routeData.polyline.setStyle({ opacity: 0.8, weight: 4 });
-                } else {
-                    // Hide this route
-                    if (searchMap.hasLayer(routeData.polyline)) {
-                        searchMap.removeLayer(routeData.polyline);
-                    }
-                    if (routeData.plainPin && searchMap.hasLayer(routeData.plainPin)) {
-                        searchMap.removeLayer(routeData.plainPin);
-                    }
-                }
-            });
-            showToast(`Showing routes by ${username}`);
-        }
-        window.viewUserRoutes = viewUserRoutes;
-        
-        // Helper function to count user's total swarms
-        async function getUserSwarmCount(userId) {
-            try {
-                const snapshot = await database.ref('swarms').orderByChild('createdBy').equalTo(userId).once('value');
-                let count = 0;
-                snapshot.forEach(() => count++);
-                return count;
-            } catch (error) {
-                console.error('Error counting swarms:', error);
-                return 0;
-            }
-        }
-        
-        // Helper function to count user's total events
-        async function getUserEventCount(userId) {
-            try {
-                const snapshot = await database.ref('events').orderByChild('createdBy').equalTo(userId).once('value');
-                let count = 0;
-                snapshot.forEach(() => count++);
-                return count;
-            } catch (error) {
-                console.error('Error counting events:', error);
-                return 0;
-            }
-        }
-        
         // Interest Button Handler
         async function toggleInterest(type, id) {
-            // Check if user is signed in AND verified
-            if (!checkAuthAndVerification()) {
+            const storageKey = `flanerie_interested_${type}_${id}`;
+            const alreadyInterested = localStorage.getItem(storageKey);
+            
+            if (alreadyInterested) {
+                showToast('You already marked interest in this!');
                 return;
             }
-            
-            const user = auth.currentUser;
-            const userId = user.uid;
             
             try {
                 if (!window.database) {
                     throw new Error('Firebase database not initialized');
-                }
-                
-                // Check if user already marked interest in Firebase (not localStorage)
-                const userInterestRef = window.database.ref(`userInterests/${userId}/${type}/${id}`);
-                const interestSnapshot = await userInterestRef.once('value');
-                
-                if (interestSnapshot.exists()) {
-                    showToast('You already marked interest in this!');
-                    return;
                 }
                 
                 // Get current count and increment
@@ -3780,11 +3127,8 @@
                 const currentCount = snapshot.val() || 0;
                 const newCount = currentCount + 1;
                 
-                // Update Firebase item count
+                // Update Firebase
                 await itemRef.set(newCount);
-                
-                // Save user's interest in Firebase (per user)
-                await userInterestRef.set(true);
                 
                 // Update displayed count
                 const countElement = document.getElementById(`${type.slice(0, -1)}-interest-count-${id}`);
@@ -3801,6 +3145,9 @@
                     btnElement.disabled = true;
                 }
                 
+                // Save to localStorage to prevent duplicates
+                localStorage.setItem(storageKey, 'true');
+                
                 showToast('Thanks for your interest!');
             } catch (error) {
                 console.error('Error updating interest:', error);
@@ -3811,26 +3158,17 @@
         
         // Like Button Handler (for routes)
         async function toggleLike(type, id) {
-            // Check if user is signed in AND verified
-            if (!checkAuthAndVerification()) {
+            const storageKey = `flanerie_liked_${type}_${id}`;
+            const alreadyLiked = localStorage.getItem(storageKey);
+            
+            if (alreadyLiked) {
+                showToast('You already liked this route!');
                 return;
             }
-            
-            const user = auth.currentUser;
-            const userId = user.uid;
             
             try {
                 if (!window.database) {
                     throw new Error('Firebase database not initialized');
-                }
-                
-                // Check if user already liked in Firebase (not localStorage)
-                const userLikeRef = window.database.ref(`userLikes/${userId}/${type}/${id}`);
-                const likeSnapshot = await userLikeRef.once('value');
-                
-                if (likeSnapshot.exists()) {
-                    showToast('You already liked this route!');
-                    return;
                 }
                 
                 // Get current count and increment
@@ -3839,11 +3177,8 @@
                 const currentCount = snapshot.val() || 0;
                 const newCount = currentCount + 1;
                 
-                // Update Firebase item count
+                // Update Firebase
                 await itemRef.set(newCount);
-                
-                // Save user's like in Firebase (per user)
-                await userLikeRef.set(true);
                 
                 // Update displayed count
                 const countElement = document.getElementById(`${type.slice(0, -1)}-like-count-${id}`);
@@ -3859,6 +3194,9 @@
                     btnElement.style.cursor = 'default';
                     btnElement.disabled = true;
                 }
+                
+                // Save to localStorage to prevent duplicates
+                localStorage.setItem(storageKey, 'true');
                 
                 showToast('Route liked! Thanks for exploring! ❤️');
             } catch (error) {
@@ -4431,7 +3769,7 @@
             };
             
             // Save to Firebase (also keeps localStorage as backup)
-            const newSwarmId = await saveSwarmToFirebase(swarmData);
+            saveSwarmToFirebase(swarmData);
             
             // Also save to localStorage as backup
             let swarms = JSON.parse(localStorage.getItem('swarms') || '[]');
@@ -4443,21 +3781,6 @@
                 'Shopping Swarm created successfully!';
             showToast(locationText);
             closeCreateSwarmModal();
-            
-            // Close the creation map and open browse swarms with the new swarm highlighted
-            if (newSwarmId) {
-                // Close creation section without triggering scroll
-                const modal = document.getElementById('fullscreen-swarm-map-v2');
-                if (modal) {
-                    // Remove modal directly without triggering closeBtn onclick
-                    modal.style.display = 'none';
-                    modal.remove();
-                    document.body.classList.remove('choreography-active');
-                    journeyMap = null;
-                }
-                // Open browse swarms immediately (no delay needed)
-                toggleSection('swarms', newSwarmId);
-            }
         }
 
         async function submitEvent(event) {
@@ -4505,7 +3828,7 @@
             };
             
             // Save to Firebase (also keeps localStorage as backup)
-            const newEventId = await saveEventToFirebase(eventData);
+            saveEventToFirebase(eventData);
             
             // Also save to localStorage as backup
             let events = JSON.parse(localStorage.getItem('events') || '[]');
@@ -4514,21 +3837,7 @@
             
             showToast('Event created successfully!');
             closeCreateEventModal();
-            
-            // Close the creation map and open browse events with the new event highlighted
-            if (newEventId) {
-                // Close creation section without triggering scroll
-                const modal = document.getElementById('fullscreen-event-map-v2');
-                if (modal) {
-                    // Remove modal directly without triggering closeBtn onclick
-                    modal.style.display = 'none';
-                    modal.remove();
-                    document.body.classList.remove('choreography-active');
-                    journeyMap = null;
-                }
-                // Open browse events immediately (no delay needed)
-                toggleSection('events', newEventId);
-            }
+            // Don't auto-navigate - user can manually go to events to see it
         }
 
         // Interest counter
@@ -4901,46 +4210,6 @@
                 </div>
                 <button type="submit" class="feature-btn" style="width: 100%;">Send Reset Link</button>
             </form>
-        </div>
-    </div>
-    
-    <!-- Dashboard Modal -->
-    <div id="dashboardModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 1200px; width: 95%; max-height: 90vh;">
-            <span class="close" onclick="closeDashboard()">&times;</span>
-            <h2 style="text-align: center; color: var(--accent-color); margin-bottom: 2rem;">My Dashboard</h2>
-            
-            <!-- Dashboard Tabs -->
-            <div style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 2px solid rgba(107, 155, 158, 0.3); flex-wrap: wrap;">
-                <button id="routesTab" class="dashboard-tab active" onclick="switchDashboardTab('routes')" style="padding: 1rem 1.5rem; background: none; border: none; color: var(--accent-light); font-weight: 600; cursor: pointer; border-bottom: 3px solid var(--accent-color); transition: all 0.3s ease;">
-                    My Routes
-                </button>
-                <button id="swarmsTab" class="dashboard-tab" onclick="switchDashboardTab('swarms')" style="padding: 1rem 1.5rem; background: none; border: none; color: #999; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s ease;">
-                    My Swarms
-                </button>
-                <button id="eventsTab" class="dashboard-tab" onclick="switchDashboardTab('events')" style="padding: 1rem 1.5rem; background: none; border: none; color: #999; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s ease;">
-                    My Events
-                </button>
-                <button id="likesTab" class="dashboard-tab" onclick="switchDashboardTab('likes')" style="padding: 1rem 1.5rem; background: none; border: none; color: #999; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s ease;">
-                    My Likes
-                </button>
-            </div>
-            
-            <!-- Dashboard Content -->
-            <div id="dashboardContent" style="overflow-y: auto; max-height: 60vh;">
-                <div id="routesContent" class="dashboard-section">
-                    <p style="text-align: center; color: #999;">Loading your routes...</p>
-                </div>
-                <div id="swarmsContent" class="dashboard-section" style="display: none;">
-                    <p style="text-align: center; color: #999;">Loading your swarms...</p>
-                </div>
-                <div id="eventsContent" class="dashboard-section" style="display: none;">
-                    <p style="text-align: center; color: #999;">Loading your events...</p>
-                </div>
-                <div id="likesContent" class="dashboard-section" style="display: none;">
-                    <p style="text-align: center; color: #999;">Loading your likes...</p>
-                </div>
-            </div>
         </div>
     </div>
 </body>
