@@ -2653,12 +2653,12 @@
                                                 waypointsHTML = `<p style="color: #999; margin-top: 1rem;">📍 ${route.waypointCount} waypoints</p>`;
                                             }
                                             
-                                            // Get total content count for this user (routes + swarms + events)
-                                            const totalCount = await getUserTotalContentCount(route.createdBy);
+                                            // Get route count for this user (not total)
+                                            const routeCount = await getUserRouteCount(route.createdBy);
                                             const username = await getUsernameFromId(route.createdBy);
                                             const userDisplay = username === 'Deleted User' ? 
                                                 `<span style="color: #999; font-size: 0.85rem;">👤 Deleted User</span>` :
-                                                `<span style="color: var(--accent-light); font-size: 0.85rem; cursor: pointer; text-decoration: underline;" onclick="viewUserRoutes('${route.createdBy}', '${username}')" title="View all content by ${username}">👤 ${username}(${totalCount})</span>`;
+                                                `<span style="color: var(--accent-light); font-size: 0.85rem; cursor: pointer; text-decoration: underline;" onclick="viewUserProfile('${route.createdBy}', '${username}')" title="View ${username}'s profile">👤 ${username}(${routeCount})</span>`;
                                             
                                             infoContent.innerHTML = `
                                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 2px solid rgba(107, 155, 158, 0.3);">
@@ -3023,12 +3023,12 @@
                                             `<button id="swarm-interest-btn-${swarm.id}" style="background: rgba(107, 155, 158, 0.5); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: default; font-size: 0.9rem;" disabled>✓ Interested</button>` :
                                             `<button id="swarm-interest-btn-${swarm.id}" onclick="toggleInterest('swarms', '${swarm.id}')" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">I'm Interested</button>`;
                                         
-                                        // Get total content count for this user (routes + swarms + events)
-                                        const totalCount = await getUserTotalContentCount(swarm.createdBy);
+                                        // Get swarm count for this user (not total)
+                                        const swarmCount = await getUserSwarmCount(swarm.createdBy);
                                         const username = await getUsernameFromId(swarm.createdBy);
                                         const userDisplay = username === 'Deleted User' ? 
                                             `<p style="color: #999; font-size: 0.85rem; margin: 0.5rem 0;">👤 Deleted User</p>` :
-                                            `<p style="color: var(--accent-light); font-size: 0.85rem; margin: 0.5rem 0; cursor: pointer; text-decoration: underline;" onclick="showToast('View all content by ${username} coming soon!')" title="View all content by ${username}">👤 Organized by: ${username}(${totalCount})</p>`;
+                                            `<p style="color: var(--accent-light); font-size: 0.85rem; margin: 0.5rem 0; cursor: pointer; text-decoration: underline;" onclick="viewUserProfile('${swarm.createdBy}', '${username}')" title="View ${username}'s profile">👤 Organized by: ${username}(${swarmCount})</p>`;
                                         
                                         infoContent.innerHTML = `
                                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 2px solid rgba(107, 155, 158, 0.3);">
@@ -3224,12 +3224,12 @@
                                             `<button id="event-interest-btn-${event.id}" style="background: rgba(107, 155, 158, 0.5); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: default; font-size: 0.9rem;" disabled>✓ Interested</button>` :
                                             `<button id="event-interest-btn-${event.id}" onclick="toggleInterest('events', '${event.id}')" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">I'm Interested</button>`;
                                         
-                                        // Get total content count for this user (routes + swarms + events)
-                                        const totalCount = await getUserTotalContentCount(event.createdBy);
+                                        // Get event count for this user (not total)
+                                        const eventCount = await getUserEventCount(event.createdBy);
                                         const username = await getUsernameFromId(event.createdBy);
                                         const userDisplay = username === 'Deleted User' ? 
                                             `<p style="color: #999; font-size: 0.85rem; margin: 0.5rem 0;">👤 Deleted User</p>` :
-                                            `<p style="color: var(--accent-light); font-size: 0.85rem; margin: 0.5rem 0; cursor: pointer; text-decoration: underline;" onclick="showToast('View all content by ${username} coming soon!')" title="View all content by ${username}">👤 Posted by: ${username}(${totalCount})</p>`;
+                                            `<p style="color: var(--accent-light); font-size: 0.85rem; margin: 0.5rem 0; cursor: pointer; text-decoration: underline;" onclick="viewUserProfile('${event.createdBy}', '${username}')" title="View ${username}'s profile">👤 Posted by: ${username}(${eventCount})</p>`;
                                         
                                         infoContent.innerHTML = `
                                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 2px solid rgba(107, 155, 158, 0.3);">
@@ -3832,7 +3832,28 @@
         function viewUserRoutes(userId, username) {
             let foundRoutes = 0;
             
-            // Hide all routes except ones by this user
+            // First, reset all routes to default state (collapse any expanded route)
+            allRoutesData.forEach(r => {
+                r.polyline.setStyle({ opacity: 0.3, weight: 3 });
+                // Hide plain pin
+                if (r.plainPin && searchMap.hasLayer(r.plainPin)) {
+                    searchMap.removeLayer(r.plainPin);
+                }
+                // Hide numbered markers
+                r.markers.forEach(m => {
+                    if (searchMap.hasLayer(m)) {
+                        searchMap.removeLayer(m);
+                    }
+                });
+            });
+            
+            // Close info panel if open
+            const infoPanel = document.getElementById('searchInfoPanel');
+            if (infoPanel) {
+                infoPanel.style.display = 'none';
+            }
+            
+            // Now show only routes by this user
             allRoutesData.forEach(routeData => {
                 if (routeData.route.createdBy === userId) {
                     // Show this route
@@ -3842,7 +3863,7 @@
                     if (!searchMap.hasLayer(routeData.plainPin)) {
                         routeData.plainPin.addTo(searchMap);
                     }
-                    routeData.polyline.setStyle({ opacity: 0.8, weight: 4 });
+                    routeData.polyline.setStyle({ opacity: 0.7, weight: 4 });
                     foundRoutes++;
                 } else {
                     // Hide this route
@@ -3862,6 +3883,121 @@
             }
         }
         window.viewUserRoutes = viewUserRoutes;
+        
+        // View user profile with all their content
+        async function viewUserProfile(userId, username) {
+            // Create fullscreen modal
+            const modal = document.createElement('div');
+            modal.id = 'user-profile-modal';
+            modal.style.cssText = 'position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.95); display: flex; align-items: center; justify-content: center; overflow-y: auto;';
+            
+            const content = document.createElement('div');
+            content.style.cssText = 'background: rgba(25, 25, 25, 0.98); border-radius: 20px; padding: 2rem; max-width: 900px; width: 90%; max-height: 90vh; overflow-y: auto; border: 2px solid rgba(107, 155, 158, 0.3); margin: 2rem;';
+            
+            content.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid rgba(107, 155, 158, 0.3);">
+                    <h2 style="color: var(--accent-color); margin: 0;">👤 ${username}'s Profile</h2>
+                    <button onclick="document.getElementById('user-profile-modal').remove()" style="background: rgba(255, 255, 255, 0.1); border: none; color: var(--accent-light); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.5rem;">✕</button>
+                </div>
+                <div id="profile-loading" style="text-align: center; color: #999; padding: 2rem;">
+                    <p>Loading ${username}'s content...</p>
+                </div>
+            `;
+            
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            
+            // Load all content
+            try {
+                const [routesSnap, swarmsSnap, eventsSnap] = await Promise.all([
+                    database.ref('routes').orderByChild('createdBy').equalTo(userId).once('value'),
+                    database.ref('swarms').orderByChild('createdBy').equalTo(userId).once('value'),
+                    database.ref('events').orderByChild('createdBy').equalTo(userId).once('value')
+                ]);
+                
+                const routes = [];
+                const swarms = [];
+                const events = [];
+                
+                routesSnap.forEach(snap => routes.push({ id: snap.key, ...snap.val(), type: 'route' }));
+                swarmsSnap.forEach(snap => swarms.push({ id: snap.key, ...snap.val(), type: 'swarm' }));
+                eventsSnap.forEach(snap => events.push({ id: snap.key, ...snap.val(), type: 'event' }));
+                
+                const allContent = [...routes, ...swarms, ...events].sort((a, b) => 
+                    new Date(b.created) - new Date(a.created)
+                );
+                
+                const totalCount = allContent.length;
+                
+                let html = `
+                    <div style="margin-bottom: 2rem;">
+                        <div style="display: flex; gap: 2rem; margin-bottom: 1rem;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 2rem; color: var(--accent-color); font-weight: bold;">${routes.length}</div>
+                                <div style="color: #999; font-size: 0.85rem;">Routes</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 2rem; color: var(--accent-color); font-weight: bold;">${swarms.length}</div>
+                                <div style="color: #999; font-size: 0.85rem;">Swarms</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 2rem; color: var(--accent-color); font-weight: bold;">${events.length}</div>
+                                <div style="color: #999; font-size: 0.85rem;">Events</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 2rem; color: var(--accent-light); font-weight: bold;">${totalCount}</div>
+                                <div style="color: #999; font-size: 0.85rem;">Total Posts</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                if (totalCount === 0) {
+                    html += `<p style="text-align: center; color: #999; padding: 2rem;">No content posted yet.</p>`;
+                } else {
+                    html += `<div style="display: flex; flex-direction: column; gap: 1rem;">`;
+                    
+                    allContent.forEach(item => {
+                        const emoji = item.type === 'route' ? '🚶' : item.type === 'swarm' ? '🛍️' : '🎉';
+                        const typeLabel = item.type === 'route' ? 'Route' : item.type === 'swarm' ? 'Swarm' : 'Event';
+                        const title = item.name || item.title;
+                        const desc = item.description || 'No description';
+                        const date = new Date(item.created).toLocaleDateString();
+                        const sectionMap = { 'route': 'search', 'swarm': 'swarms', 'event': 'events' };
+                        
+                        html += `
+                            <div onclick="document.getElementById('user-profile-modal').remove(); toggleSection('${sectionMap[item.type]}', '${item.id}')" 
+                                 style="background: rgba(30, 30, 30, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; padding: 1.5rem; cursor: pointer; transition: all 0.3s;"
+                                 onmouseover="this.style.borderColor='var(--accent-color)'; this.style.transform='translateY(-2px)'"
+                                 onmouseout="this.style.borderColor='rgba(107, 155, 158, 0.3)'; this.style.transform='translateY(0)'">
+                                <div style="display: flex; align-items: start; gap: 1rem;">
+                                    <div style="font-size: 2rem; line-height: 1;">${emoji}</div>
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                            <h3 style="color: var(--accent-light); margin: 0; font-size: 1.1rem;">${title}</h3>
+                                            <span style="background: rgba(107, 155, 158, 0.2); color: var(--accent-light); padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">${typeLabel}</span>
+                                        </div>
+                                        <p style="color: #d4d4d4; font-size: 0.9rem; margin: 0.5rem 0; line-height: 1.4;">${desc.substring(0, 150)}${desc.length > 150 ? '...' : ''}</p>
+                                        <p style="color: #999; font-size: 0.8rem; margin: 0.5rem 0 0 0;">📅 Posted ${date}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `</div>`;
+                }
+                
+                document.getElementById('profile-loading').outerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading user profile:', error);
+                document.getElementById('profile-loading').innerHTML = `
+                    <p style="color: #d9534f;">Error loading profile</p>
+                `;
+            }
+        }
+        window.viewUserProfile = viewUserProfile;
         
         // Helper function to count user's total swarms
         async function getUserSwarmCount(userId) {
