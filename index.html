@@ -1338,6 +1338,8 @@
                 .then(() => {
                     console.log('Sign-up complete, verification email sent');
                     showToast('Account created! You\'re signed in. Check your email for verification link.');
+                    // Update greeting with username immediately
+                    document.getElementById('user-name').textContent = `Hi, ${displayName}!`;
                 })
                 .catch((error) => {
                     console.error('Sign-up error:', error);
@@ -3901,6 +3903,10 @@
             
             // Load all content
             try {
+                console.log('=== PROFILE DEBUG START ===');
+                console.log('Loading profile for userId:', userId);
+                console.log('Loading profile for username:', username);
+                
                 const [routesSnap, swarmsSnap, eventsSnap] = await Promise.all([
                     database.ref('routes').orderByChild('createdBy').equalTo(userId).once('value'),
                     database.ref('swarms').orderByChild('createdBy').equalTo(userId).once('value'),
@@ -3911,9 +3917,29 @@
                 const swarms = [];
                 const events = [];
                 
-                routesSnap.forEach(snap => routes.push({ id: snap.key, ...snap.val(), type: 'route' }));
-                swarmsSnap.forEach(snap => swarms.push({ id: snap.key, ...snap.val(), type: 'swarm' }));
-                eventsSnap.forEach(snap => events.push({ id: snap.key, ...snap.val(), type: 'event' }));
+                console.log('Routes snapshot exists:', routesSnap.exists());
+                console.log('Routes snapshot numChildren:', routesSnap.numChildren());
+                routesSnap.forEach(snap => {
+                    console.log('  Route found:', snap.key, snap.val().name, 'createdBy:', snap.val().createdBy);
+                    routes.push({ id: snap.key, ...snap.val(), type: 'route' });
+                });
+                
+                console.log('Swarms snapshot exists:', swarmsSnap.exists());
+                console.log('Swarms snapshot numChildren:', swarmsSnap.numChildren());
+                swarmsSnap.forEach(snap => {
+                    console.log('  Swarm found:', snap.key, snap.val().title, 'createdBy:', snap.val().createdBy);
+                    swarms.push({ id: snap.key, ...snap.val(), type: 'swarm' });
+                });
+                
+                console.log('Events snapshot exists:', eventsSnap.exists());
+                console.log('Events snapshot numChildren:', eventsSnap.numChildren());
+                eventsSnap.forEach(snap => {
+                    console.log('  Event found:', snap.key, snap.val().name, 'createdBy:', snap.val().createdBy);
+                    events.push({ id: snap.key, ...snap.val(), type: 'event' });
+                });
+                
+                console.log('Final counts:', routes.length, 'routes,', swarms.length, 'swarms,', events.length, 'events');
+                console.log('=== PROFILE DEBUG END ===');
                 
                 const allContent = [...routes, ...swarms, ...events].sort((a, b) => 
                     new Date(b.created) - new Date(a.created)
@@ -4143,8 +4169,13 @@
                 infoPanel.style.display = 'none';
             }
             
-            // Reset all routes to initial state
+            // Reset all routes to initial state and ensure they're all visible
             allRoutesData.forEach(r => {
+                // Add polyline back to map if not present
+                if (!searchMap.hasLayer(r.polyline)) {
+                    r.polyline.addTo(searchMap);
+                }
+                
                 // Reset polyline style
                 r.polyline.setStyle({ opacity: 0.7, weight: 4, color: '#8DBCC0' });
                 
@@ -4158,6 +4189,8 @@
                 // Show plain pin
                 if (r.plainPin && !searchMap.hasLayer(r.plainPin)) {
                     r.plainPin.addTo(searchMap);
+                }
+                if (r.plainPin) {
                     r.plainPin.setOpacity(1);
                 }
             });
