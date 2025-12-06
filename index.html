@@ -3045,6 +3045,7 @@
                                             ${swarm.duration ? `<p style="color: #d4d4d4; margin: 0.5rem 0;"><strong style="color: var(--accent-light);">⏱️ Duration:</strong> ${swarm.duration}</p>` : ''}
                                             ${swarm.description ? `<p style="color: #d4d4d4; margin: 0.8rem 0 0 0; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word;">${swarm.description}</p>` : ''}
                                             ${swarm.identifier ? `<p style="color: #d4d4d4; margin: 0.8rem 0 0 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">🔍 Look for:</strong> ${swarm.identifier}</p>` : ''}
+                                            ${swarm.postedBy ? `<p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">👤 Organizer:</strong> ${swarm.postedBy}</p>` : ''}
                                             ${swarm.contact ? `<p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">📧 Contact:</strong> ${swarm.contact}</p>` : ''}
                                             <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(107, 155, 158, 0.2);">
                                                 <p id="swarm-interest-count-${swarm.id}" style="color: var(--accent-light); font-weight: 600; margin: 0;">👥 ${participants} flâneurs interested</p>
@@ -3793,12 +3794,7 @@
             try {
                 const snapshot = await database.ref('routes').orderByChild('createdBy').equalTo(userId).once('value');
                 let count = 0;
-                const routeIds = [];
-                snapshot.forEach((childSnap) => {
-                    count++;
-                    routeIds.push(childSnap.key);
-                });
-                console.log(`getUserRouteCount for ${userId}: Found ${count} routes`, routeIds);
+                snapshot.forEach(() => count++);
                 return count;
             } catch (error) {
                 console.error('Error counting routes:', error);
@@ -3815,16 +3811,10 @@
                     database.ref('events').orderByChild('createdBy').equalTo(userId).once('value')
                 ]);
                 
-                let routeCount = 0;
-                let swarmCount = 0;
-                let eventCount = 0;
-                
-                routes.forEach(() => routeCount++);
-                swarms.forEach(() => swarmCount++);
-                events.forEach(() => eventCount++);
-                
-                const totalCount = routeCount + swarmCount + eventCount;
-                console.log(`Total content for ${userId}: ${routeCount} routes + ${swarmCount} swarms + ${eventCount} events = ${totalCount}`);
+                let totalCount = 0;
+                routes.forEach(() => totalCount++);
+                swarms.forEach(() => totalCount++);
+                events.forEach(() => totalCount++);
                 
                 return totalCount;
             } catch (error) {
@@ -3914,8 +3904,6 @@
             
             // Load all content
             try {
-                console.log(`Loading profile for userId: ${userId}, username: ${username}`);
-                
                 const [routesSnap, swarmsSnap, eventsSnap] = await Promise.all([
                     database.ref('routes').orderByChild('createdBy').equalTo(userId).once('value'),
                     database.ref('swarms').orderByChild('createdBy').equalTo(userId).once('value'),
@@ -3926,20 +3914,9 @@
                 const swarms = [];
                 const events = [];
                 
-                routesSnap.forEach(snap => {
-                    routes.push({ id: snap.key, ...snap.val(), type: 'route' });
-                    console.log('Found route:', snap.key, snap.val().name);
-                });
-                swarmsSnap.forEach(snap => {
-                    swarms.push({ id: snap.key, ...snap.val(), type: 'swarm' });
-                    console.log('Found swarm:', snap.key, snap.val().title);
-                });
-                eventsSnap.forEach(snap => {
-                    events.push({ id: snap.key, ...snap.val(), type: 'event' });
-                    console.log('Found event:', snap.key, snap.val().name);
-                });
-                
-                console.log(`Profile totals: ${routes.length} routes, ${swarms.length} swarms, ${events.length} events`);
+                routesSnap.forEach(snap => routes.push({ id: snap.key, ...snap.val(), type: 'route' }));
+                swarmsSnap.forEach(snap => swarms.push({ id: snap.key, ...snap.val(), type: 'swarm' }));
+                eventsSnap.forEach(snap => events.push({ id: snap.key, ...snap.val(), type: 'event' }));
                 
                 const allContent = [...routes, ...swarms, ...events].sort((a, b) => 
                     new Date(b.created) - new Date(a.created)
@@ -4017,71 +3994,12 @@
         }
         window.viewUserProfile = viewUserProfile;
         
-        // Debug function to check ALL routes/swarms/events in Firebase
-        async function debugFirebaseData() {
-            console.log('=== FIREBASE DATA DEBUG ===');
-            
-            // Check all routes
-            const allRoutes = await database.ref('routes').once('value');
-            console.log('ALL ROUTES IN FIREBASE:');
-            allRoutes.forEach(snap => {
-                const route = snap.val();
-                console.log(`  Route ${snap.key}:`, {
-                    name: route.name,
-                    createdBy: route.createdBy,
-                    createdByName: route.createdByName
-                });
-            });
-            
-            // Check all swarms
-            const allSwarms = await database.ref('swarms').once('value');
-            console.log('ALL SWARMS IN FIREBASE:');
-            allSwarms.forEach(snap => {
-                const swarm = snap.val();
-                console.log(`  Swarm ${snap.key}:`, {
-                    title: swarm.title,
-                    createdBy: swarm.createdBy,
-                    createdByName: swarm.createdByName
-                });
-            });
-            
-            // Check all events
-            const allEvents = await database.ref('events').once('value');
-            console.log('ALL EVENTS IN FIREBASE:');
-            allEvents.forEach(snap => {
-                const event = snap.val();
-                console.log(`  Event ${snap.key}:`, {
-                    name: event.name,
-                    createdBy: event.createdBy,
-                    createdByName: event.createdByName
-                });
-            });
-            
-            // Check current user
-            const user = auth.currentUser;
-            if (user) {
-                console.log('CURRENT USER:', {
-                    uid: user.uid,
-                    email: user.email,
-                    displayName: user.displayName
-                });
-            }
-            
-            console.log('=== END DEBUG ===');
-        }
-        window.debugFirebaseData = debugFirebaseData;
-        
         // Helper function to count user's total swarms
         async function getUserSwarmCount(userId) {
             try {
                 const snapshot = await database.ref('swarms').orderByChild('createdBy').equalTo(userId).once('value');
                 let count = 0;
-                const swarmIds = [];
-                snapshot.forEach((childSnap) => {
-                    count++;
-                    swarmIds.push(childSnap.key);
-                });
-                console.log(`getUserSwarmCount for ${userId}: Found ${count} swarms`, swarmIds);
+                snapshot.forEach(() => count++);
                 return count;
             } catch (error) {
                 console.error('Error counting swarms:', error);
@@ -4094,12 +4012,7 @@
             try {
                 const snapshot = await database.ref('events').orderByChild('createdBy').equalTo(userId).once('value');
                 let count = 0;
-                const eventIds = [];
-                snapshot.forEach((childSnap) => {
-                    count++;
-                    eventIds.push(childSnap.key);
-                });
-                console.log(`getUserEventCount for ${userId}: Found ${count} events`, eventIds);
+                snapshot.forEach(() => count++);
                 return count;
             } catch (error) {
                 console.error('Error counting events:', error);
@@ -4637,12 +4550,19 @@
             document.getElementById('createSwarmModal').style.display = 'flex';
             // Enable submit button
             document.getElementById('createSwarmBtn').disabled = false;
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('swarmDateInput').setAttribute('min', today);
         }
         
         function openCreateEventModalWithLocation(location) {
             document.getElementById('createEventModal').style.display = 'flex';
             // Enable submit button
             document.getElementById('createEventBtn').disabled = false;
+            // Set minimum dates to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('eventStartDateInput').setAttribute('min', today);
+            document.getElementById('eventEndDateInput').setAttribute('min', today);
         }
         
         function openCreateSwarmModal() {
@@ -4803,6 +4723,7 @@
                 date: formData.get('swarmDate'),
                 time: formData.get('swarmTime'),
                 description: formData.get('swarmDescription'),
+                postedBy: formData.get('swarmPostedBy'),
                 contact: formData.get('swarmContact'),
                 duration: formData.get('swarmDuration'),
                 identifier: formData.get('swarmIdentifier'),
@@ -5069,7 +4990,7 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
                     <div>
                         <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Date *</label>
-                        <input type="date" name="swarmDate" required style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;">
+                        <input type="date" name="swarmDate" id="swarmDateInput" required style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;">
                     </div>
                     <div>
                         <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Time *</label>
@@ -5106,7 +5027,12 @@
                 </div>
 
                 <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Contact (Optional)</label>
+                    <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Organizer Name (Optional)</label>
+                    <input type="text" name="swarmPostedBy" maxlength="60" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="Your name or organization">
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Contact Email/Phone (Optional)</label>
                     <input type="text" name="swarmContact" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="email@example.com or phone">
                 </div>
 
@@ -5157,7 +5083,7 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
                     <div>
                         <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Start Date *</label>
-                        <input type="date" name="eventStartDate" required style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;">
+                        <input type="date" name="eventStartDate" id="eventStartDateInput" required style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;">
                     </div>
                     <div>
                         <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Start Time *</label>
@@ -5168,7 +5094,7 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
                     <div>
                         <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">End Date</label>
-                        <input type="date" name="eventEndDate" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;">
+                        <input type="date" name="eventEndDate" id="eventEndDateInput" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;">
                     </div>
                     <div>
                         <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">End Time</label>
@@ -5305,7 +5231,7 @@
                     My Events
                 </button>
                 <button id="likesTab" class="dashboard-tab" onclick="switchDashboardTab('likes')" style="padding: 1rem 1.5rem; background: none; border: none; color: #999; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s ease;">
-                    My Likes
+                    My Likes & Interests
                 </button>
             </div>
             
