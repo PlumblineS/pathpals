@@ -2653,12 +2653,11 @@
                                                 waypointsHTML = `<p style="color: #999; margin-top: 1rem;">📍 ${route.waypointCount} waypoints</p>`;
                                             }
                                             
-                                            // Get route count for this user (not total)
-                                            const routeCount = await getUserRouteCount(route.createdBy);
+                                            // Get username without count for display
                                             const username = await getUsernameFromId(route.createdBy);
                                             const userDisplay = username === 'Deleted User' ? 
                                                 `<span style="color: #999; font-size: 0.85rem;">👤 Deleted User</span>` :
-                                                `<span style="color: var(--accent-light); font-size: 0.85rem; cursor: pointer; text-decoration: underline;" onclick="viewUserProfile('${route.createdBy}', '${username}')" title="View ${username}'s profile">👤 ${username}(${routeCount})</span>`;
+                                                `<span style="color: var(--accent-light); font-size: 0.85rem; cursor: pointer; text-decoration: underline;" onclick="viewUserProfile('${route.createdBy}', '${username}')" title="View ${username}'s profile">👤 ${username}</span>`;
                                             
                                             infoContent.innerHTML = `
                                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 2px solid rgba(107, 155, 158, 0.3);">
@@ -3023,12 +3022,11 @@
                                             `<button id="swarm-interest-btn-${swarm.id}" style="background: rgba(107, 155, 158, 0.5); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: default; font-size: 0.9rem;" disabled>✓ Interested</button>` :
                                             `<button id="swarm-interest-btn-${swarm.id}" onclick="toggleInterest('swarms', '${swarm.id}')" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">I'm Interested</button>`;
                                         
-                                        // Get swarm count for this user (not total)
-                                        const swarmCount = await getUserSwarmCount(swarm.createdBy);
+                                        // Get username without count for display
                                         const username = await getUsernameFromId(swarm.createdBy);
                                         const userDisplay = username === 'Deleted User' ? 
                                             `<p style="color: #999; font-size: 0.85rem; margin: 0.5rem 0;">👤 Deleted User</p>` :
-                                            `<p style="color: var(--accent-light); font-size: 0.85rem; margin: 0.5rem 0; cursor: pointer; text-decoration: underline;" onclick="viewUserProfile('${swarm.createdBy}', '${username}')" title="View ${username}'s profile">👤 Organized by: ${username}(${swarmCount})</p>`;
+                                            `<p style="color: var(--accent-light); font-size: 0.85rem; margin: 0.5rem 0; cursor: pointer; text-decoration: underline;" onclick="viewUserProfile('${swarm.createdBy}', '${username}')" title="View ${username}'s profile">👤 Organized by: ${username}</p>`;
                                         
                                         infoContent.innerHTML = `
                                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 2px solid rgba(107, 155, 158, 0.3);">
@@ -3225,12 +3223,11 @@
                                             `<button id="event-interest-btn-${event.id}" style="background: rgba(107, 155, 158, 0.5); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: default; font-size: 0.9rem;" disabled>✓ Interested</button>` :
                                             `<button id="event-interest-btn-${event.id}" onclick="toggleInterest('events', '${event.id}')" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">I'm Interested</button>`;
                                         
-                                        // Get event count for this user (not total)
-                                        const eventCount = await getUserEventCount(event.createdBy);
+                                        // Get username without count for display
                                         const username = await getUsernameFromId(event.createdBy);
                                         const userDisplay = username === 'Deleted User' ? 
                                             `<p style="color: #999; font-size: 0.85rem; margin: 0.5rem 0;">👤 Deleted User</p>` :
-                                            `<p style="color: var(--accent-light); font-size: 0.85rem; margin: 0.5rem 0; cursor: pointer; text-decoration: underline;" onclick="viewUserProfile('${event.createdBy}', '${username}')" title="View ${username}'s profile">👤 Posted by: ${username}(${eventCount})</p>`;
+                                            `<p style="color: var(--accent-light); font-size: 0.85rem; margin: 0.5rem 0; cursor: pointer; text-decoration: underline;" onclick="viewUserProfile('${event.createdBy}', '${username}')" title="View ${username}'s profile">👤 Posted by: ${username}</p>`;
                                         
                                         infoContent.innerHTML = `
                                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 2px solid rgba(107, 155, 158, 0.3);">
