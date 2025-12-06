@@ -2710,6 +2710,9 @@
                                     if (routeData.route.id === highlightId) {
                                         // Keep this route visible and highlighted
                                         routeData.polyline.fire('click');
+                                        // Center map on this route
+                                        const bounds = routeData.polyline.getBounds();
+                                        searchMap.fitBounds(bounds, { padding: [50, 50] });
                                     } else {
                                         // Hide other routes
                                         searchMap.removeLayer(routeData.polyline);
@@ -3807,10 +3810,16 @@
                     database.ref('events').orderByChild('createdBy').equalTo(userId).once('value')
                 ]);
                 
-                let totalCount = 0;
-                routes.forEach(() => totalCount++);
-                swarms.forEach(() => totalCount++);
-                events.forEach(() => totalCount++);
+                let routeCount = 0;
+                let swarmCount = 0;
+                let eventCount = 0;
+                
+                routes.forEach(() => routeCount++);
+                swarms.forEach(() => swarmCount++);
+                events.forEach(() => eventCount++);
+                
+                const totalCount = routeCount + swarmCount + eventCount;
+                console.log(`Total content for ${userId}: ${routeCount} routes + ${swarmCount} swarms + ${eventCount} events = ${totalCount}`);
                 
                 return totalCount;
             } catch (error) {
@@ -3821,6 +3830,8 @@
         
         // Filter routes by creator
         function viewUserRoutes(userId, username) {
+            let foundRoutes = 0;
+            
             // Hide all routes except ones by this user
             allRoutesData.forEach(routeData => {
                 if (routeData.route.createdBy === userId) {
@@ -3828,7 +3839,11 @@
                     if (!searchMap.hasLayer(routeData.polyline)) {
                         routeData.polyline.addTo(searchMap);
                     }
+                    if (!searchMap.hasLayer(routeData.plainPin)) {
+                        routeData.plainPin.addTo(searchMap);
+                    }
                     routeData.polyline.setStyle({ opacity: 0.8, weight: 4 });
+                    foundRoutes++;
                 } else {
                     // Hide this route
                     if (searchMap.hasLayer(routeData.polyline)) {
@@ -3839,7 +3854,12 @@
                     }
                 }
             });
-            showToast(`Showing routes by ${username}`);
+            
+            if (foundRoutes > 0) {
+                showToast(`Showing ${foundRoutes} routes by ${username}`);
+            } else {
+                showToast(`No routes found by ${username}`);
+            }
         }
         window.viewUserRoutes = viewUserRoutes;
         
