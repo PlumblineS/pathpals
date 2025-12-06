@@ -3793,7 +3793,12 @@
             try {
                 const snapshot = await database.ref('routes').orderByChild('createdBy').equalTo(userId).once('value');
                 let count = 0;
-                snapshot.forEach(() => count++);
+                const routeIds = [];
+                snapshot.forEach((childSnap) => {
+                    count++;
+                    routeIds.push(childSnap.key);
+                });
+                console.log(`getUserRouteCount for ${userId}: Found ${count} routes`, routeIds);
                 return count;
             } catch (error) {
                 console.error('Error counting routes:', error);
@@ -3909,6 +3914,8 @@
             
             // Load all content
             try {
+                console.log(`Loading profile for userId: ${userId}, username: ${username}`);
+                
                 const [routesSnap, swarmsSnap, eventsSnap] = await Promise.all([
                     database.ref('routes').orderByChild('createdBy').equalTo(userId).once('value'),
                     database.ref('swarms').orderByChild('createdBy').equalTo(userId).once('value'),
@@ -3919,9 +3926,20 @@
                 const swarms = [];
                 const events = [];
                 
-                routesSnap.forEach(snap => routes.push({ id: snap.key, ...snap.val(), type: 'route' }));
-                swarmsSnap.forEach(snap => swarms.push({ id: snap.key, ...snap.val(), type: 'swarm' }));
-                eventsSnap.forEach(snap => events.push({ id: snap.key, ...snap.val(), type: 'event' }));
+                routesSnap.forEach(snap => {
+                    routes.push({ id: snap.key, ...snap.val(), type: 'route' });
+                    console.log('Found route:', snap.key, snap.val().name);
+                });
+                swarmsSnap.forEach(snap => {
+                    swarms.push({ id: snap.key, ...snap.val(), type: 'swarm' });
+                    console.log('Found swarm:', snap.key, snap.val().title);
+                });
+                eventsSnap.forEach(snap => {
+                    events.push({ id: snap.key, ...snap.val(), type: 'event' });
+                    console.log('Found event:', snap.key, snap.val().name);
+                });
+                
+                console.log(`Profile totals: ${routes.length} routes, ${swarms.length} swarms, ${events.length} events`);
                 
                 const allContent = [...routes, ...swarms, ...events].sort((a, b) => 
                     new Date(b.created) - new Date(a.created)
@@ -3999,12 +4017,71 @@
         }
         window.viewUserProfile = viewUserProfile;
         
+        // Debug function to check ALL routes/swarms/events in Firebase
+        async function debugFirebaseData() {
+            console.log('=== FIREBASE DATA DEBUG ===');
+            
+            // Check all routes
+            const allRoutes = await database.ref('routes').once('value');
+            console.log('ALL ROUTES IN FIREBASE:');
+            allRoutes.forEach(snap => {
+                const route = snap.val();
+                console.log(`  Route ${snap.key}:`, {
+                    name: route.name,
+                    createdBy: route.createdBy,
+                    createdByName: route.createdByName
+                });
+            });
+            
+            // Check all swarms
+            const allSwarms = await database.ref('swarms').once('value');
+            console.log('ALL SWARMS IN FIREBASE:');
+            allSwarms.forEach(snap => {
+                const swarm = snap.val();
+                console.log(`  Swarm ${snap.key}:`, {
+                    title: swarm.title,
+                    createdBy: swarm.createdBy,
+                    createdByName: swarm.createdByName
+                });
+            });
+            
+            // Check all events
+            const allEvents = await database.ref('events').once('value');
+            console.log('ALL EVENTS IN FIREBASE:');
+            allEvents.forEach(snap => {
+                const event = snap.val();
+                console.log(`  Event ${snap.key}:`, {
+                    name: event.name,
+                    createdBy: event.createdBy,
+                    createdByName: event.createdByName
+                });
+            });
+            
+            // Check current user
+            const user = auth.currentUser;
+            if (user) {
+                console.log('CURRENT USER:', {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName
+                });
+            }
+            
+            console.log('=== END DEBUG ===');
+        }
+        window.debugFirebaseData = debugFirebaseData;
+        
         // Helper function to count user's total swarms
         async function getUserSwarmCount(userId) {
             try {
                 const snapshot = await database.ref('swarms').orderByChild('createdBy').equalTo(userId).once('value');
                 let count = 0;
-                snapshot.forEach(() => count++);
+                const swarmIds = [];
+                snapshot.forEach((childSnap) => {
+                    count++;
+                    swarmIds.push(childSnap.key);
+                });
+                console.log(`getUserSwarmCount for ${userId}: Found ${count} swarms`, swarmIds);
                 return count;
             } catch (error) {
                 console.error('Error counting swarms:', error);
@@ -4017,7 +4094,12 @@
             try {
                 const snapshot = await database.ref('events').orderByChild('createdBy').equalTo(userId).once('value');
                 let count = 0;
-                snapshot.forEach(() => count++);
+                const eventIds = [];
+                snapshot.forEach((childSnap) => {
+                    count++;
+                    eventIds.push(childSnap.key);
+                });
+                console.log(`getUserEventCount for ${userId}: Found ${count} events`, eventIds);
                 return count;
             } catch (error) {
                 console.error('Error counting events:', error);
