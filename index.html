@@ -1913,29 +1913,47 @@
                     const isUnread = !msg.read;
                     const timestamp = new Date(msg.timestamp).toLocaleString();
                     
+                    // Escape HTML to prevent XSS
+                    const escapeHtml = (str) => {
+                        if (!str) return '';
+                        return String(str)
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/"/g, '&quot;')
+                            .replace(/'/g, '&#039;');
+                    };
+                    
+                    const escapedSubject = escapeHtml(msg.subject);
+                    const escapedFromName = escapeHtml(msg.fromName);
+                    const escapedFromEmail = escapeHtml(msg.fromEmail);
+                    const escapedItemName = escapeHtml(msg.itemName);
+                    const escapedType = escapeHtml(msg.type);
+                    const escapedMessage = escapeHtml(msg.message);
+                    
                     html += `
                         <div style="background: ${isUnread ? 'rgba(107, 155, 158, 0.15)' : 'rgba(30, 30, 30, 0.8)'}; border: 2px solid ${isUnread ? 'var(--accent-color)' : 'rgba(107, 155, 158, 0.3)'}; border-radius: 15px; padding: 1.5rem;">
                             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
                                 <div style="flex: 1;">
                                     ${isUnread ? '<span style="background: var(--accent-color); color: white; padding: 0.2rem 0.6rem; border-radius: 10px; font-size: 0.75rem; margin-right: 0.5rem; font-weight: 600;">NEW</span>' : ''}
-                                    <span style="color: var(--accent-light); font-weight: 600; font-size: 1.1rem;">${msg.subject}</span>
+                                    <span style="color: var(--accent-light); font-weight: 600; font-size: 1.1rem;">${escapedSubject}</span>
                                 </div>
                                 <button onclick="deleteMessage('${msg.id}')" style="background: rgba(255, 70, 70, 0.2); border: none; color: #ff4646; padding: 0.4rem 0.8rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(255, 70, 70, 0.4)'" onmouseout="this.style.background='rgba(255, 70, 70, 0.2)'">Delete</button>
                             </div>
                             
                             <div style="color: #999; font-size: 0.85rem; margin-bottom: 0.8rem;">
-                                <strong style="color: var(--accent-light);">From:</strong> ${msg.fromName} (${msg.fromEmail})<br>
-                                <strong style="color: var(--accent-light);">About:</strong> ${msg.itemName} (${msg.type})<br>
+                                <strong style="color: var(--accent-light);">From:</strong> ${escapedFromName} (${escapedFromEmail})<br>
+                                <strong style="color: var(--accent-light);">About:</strong> ${escapedItemName} (${escapedType})<br>
                                 <strong style="color: var(--accent-light);">Sent:</strong> ${timestamp}
                             </div>
                             
                             <div style="color: #d4d4d4; line-height: 1.6; white-space: pre-wrap; background: rgba(10, 10, 10, 0.5); padding: 1rem; border-radius: 10px; border-left: 3px solid var(--accent-color);">
-                                ${msg.message}
+                                ${escapedMessage}
                             </div>
                             
                             ${isUnread ? `<button onclick="markMessageRead('${msg.id}'); loadMyMessages();" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; cursor: pointer; margin-top: 1rem; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">Mark as Read</button>` : ''}
                             
-                            <a href="mailto:${msg.fromEmail}?subject=Re: ${encodeURIComponent(msg.subject)}" style="display: inline-block; background: rgba(107, 155, 158, 0.2); color: var(--accent-light); border: none; padding: 0.6rem 1.2rem; border-radius: 10px; cursor: pointer; margin-top: 0.5rem; font-weight: 600; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(107, 155, 158, 0.3)'" onmouseout="this.style.background='rgba(107, 155, 158, 0.2)'">📧 Reply via Email</a>
+                            <a href="mailto:${escapedFromEmail}?subject=Re: ${encodeURIComponent(msg.subject)}" style="display: inline-block; background: rgba(107, 155, 158, 0.2); color: var(--accent-light); border: none; padding: 0.6rem 1.2rem; border-radius: 10px; cursor: pointer; margin-top: 0.5rem; font-weight: 600; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(107, 155, 158, 0.3)'" onmouseout="this.style.background='rgba(107, 155, 158, 0.2)'">📧 Reply via Email</a>
                         </div>
                     `;
                 });
@@ -3151,8 +3169,8 @@
                                             ${swarm.description ? `<p style="color: #d4d4d4; margin: 0.8rem 0 0 0; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word;">${swarm.description}</p>` : ''}
                                             ${swarm.identifier ? `<p style="color: #d4d4d4; margin: 0.8rem 0 0 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">🔍 Look for:</strong> ${swarm.identifier}</p>` : ''}
                                             ${swarm.postedBy ? `<p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">👤 Organizer:</strong> ${swarm.postedBy}</p>` : ''}
-                                            ${swarm.createdBy !== (user ? user.uid : null) ? `<button onclick="openMessageModal('${swarm.createdBy}', '${username}', 'swarm', '${swarm.title}')" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin: 0.5rem 0; font-size: 0.9rem;">📧 Contact Organizer</button>` : ''}
-                                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(107, 155, 158, 0.2);">
+                                            ${swarm.createdBy !== (user ? user.uid : null) ? `<button onclick="openMessageModal('${swarm.createdBy}', '${username.replace(/'/g, "\\'")}', 'swarm', '${(swarm.title || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}')" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin: 0.5rem 0; font-size: 0.9rem;">📧 Contact Organizer</button>` : ''}
+                                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(107, 155, 158, 0.2);">>
                                                 <p id="swarm-interest-count-${swarm.id}" style="color: var(--accent-light); font-weight: 600; margin: 0;">👥 ${participants} flâneurs interested</p>
                                                 ${btnState}
                                             </div>
@@ -3349,7 +3367,7 @@
                                             <p style="color: #d4d4d4; margin: 0.5rem 0;"><strong style="color: var(--accent-light);">📅 When:</strong> ${dateTimeStr}</p>
                                             ${event.description ? `<p style="color: #d4d4d4; margin: 0.8rem 0; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word;">${event.description}</p>` : ''}
                                             ${event.postedBy ? `<p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">👤 Contact Name:</strong> ${event.postedBy}</p>` : ''}
-                                            ${event.createdBy !== (user ? user.uid : null) ? `<button onclick="openMessageModal('${event.createdBy}', '${username}', 'event', '${event.name}')" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin: 0.5rem 0; font-size: 0.9rem;">📧 Contact Organizer</button>` : ''}
+                                            ${event.createdBy !== (user ? user.uid : null) ? `<button onclick="openMessageModal('${event.createdBy}', '${username.replace(/'/g, "\\'")}', 'event', '${(event.name || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}')" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin: 0.5rem 0; font-size: 0.9rem;">📧 Contact Organizer</button>` : ''}
                                             ${event.website ? `<p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">🔗 Website:</strong> <a href="${event.website}" target="_blank" style="color: var(--accent-light); word-break: break-all;">${event.website}</a></p>` : ''}
                                             ${event.maxParticipants ? `<p style="color: #d4d4d4; margin: 0.5rem 0;"><strong style="color: var(--accent-light);">👥 Max Participants:</strong> ${event.maxParticipants}</p>` : ''}
                                             <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(107, 155, 158, 0.2);">
@@ -5132,16 +5150,20 @@
             modal.id = 'messageModal';
             modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10, 10, 10, 0.95); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 2rem;';
             
+            // Escape strings for HTML
+            const escapedRecipientName = recipientName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+            const escapedItemName = itemName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+            
             modal.innerHTML = `
                 <div style="background: rgba(25, 25, 25, 0.98); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 20px; padding: 2rem; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                        <h3 style="color: var(--accent-color); margin: 0;">📧 Contact ${recipientName}</h3>
+                        <h3 style="color: var(--accent-color); margin: 0;">📧 Contact ${escapedRecipientName}</h3>
                         <button onclick="document.getElementById('messageModal').remove()" style="background: none; border: none; color: var(--accent-light); font-size: 1.5rem; cursor: pointer;">&times;</button>
                     </div>
                     
-                    <p style="color: #d4d4d4; margin-bottom: 1rem;">About: <strong>${itemName}</strong></p>
+                    <p style="color: #d4d4d4; margin-bottom: 1rem;">About: <strong>${escapedItemName}</strong></p>
                     
-                    <form id="messageForm" onsubmit="sendMessage(event, '${recipientId}', '${recipientName}', '${type}', '${itemName}')">
+                    <form id="messageForm" onsubmit="sendMessage(event, '${recipientId}', '${escapedRecipientName}', '${type}', '${escapedItemName}')">
                         <div style="margin-bottom: 1rem;">
                             <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Subject *</label>
                             <input type="text" id="messageSubject" required maxlength="100" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="Question about the ${type}">
@@ -5192,10 +5214,17 @@
             try {
                 await database.ref('messages').push(messageData);
                 showToast('Message sent successfully!');
-                document.getElementById('messageModal').remove();
+                const modal = document.getElementById('messageModal');
+                if (modal) modal.remove();
             } catch (error) {
                 console.error('Error sending message:', error);
-                showToast('Error sending message: ' + error.message);
+                if (error.code === 'PERMISSION_DENIED') {
+                    showToast('Permission denied. Please make sure you\'re logged in and Firebase rules are configured.');
+                } else {
+                    showToast('Error sending message: ' + error.message);
+                }
+                const modal = document.getElementById('messageModal');
+                if (modal) modal.remove();
             }
         }
         window.sendMessage = sendMessage;
