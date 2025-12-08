@@ -54,6 +54,7 @@
             justify-content: center;
             align-items: center;
             position: relative;
+            padding: 0 2rem; /* Add padding for breathing room */
         }
         
         .nav-links {
@@ -78,9 +79,9 @@
         .nav-auth {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 1rem; /* Increased from 0.5rem */
             position: absolute;
-            right: 0;
+            right: 2rem; /* Push further right */
         }
         
         .auth-btn {
@@ -1299,6 +1300,25 @@
         async function signUpWithEmail(event) {
             event.preventDefault();
             
+            // ANTI-BOT CHECK 1: Honeypot field
+            const honeypot = document.getElementById('website').value;
+            if (honeypot) {
+                console.log('Bot detected: honeypot filled');
+                showToast('Error creating account');
+                return; // Bot detected, silently reject
+            }
+            
+            // ANTI-BOT CHECK 2: Rate limiting (max 3 signups per hour from this browser)
+            const signupAttempts = JSON.parse(localStorage.getItem('signupAttempts') || '[]');
+            const now = Date.now();
+            const oneHourAgo = now - (60 * 60 * 1000);
+            const recentAttempts = signupAttempts.filter(time => time > oneHourAgo);
+            
+            if (recentAttempts.length >= 3) {
+                showToast('Too many signup attempts. Please try again later.');
+                return;
+            }
+            
             const email = document.getElementById('signUpEmail').value;
             const password = document.getElementById('signUpPassword').value;
             const displayName = document.getElementById('signUpDisplayName').value.trim();
@@ -1327,6 +1347,10 @@
                 .then((userCredential) => {
                     const user = userCredential.user;
                     
+                    // Record signup attempt
+                    recentAttempts.push(now);
+                    localStorage.setItem('signupAttempts', JSON.stringify(recentAttempts));
+                    
                     // Set display name
                     return user.updateProfile({
                         displayName: displayName
@@ -1341,7 +1365,7 @@
                 })
                 .then(() => {
                     console.log('Sign-up complete, verification email sent');
-                    showToast('Account created! You\'re signed in. Check your email for verification link.');
+                    showToast('Account created! Please verify your email to unlock all features.');
                     // Update greeting with username immediately
                     document.getElementById('user-name').textContent = `Hi, ${displayName}!`;
                 })
@@ -1953,7 +1977,10 @@
                             
                             ${isUnread ? `<button onclick="markMessageRead('${msg.id}'); loadMyMessages();" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; cursor: pointer; margin-top: 1rem; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">Mark as Read</button>` : ''}
                             
-                            <a href="mailto:${escapedFromEmail}?subject=Re: ${encodeURIComponent(msg.subject)}" style="display: inline-block; background: rgba(107, 155, 158, 0.2); color: var(--accent-light); border: none; padding: 0.6rem 1.2rem; border-radius: 10px; cursor: pointer; margin-top: 0.5rem; font-weight: 600; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(107, 155, 158, 0.3)'" onmouseout="this.style.background='rgba(107, 155, 158, 0.2)'">📧 Reply via Email</a>
+                            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                                <a href="mailto:${escapedFromEmail}?subject=Re: ${encodeURIComponent(msg.subject)}" style="display: inline-block; background: rgba(107, 155, 158, 0.2); color: var(--accent-light); border: none; padding: 0.6rem 1.2rem; border-radius: 10px; cursor: pointer; font-weight: 600; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(107, 155, 158, 0.3)'" onmouseout="this.style.background='rgba(107, 155, 158, 0.2)'">📧 Reply via Email</a>
+                                <button onclick="reportMessage('${msg.id}', '${msg.from}', '${escapedSubject}')" style="background: rgba(255, 70, 70, 0.2); color: #ff4646; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='rgba(255, 70, 70, 0.4)'" onmouseout="this.style.background='rgba(255, 70, 70, 0.2)'">🚩 Report</button>
+                            </div>
                         </div>
                     `;
                 });
@@ -5175,6 +5202,9 @@
                             <p style="color: #999; font-size: 0.85rem; margin-top: 0.5rem;">Note: Your username and email will be shared with the organizer</p>
                         </div>
                         
+                        <!-- Honeypot field (hidden from humans, bots will fill it) -->
+                        <input type="text" id="messageWebsite" name="website" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1" autocomplete="off">
+                        
                         <button type="submit" class="feature-btn" style="width: 100%;">Send Message</button>
                     </form>
                 </div>
@@ -5191,6 +5221,29 @@
             const user = auth.currentUser;
             if (!user) {
                 showToast('Please sign in to send messages');
+                return;
+            }
+            
+            // ANTI-BOT CHECK 1: Honeypot field
+            const honeypot = document.getElementById('messageWebsite').value;
+            if (honeypot) {
+                console.log('Bot detected: honeypot filled');
+                showToast('Error sending message');
+                const modal = document.getElementById('messageModal');
+                if (modal) modal.remove();
+                return; // Bot detected, silently reject
+            }
+            
+            // ANTI-BOT CHECK 2: Rate limiting (max 10 messages per hour from this browser)
+            const messageAttempts = JSON.parse(localStorage.getItem('messageAttempts') || '[]');
+            const now = Date.now();
+            const oneHourAgo = now - (60 * 60 * 1000);
+            const recentAttempts = messageAttempts.filter(time => time > oneHourAgo);
+            
+            if (recentAttempts.length >= 10) {
+                showToast('Too many messages sent. Please try again later.');
+                const modal = document.getElementById('messageModal');
+                if (modal) modal.remove();
                 return;
             }
             
@@ -5213,6 +5266,11 @@
             
             try {
                 await database.ref('messages').push(messageData);
+                
+                // Record message attempt for rate limiting
+                recentAttempts.push(now);
+                localStorage.setItem('messageAttempts', JSON.stringify(recentAttempts));
+                
                 showToast('Message sent successfully!');
                 const modal = document.getElementById('messageModal');
                 if (modal) modal.remove();
@@ -5299,6 +5357,33 @@
             }
         }
         window.deleteMessage = deleteMessage;
+        
+        // Report message as spam/abuse
+        async function reportMessage(messageId, reportedUserId, subject) {
+            if (!confirm('Report this message as spam or abuse? This will be reviewed by site administrators.')) return;
+            
+            const user = auth.currentUser;
+            if (!user) return;
+            
+            const reportData = {
+                messageId: messageId,
+                reportedBy: user.uid,
+                reportedByEmail: user.email,
+                reportedUser: reportedUserId,
+                messageSubject: subject,
+                timestamp: new Date().toISOString(),
+                status: 'pending'
+            };
+            
+            try {
+                await database.ref('reports').push(reportData);
+                showToast('Message reported. Thank you for helping keep our community safe.');
+            } catch (error) {
+                console.error('Error reporting message:', error);
+                showToast('Error submitting report');
+            }
+        }
+        window.reportMessage = reportMessage;
         
     </script>
 
@@ -5485,6 +5570,8 @@
                     <input type="text" id="signUpDisplayName" required oninput="checkUsernameAvailability()" pattern="[a-zA-Z0-9_]+" minlength="3" maxlength="20" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="Letters, numbers, underscore only">
                     <p id="usernameStatus" style="margin-top: 0.5rem; font-size: 0.85rem; color: #999;"></p>
                 </div>
+                <!-- Honeypot field (hidden from humans, bots will fill it) -->
+                <input type="text" id="website" name="website" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1" autocomplete="off">
                 <button type="submit" class="feature-btn" style="width: 100%;">Sign Up</button>
                 <p style="color: #999; font-size: 0.85rem; margin-top: 1rem; text-align: center;">
                     You'll receive a verification email after signing up
