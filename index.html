@@ -2542,21 +2542,19 @@
                 } else if (sectionId === 'search') {
                     const mapElement = document.getElementById('search-map');
                     if (mapElement && !searchMap) {
-                        // Get user location before initializing map
-                        getUserLocation().then(location => {
-                            searchMap = L.map(mapElement).setView([location.lat, location.lng], location.zoom);
-                            L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
-                                tileSize: 512,
-                                zoomOffset: -1
-                            }).addTo(searchMap);
-                            
-                            // Add clean Mapbox attribution
-                            L.control.attribution({ position: "bottomright", prefix: false }).addAttribution("© <a href=\"https://www.mapbox.com/\">Mapbox</a>").addTo(searchMap);
-                            // Load routes from Firebase
-                            allRoutesData = []; // Reset
-                            selectedRoute = null; // Reset
-                            
-                            getAllRoutes().then(routes => {
+                        searchMap = L.map(mapElement).setView([39.7392, -104.9903], 13);
+                        L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
+                            tileSize: 512,
+                            zoomOffset: -1
+                        }).addTo(searchMap);
+                        
+                        // Add clean Mapbox attribution
+                        L.control.attribution({ position: "bottomright", prefix: false }).addAttribution("© <a href=\"https://www.mapbox.com/\">Mapbox</a>").addTo(searchMap);
+                        // Load routes from Firebase
+                        allRoutesData = []; // Reset
+                        selectedRoute = null; // Reset
+                        
+                        getAllRoutes().then(routes => {
                             allRoutesData = []; // Reset global array
                             
                             routes.forEach((route, index) => {
@@ -2907,20 +2905,18 @@
                                 }
                             });
                         }
-                        }); // Close getUserLocation().then()
                     }
                 } else if (sectionId === 'swarms') {
                     const mapElement = document.getElementById('swarm-map');
                     if (mapElement) {
                         // Initialize map if it doesn't exist
                         if (!swarmMap) {
-                            getUserLocation().then(location => {
-                                swarmMap = L.map(mapElement).setView([location.lat, location.lng], location.zoom);
-                                L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
-                                    tileSize: 512,
-                                    zoomOffset: -1
-                                }).addTo(swarmMap);
-                                L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(swarmMap);
+                            swarmMap = L.map(mapElement).setView([39.7392, -104.9903], 13);
+                            L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
+                                tileSize: 512,
+                                zoomOffset: -1
+                            }).addTo(swarmMap);
+                            L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(swarmMap);
                         } else {
                             // Map exists - clear all existing markers before reloading
                             swarmMap.eachLayer(function (layer) {
@@ -3106,7 +3102,6 @@
                                 }
                             });
                         }
-                            }); // Close getUserLocation().then()
                     }
                 } else if (sectionId === 'events') {
                     // Initialize event map
@@ -3114,13 +3109,12 @@
                     if (eventMapElement) {
                         // Initialize map if it doesn't exist
                         if (!eventMap) {
-                            getUserLocation().then(location => {
-                                eventMap = L.map(eventMapElement).setView([location.lat, location.lng], location.zoom);
-                                L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
-                                    tileSize: 512,
-                                    zoomOffset: -1
-                                }).addTo(eventMap);
-                                L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(eventMap);
+                            eventMap = L.map(eventMapElement).setView([39.7392, -104.9903], 13);
+                            L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
+                                tileSize: 512,
+                                zoomOffset: -1
+                            }).addTo(eventMap);
+                            L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(eventMap);
                         } else {
                             // Map exists - clear all existing markers before reloading
                             eventMap.eachLayer(function (layer) {
@@ -3312,7 +3306,6 @@
                             }
                         });
                     }
-                            }); // Close getUserLocation().then()
                 }
             }, 500);
         }
@@ -4227,31 +4220,6 @@
             }
         }
         window.closeEventInfo = closeEventInfo;
-        
-        // Helper function to get user's location or default to Denver
-        function getUserLocation() {
-            return new Promise((resolve) => {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            resolve({
-                                lat: position.coords.latitude,
-                                lng: position.coords.longitude,
-                                zoom: 13
-                            });
-                        },
-                        () => {
-                            // Geolocation failed, use Denver
-                            resolve({ lat: 39.7392, lng: -104.9903, zoom: 11 });
-                        },
-                        { timeout: 5000 }
-                    );
-                } else {
-                    // Geolocation not supported, use Denver
-                    resolve({ lat: 39.7392, lng: -104.9903, zoom: 11 });
-                }
-            });
-        }
         
         // Toast Notification
         function showToast(message) {
