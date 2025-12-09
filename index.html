@@ -54,7 +54,7 @@
             justify-content: center;
             align-items: center;
             position: relative;
-            padding: 0 2rem; /* Add padding for breathing room */
+            padding: 0 2rem;
         }
         
         .nav-links {
@@ -75,26 +75,30 @@
             color: #ffffff;
         }
         
-        /* Auth UI */
+        /* Auth UI - Way over on the right */
         .nav-auth {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.5rem;
             position: absolute;
-            right: 3rem; /* Much further right */
-            white-space: nowrap; /* Prevent text wrapping */
+            right: 0;
+        }
+        
+        #user-name {
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
         }
         
         .auth-btn {
             background: linear-gradient(135deg, var(--accent-color), #8dbcc0);
             color: white;
             border: none;
-            padding: 0.7rem 1.5rem;
+            padding: 0.6rem 1.2rem;
             border-radius: 25px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 0.95rem; /* Slightly smaller */
+            font-size: 0.9rem;
         }
         
         .auth-btn:hover {
@@ -803,7 +807,7 @@
             <div class="nav-auth">
                 <button id="sign-in-btn" class="auth-btn" onclick="showSignInModal()">Sign In</button>
                 <div id="user-info" style="display: none;">
-                    <span id="user-name" style="color: var(--accent-light); margin-right: 0.75rem; font-size: 0.9rem;">Hi, User!</span>
+                    <span id="user-name" style="color: var(--accent-light);">Hi, User!</span>
                     <button class="auth-btn" onclick="openDashboard()">Dashboard</button>
                     <button id="sign-out-btn" class="auth-btn" onclick="signOut()">Sign Out</button>
                 </div>
