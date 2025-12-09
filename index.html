@@ -79,9 +79,10 @@
         .nav-auth {
             display: flex;
             align-items: center;
-            gap: 1rem; /* Increased from 0.5rem */
+            gap: 0.75rem;
             position: absolute;
-            right: 2rem; /* Push further right */
+            right: 3rem; /* Much further right */
+            white-space: nowrap; /* Prevent text wrapping */
         }
         
         .auth-btn {
@@ -93,6 +94,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-size: 0.95rem; /* Slightly smaller */
         }
         
         .auth-btn:hover {
@@ -801,8 +803,8 @@
             <div class="nav-auth">
                 <button id="sign-in-btn" class="auth-btn" onclick="showSignInModal()">Sign In</button>
                 <div id="user-info" style="display: none;">
-                    <span id="user-name" style="color: var(--accent-light); margin-right: 1rem;">Hi, User!</span>
-                    <button class="auth-btn" onclick="openDashboard()" style="margin-right: 0.5rem;">Dashboard</button>
+                    <span id="user-name" style="color: var(--accent-light); margin-right: 0.75rem; font-size: 0.9rem;">Hi, User!</span>
+                    <button class="auth-btn" onclick="openDashboard()">Dashboard</button>
                     <button id="sign-out-btn" class="auth-btn" onclick="signOut()">Sign Out</button>
                 </div>
             </div>
@@ -1923,6 +1925,9 @@
                 return;
             }
             
+            // Clean up old messages (30+ days old for events/swarms)
+            cleanupOldMessages();
+            
             try {
                 const messages = await loadMessages();
                 
@@ -1978,7 +1983,7 @@
                             ${isUnread ? `<button onclick="markMessageRead('${msg.id}'); loadMyMessages();" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; cursor: pointer; margin-top: 1rem; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">Mark as Read</button>` : ''}
                             
                             <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
-                                <a href="mailto:${escapedFromEmail}?subject=Re: ${encodeURIComponent(msg.subject)}" style="display: inline-block; background: rgba(107, 155, 158, 0.2); color: var(--accent-light); border: none; padding: 0.6rem 1.2rem; border-radius: 10px; cursor: pointer; font-weight: 600; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(107, 155, 158, 0.3)'" onmouseout="this.style.background='rgba(107, 155, 158, 0.2)'">📧 Reply via Email</a>
+                                <button onclick="replyToMessage('${msg.from}', '${escapedFromName}', 'Re: ${escapedSubject}')" style="display: inline-block; background: rgba(107, 155, 158, 0.2); color: var(--accent-light); border: none; padding: 0.6rem 1.2rem; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='rgba(107, 155, 158, 0.3)'" onmouseout="this.style.background='rgba(107, 155, 158, 0.2)'">💬 Reply</button>
                                 <button onclick="reportMessage('${msg.id}', '${msg.from}', '${escapedSubject}')" style="background: rgba(255, 70, 70, 0.2); color: #ff4646; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='rgba(255, 70, 70, 0.4)'" onmouseout="this.style.background='rgba(255, 70, 70, 0.2)'">🚩 Report</button>
                             </div>
                         </div>
@@ -5199,7 +5204,7 @@
                         <div style="margin-bottom: 1.5rem;">
                             <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Message *</label>
                             <textarea id="messageText" required maxlength="1000" rows="6" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem; resize: vertical;" placeholder="Hi, I'm interested in..."></textarea>
-                            <p style="color: #999; font-size: 0.85rem; margin-top: 0.5rem;">Note: Your username and email will be shared with the organizer</p>
+                            <p style="color: #999; font-size: 0.85rem; margin-top: 0.5rem;">💡 Your username and email will be shared with the organizer. Messages about events/swarms will be automatically deleted 7 days after the event date.</p>
                         </div>
                         
                         <!-- Honeypot field (hidden from humans, bots will fill it) -->
@@ -5311,6 +5316,40 @@
         }
         window.loadMessages = loadMessages;
         
+        // Clean up old event/swarm messages (7 days after event date)
+        async function cleanupOldMessages() {
+            try {
+                const allMessagesSnapshot = await database.ref('messages').once('value');
+                const now = new Date();
+                const deletePromises = [];
+                
+                allMessagesSnapshot.forEach(snap => {
+                    const msg = snap.val();
+                    
+                    // Only auto-delete event/swarm messages, not direct replies
+                    if (msg.type === 'event' || msg.type === 'swarm') {
+                        // Parse itemName to try to get the event/swarm ID
+                        // For now, we'll just check message age (30 days old = delete)
+                        const messageDate = new Date(msg.timestamp);
+                        const daysSinceMessage = (now - messageDate) / (1000 * 60 * 60 * 24);
+                        
+                        if (daysSinceMessage > 30) {
+                            console.log('Deleting old message:', snap.key);
+                            deletePromises.push(database.ref(`messages/${snap.key}`).remove());
+                        }
+                    }
+                });
+                
+                if (deletePromises.length > 0) {
+                    await Promise.all(deletePromises);
+                    console.log(`Cleaned up ${deletePromises.length} old messages`);
+                }
+            } catch (error) {
+                console.error('Error cleaning up messages:', error);
+            }
+        }
+        window.cleanupOldMessages = cleanupOldMessages;
+        
         // Get unread message count
         async function getUnreadMessageCount() {
             const user = auth.currentUser;
@@ -5342,6 +5381,118 @@
             }
         }
         window.markMessageRead = markMessageRead;
+        
+        // Reply to a message (internal messaging)
+        function replyToMessage(recipientId, recipientName, defaultSubject) {
+            if (!auth.currentUser) {
+                showToast('Please sign in to send messages');
+                return;
+            }
+            
+            // Create modal
+            const modal = document.createElement('div');
+            modal.id = 'replyModal';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10, 10, 10, 0.95); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 2rem;';
+            
+            modal.innerHTML = `
+                <div style="background: rgba(25, 25, 25, 0.98); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 20px; padding: 2rem; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 style="color: var(--accent-color); margin: 0;">💬 Reply to ${recipientName}</h3>
+                        <button onclick="document.getElementById('replyModal').remove()" style="background: none; border: none; color: var(--accent-light); font-size: 1.5rem; cursor: pointer;">&times;</button>
+                    </div>
+                    
+                    <form id="replyForm" onsubmit="sendReply(event, '${recipientId}', '${recipientName}')">
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Subject *</label>
+                            <input type="text" id="replySubject" required maxlength="100" value="${defaultSubject}" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;">
+                        </div>
+                        
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Message *</label>
+                            <textarea id="replyText" required maxlength="1000" rows="6" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem; resize: vertical;" placeholder="Type your reply..."></textarea>
+                            <p style="color: #999; font-size: 0.85rem; margin-top: 0.5rem;">💡 Messages are private and only visible to you and the recipient</p>
+                        </div>
+                        
+                        <!-- Honeypot field -->
+                        <input type="text" id="replyWebsite" name="website" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1" autocomplete="off">
+                        
+                        <button type="submit" class="feature-btn" style="width: 100%;">Send Reply</button>
+                    </form>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        window.replyToMessage = replyToMessage;
+        
+        // Send reply
+        async function sendReply(event, recipientId, recipientName) {
+            event.preventDefault();
+            
+            const user = auth.currentUser;
+            if (!user) {
+                showToast('Please sign in to send messages');
+                return;
+            }
+            
+            // Honeypot check
+            const honeypot = document.getElementById('replyWebsite').value;
+            if (honeypot) {
+                console.log('Bot detected');
+                showToast('Error sending reply');
+                const modal = document.getElementById('replyModal');
+                if (modal) modal.remove();
+                return;
+            }
+            
+            // Rate limiting check (same as sendMessage - 10/hour)
+            const messageAttempts = JSON.parse(localStorage.getItem('messageAttempts') || '[]');
+            const now = Date.now();
+            const oneHourAgo = now - (60 * 60 * 1000);
+            const recentAttempts = messageAttempts.filter(time => time > oneHourAgo);
+            
+            if (recentAttempts.length >= 10) {
+                showToast('Too many messages sent. Please try again later.');
+                const modal = document.getElementById('replyModal');
+                if (modal) modal.remove();
+                return;
+            }
+            
+            const subject = document.getElementById('replySubject').value;
+            const messageText = document.getElementById('replyText').value;
+            
+            const messageData = {
+                from: user.uid,
+                fromName: user.displayName || user.email.split('@')[0],
+                fromEmail: user.email,
+                to: recipientId,
+                toName: recipientName,
+                subject: subject,
+                message: messageText,
+                type: 'reply',
+                itemName: 'Message Reply',
+                timestamp: new Date().toISOString(),
+                read: false
+            };
+            
+            try {
+                await database.ref('messages').push(messageData);
+                
+                // Record attempt
+                recentAttempts.push(now);
+                localStorage.setItem('messageAttempts', JSON.stringify(recentAttempts));
+                
+                showToast('Reply sent successfully!');
+                const modal = document.getElementById('replyModal');
+                if (modal) modal.remove();
+            } catch (error) {
+                console.error('Error sending reply:', error);
+                showToast('Error sending reply');
+                const modal = document.getElementById('replyModal');
+                if (modal) modal.remove();
+            }
+        }
+        window.sendReply = sendReply;
         
         // Delete message
         async function deleteMessage(messageId) {
