@@ -2038,20 +2038,6 @@
         }
         
         // View items from dashboard on map
-        function viewRouteFromDashboard(routeId) {
-            closeDashboard();
-            toggleSection('search', routeId);
-        }
-        
-        function viewSwarmFromDashboard(swarmId) {
-            closeDashboard();
-            toggleSection('swarms', swarmId);
-        }
-        
-        function viewEventFromDashboard(eventId) {
-            closeDashboard();
-            toggleSection('events', eventId);
-        }
         
         // Delete route
         async function deleteRoute(routeId) {
@@ -2161,9 +2147,6 @@
         window.editRoute = editRoute;
         window.editSwarm = editSwarm;
         window.editEvent = editEvent;
-        window.viewRouteFromDashboard = viewRouteFromDashboard;
-        window.viewSwarmFromDashboard = viewSwarmFromDashboard;
-        window.viewEventFromDashboard = viewEventFromDashboard;
         window.viewRouteFromDashboard = viewRouteFromDashboard;
         window.viewSwarmFromDashboard = viewSwarmFromDashboard;
         window.viewEventFromDashboard = viewEventFromDashboard;
