@@ -2387,7 +2387,7 @@
             };
             
             const content = document.createElement('div');
-            content.style.cssText = 'padding: 3rem; max-width: 1600px; margin: 0 auto; padding-bottom: 4rem; height: 100vh; overflow: hidden;';
+            content.style.cssText = 'padding: 2rem; max-width: 1600px; margin: 0 auto; padding-bottom: 3rem; height: 100vh; overflow: hidden;';
             
             // Create content based on section
             const mapMode = sectionId.includes('swarm') ? 'swarm' : sectionId.includes('event') ? 'event' : 'journey';
@@ -2468,12 +2468,12 @@
                 `;
              } else if (sectionId === 'search') {
                 content.innerHTML = `
-                    <h2 style="color: var(--accent-color); margin-bottom: 1rem;">Search Routes</h2>
-                    <p style="color: #d4d4d4; margin-bottom: 1.5rem;">Discover community-shared walking routes and find your next adventure</p>
+                    <h2 style="color: var(--accent-color); margin-bottom: 0.5rem;">Search Routes</h2>
+                    <p style="color: #d4d4d4; margin-bottom: 1rem;">Discover community-shared walking routes and find your next adventure</p>
                     
-                    <div style="margin-bottom: 1.5rem;">
+                    <div style="margin-bottom: 1rem;">
                         <label for="categoryFilter" style="color: var(--accent-color); font-weight: 600; display: block; margin-bottom: 0.5rem;">Filter by Category:</label>
-                        <select id="categoryFilter" style="width: 100%; padding: 0.75rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif; font-size: 1rem; cursor: pointer;">
+                        <select id="categoryFilter" style="width: 100%; padding: 0.75rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif; font-size: 1rem; cursor: pointer; max-height: 150px; overflow-y: auto;">
                             <option value="all">All Categories</option>
                             <option value="Coffee Shops">☕ Coffee Shops</option>
                             <option value="Tacos">🌮 Tacos</option>
@@ -2525,23 +2525,23 @@
                     </div>
                     
                     <!-- Secondary dropdown for custom categories -->
-                    <div id="customCategoryFilterContainer" style="margin-bottom: 1.5rem; display: none;">
+                    <div id="customCategoryFilterContainer" style="margin-bottom: 1rem; display: none;">
                         <label for="customCategoryFilter" style="color: var(--accent-color); font-weight: 600; display: block; margin-bottom: 0.5rem;">✨ User Created Categories:</label>
                         <select id="customCategoryFilter" style="width: 100%; padding: 0.75rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif; font-size: 1rem; cursor: pointer;">
                             <option value="">All Custom Categories</option>
                         </select>
                     </div>
                     
-                    <div style="margin-bottom: 1.5rem;">
-                        <h3 style="color: var(--accent-light); margin-bottom: 1rem;">🔍 Search Near Me</h3>
-                        <div style="margin-bottom: 1rem; position: relative;">
+                    <div style="margin-bottom: 1rem;">
+                        <h3 style="color: var(--accent-light); margin-bottom: 0.5rem;">🔍 Search Near Me</h3>
+                        <div style="margin-bottom: 0.5rem; position: relative;">
                             <input type="text" id="mapSearch" placeholder="👉 Enter your zip code to find routes near you..." style="width: 100%; padding: 1rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif; font-size: 1rem; animation: searchPulse 2s ease-in-out 3;">
                             <div id="mapSearchSuggestions" style="position: absolute; top: 100%; left: 0; right: 0; background: rgba(30, 30, 30, 0.98); border: 2px solid rgba(107, 155, 158, 0.3); border-top: none; border-radius: 0 0 15px 15px; max-height: 300px; overflow-y: auto; z-index: 1000; display: none;"></div>
                         </div>
                         <button class="feature-btn" onclick="showToast('Searching routes...')">Search</button>
                     </div>
                     
-                    <div id="search-map" style="height: 500px; border-radius: 15px; margin: 1rem 0; background: #1a1a1a;"></div>
+                    <div id="search-map" style="height: 400px; border-radius: 15px; margin: 0.5rem 0; background: #1a1a1a;"></div>
                     
                     <!-- Info Panel -->
                     <div id="searchInfoPanel" style="display: none; padding: 1.5rem; background: rgba(25, 25, 25, 0.95); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; margin: 1rem auto 0 auto; max-width: 500px;">
@@ -2564,7 +2564,7 @@
                         <button class="feature-btn" onclick="showToast('Searching swarms...')">Search</button>
                     </div>
                     
-                    <div id="swarm-map" style="height: 500px; border-radius: 15px; margin: 1rem 0; background: #1a1a1a;"></div>
+                    <div id="swarm-map" style="height: 400px; border-radius: 15px; margin: 0.5rem 0; background: #1a1a1a;"></div>
                     
                     <!-- Info Panel -->
                     <div id="swarmInfoPanel" style="display: none; padding: 1.5rem; background: rgba(25, 25, 25, 0.95); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; margin: 1rem auto 0 auto; max-width: 500px;">
@@ -2587,7 +2587,7 @@
                         <button class="feature-btn" onclick="showToast('Searching events...')">Search Events</button>
                     </div>
                     
-                    <div id="event-map" style="height: 500px; border-radius: 15px; margin: 1rem 0; background: #1a1a1a;"></div>
+                    <div id="event-map" style="height: 400px; border-radius: 15px; margin: 0.5rem 0; background: #1a1a1a;"></div>
                     
                     <!-- Info Panel -->
                     <div id="eventInfoPanel" style="display: none; padding: 1.5rem; background: rgba(25, 25, 25, 0.95); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; margin: 1rem auto 0 auto; max-width: 500px;">
