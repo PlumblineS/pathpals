@@ -1649,6 +1649,9 @@
                 return;
             }
             
+            // Lock background scrolling
+            document.body.classList.add('choreography-active');
+            
             document.getElementById('dashboardModal').style.display = 'flex';
             updateUnreadBadge(); // Update message badge
             switchDashboardTab('routes');
@@ -1656,6 +1659,9 @@
         
         // Close dashboard
         function closeDashboard() {
+            // Unlock background scrolling
+            document.body.classList.remove('choreography-active');
+            
             document.getElementById('dashboardModal').style.display = 'none';
         }
         
@@ -2868,9 +2874,9 @@
                                     if (routeData.route.id === highlightId) {
                                         // Keep this route visible and highlighted
                                         routeData.polyline.fire('click');
-                                        // Center map on this route
+                                        // Center map on this route with city-level zoom (max zoom 12)
                                         const bounds = routeData.polyline.getBounds();
-                                        searchMap.fitBounds(bounds, { padding: [50, 50] });
+                                        searchMap.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
                                     } else {
                                         // Hide other routes
                                         searchMap.removeLayer(routeData.polyline);
@@ -3031,8 +3037,8 @@
 
                         
                         // Add search autocomplete functionality
-                        const searchInput = document.getElementById('searchMapLocation');
-                        const suggestionsDiv = document.getElementById('searchMapSuggestions');
+                        const searchInput = document.getElementById('mapSearch');
+                        const suggestionsDiv = document.getElementById('mapSearchSuggestions');
                         let searchTimeout;
                         
                         if (searchInput && suggestionsDiv) {
@@ -3222,7 +3228,7 @@
                                 // Auto-show info for highlighted swarm
                                 if (isHighlighted) {
                                     marker.fire('click');
-                                    swarmMap.setView([swarm.lat, swarm.lng], 15);
+                                    swarmMap.setView([swarm.lat, swarm.lng], 11); // City level zoom
                                 }
                             });
                         });
@@ -3422,7 +3428,7 @@
                                 // Auto-show info for highlighted event
                                 if (isHighlighted) {
                                     marker.fire('click');
-                                    eventMap.setView([event.lat, event.lng], 15);
+                                    eventMap.setView([event.lat, event.lng], 11); // City level zoom
                                 }
                             });
                         });
