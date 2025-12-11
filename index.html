@@ -2866,8 +2866,13 @@
                     return;
                 }
                 
-                // Store the route ID for updating later
+                // Store the route ID and data for updating later
                 window.editingRouteId = routeId;
+                window.editingRouteData = {
+                    name: route.name,
+                    description: route.description,
+                    category: route.category
+                };
                 
                 // Close dashboard
                 closeDashboard();
@@ -4758,6 +4763,38 @@
             `;
             
             document.body.appendChild(modal);
+            
+            // Pre-populate fields if editing
+            if (window.editingRouteData) {
+                document.getElementById('routeName').value = window.editingRouteData.name || '';
+                document.getElementById('routeDescription').value = window.editingRouteData.description || '';
+                
+                // Handle category - select it from dropdown or use custom
+                const category = window.editingRouteData.category || '';
+                const categorySelect = document.getElementById('routeCategory');
+                
+                // Check if category exists in predefined list
+                let categoryExists = false;
+                for (let option of categorySelect.options) {
+                    if (option.value === category) {
+                        categorySelect.value = category;
+                        categoryExists = true;
+                        break;
+                    }
+                }
+                
+                // If category doesn't exist in dropdown, use "Other" and put in custom field
+                if (!categoryExists && category) {
+                    categorySelect.value = 'Other';
+                    toggleCustomRouteCategory(); // Show custom field
+                    setTimeout(() => {
+                        document.getElementById('customRouteCategory').value = category;
+                    }, 50);
+                }
+                
+                // Update modal title
+                document.querySelector('#saveRouteModal h2').textContent = 'Update Your Route';
+            }
         }
         
         async function confirmSaveRoute() {
@@ -4858,8 +4895,9 @@
                     document.getElementById('saveRouteModal').remove();
                     showToast(`Route "${name}" updated successfully!`);
                     
-                    // Clear editing flag
+                    // Clear editing flags
                     window.editingRouteId = null;
+                    window.editingRouteData = null;
                     
                     // Close the editing map
                     const modal = document.getElementById('fullscreen-journey-map');
