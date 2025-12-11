@@ -1969,6 +1969,8 @@
                 loadMyLikes();
             } else if (tab === 'messages') {
                 loadMyMessages();
+            } else if (tab === 'account') {
+                loadAccountSettings();
             }
         }
         
@@ -2346,6 +2348,182 @@
                 }
             }
         }
+        
+        // Load account settings
+        async function loadAccountSettings() {
+            const user = auth.currentUser;
+            if (!user) return;
+            
+            const contentDiv = document.getElementById('accountContent');
+            
+            // Get user creation date
+            const creationDate = user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : 'Unknown';
+            
+            contentDiv.innerHTML = `
+                <div style="max-width: 600px; margin: 0 auto;">
+                    <div style="text-align: center; padding: 2rem; background: rgba(30, 30, 30, 0.6); border-radius: 15px; margin-bottom: 2rem;">
+                        <h3 style="color: var(--accent-light); margin-bottom: 0.5rem;">Flâneur since ${creationDate}</h3>
+                        <p style="color: #999; font-size: 0.9rem;">Welcome back, ${user.displayName || user.email.split('@')[0]}!</p>
+                    </div>
+                    
+                    <div style="background: rgba(30, 30, 30, 0.6); border-radius: 15px; padding: 2rem; margin-bottom: 1.5rem;">
+                        <h3 style="color: var(--accent-color); margin-bottom: 1.5rem;">Account Information</h3>
+                        
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; color: #999; font-size: 0.85rem; margin-bottom: 0.5rem;">Username</label>
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <input type="text" id="usernameInput" value="${user.displayName || user.email.split('@')[0]}" style="flex: 1; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;">
+                                <button onclick="updateUsername()" style="padding: 0.8rem 1.5rem; background: var(--accent-color); border: none; border-radius: 10px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s;">Update</button>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; color: #999; font-size: 0.85rem; margin-bottom: 0.5rem;">Email</label>
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <input type="email" id="emailInput" value="${user.email}" style="flex: 1; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;">
+                                <button onclick="updateEmail()" style="padding: 0.8rem 1.5rem; background: var(--accent-color); border: none; border-radius: 10px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s;">Update</button>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; color: #999; font-size: 0.85rem; margin-bottom: 0.5rem;">Password</label>
+                            <button onclick="updatePassword()" style="width: 100%; padding: 0.8rem; background: rgba(107, 155, 158, 0.2); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: var(--accent-light); font-weight: 600; cursor: pointer; transition: all 0.3s;">Change Password</button>
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(50, 20, 20, 0.6); border: 2px solid rgba(220, 38, 38, 0.3); border-radius: 15px; padding: 2rem;">
+                        <h3 style="color: #ff6b6b; margin-bottom: 1rem;">Danger Zone</h3>
+                        <p style="color: #d4d4d4; margin-bottom: 1rem; font-size: 0.9rem;">Permanently delete your account and all associated data. This action cannot be undone.</p>
+                        <button onclick="deleteAccount()" style="width: 100%; padding: 0.8rem; background: rgba(220, 38, 38, 0.2); border: 2px solid #dc2626; border-radius: 10px; color: #ff6b6b; font-weight: 600; cursor: pointer; transition: all 0.3s;">Delete My Account</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Update username
+        async function updateUsername() {
+            const user = auth.currentUser;
+            if (!user) return;
+            
+            const newUsername = document.getElementById('usernameInput')?.value;
+            if (!newUsername || newUsername.trim() === '') {
+                showToast('Please enter a username');
+                return;
+            }
+            
+            try {
+                await user.updateProfile({ displayName: newUsername });
+                showToast('✅ Username updated successfully!');
+            } catch (error) {
+                console.error('Error updating username:', error);
+                showToast('❌ Error updating username');
+            }
+        }
+        
+        // Update email
+        async function updateEmail() {
+            const user = auth.currentUser;
+            if (!user) return;
+            
+            const newEmail = document.getElementById('emailInput')?.value;
+            if (!newEmail || !newEmail.includes('@')) {
+                showToast('Please enter a valid email');
+                return;
+            }
+            
+            try {
+                await user.updateEmail(newEmail);
+                showToast('✅ Email updated successfully! Please verify your new email.');
+            } catch (error) {
+                console.error('Error updating email:', error);
+                if (error.code === 'auth/requires-recent-login') {
+                    showToast('❌ Please sign out and sign in again before changing email');
+                } else {
+                    showToast('❌ Error updating email: ' + error.message);
+                }
+            }
+        }
+        
+        // Update password
+        async function updatePassword() {
+            const user = auth.currentUser;
+            if (!user) return;
+            
+            const newPassword = prompt('Enter your new password (minimum 6 characters):');
+            if (!newPassword || newPassword.length < 6) {
+                showToast('Password must be at least 6 characters');
+                return;
+            }
+            
+            try {
+                await user.updatePassword(newPassword);
+                showToast('✅ Password updated successfully!');
+            } catch (error) {
+                console.error('Error updating password:', error);
+                if (error.code === 'auth/requires-recent-login') {
+                    showToast('❌ Please sign out and sign in again before changing password');
+                } else {
+                    showToast('❌ Error updating password: ' + error.message);
+                }
+            }
+        }
+        
+        // Delete account
+        async function deleteAccount() {
+            const user = auth.currentUser;
+            if (!user) return;
+            
+            const confirmation = prompt('This will permanently delete your account and all data. Type "DELETE" to confirm:');
+            if (confirmation !== 'DELETE') {
+                showToast('Account deletion cancelled');
+                return;
+            }
+            
+            try {
+                // Delete user data from Firebase
+                await database.ref(`routes`).orderByChild('createdBy').equalTo(user.uid).once('value', async (snapshot) => {
+                    const deletePromises = [];
+                    snapshot.forEach(child => {
+                        deletePromises.push(database.ref(`routes/${child.key}`).remove());
+                    });
+                    await Promise.all(deletePromises);
+                });
+                
+                await database.ref(`swarms`).orderByChild('createdBy').equalTo(user.uid).once('value', async (snapshot) => {
+                    const deletePromises = [];
+                    snapshot.forEach(child => {
+                        deletePromises.push(database.ref(`swarms/${child.key}`).remove());
+                    });
+                    await Promise.all(deletePromises);
+                });
+                
+                await database.ref(`events`).orderByChild('createdBy').equalTo(user.uid).once('value', async (snapshot) => {
+                    const deletePromises = [];
+                    snapshot.forEach(child => {
+                        deletePromises.push(database.ref(`events/${child.key}`).remove());
+                    });
+                    await Promise.all(deletePromises);
+                });
+                
+                // Delete user account
+                await user.delete();
+                showToast('Account deleted successfully');
+                window.location.reload();
+            } catch (error) {
+                console.error('Error deleting account:', error);
+                if (error.code === 'auth/requires-recent-login') {
+                    showToast('❌ Please sign out and sign in again before deleting account');
+                } else {
+                    showToast('❌ Error deleting account: ' + error.message);
+                }
+            }
+        }
+        
+        window.loadAccountSettings = loadAccountSettings;
+        window.updateUsername = updateUsername;
+        window.updateEmail = updateEmail;
+        window.updatePassword = updatePassword;
+        window.deleteAccount = deleteAccount;
         
         // View items from dashboard on map
         
@@ -5814,6 +5992,9 @@
                 createdByEmail: user.email
             };
             
+            // Check if this is a recurring event
+            const isRecurring = document.getElementById('recurringEventCheckbox')?.checked;
+            
             // Save to Firebase (also keeps localStorage as backup)
             if (window.editingEventId) {
                 // UPDATE existing event
@@ -5822,8 +6003,66 @@
                 window.editingEventId = null; // Clear editing flag
                 closeCreateEventModal();
                 openDashboard(); // Show updated event in dashboard
+            } else if (isRecurring) {
+                // CREATE RECURRING EVENTS
+                const interval = parseInt(formData.get('eventRecurrenceInterval')) || 1;
+                const frequency = formData.get('eventRecurrenceFrequency') || 'weeks';
+                const recurrenceEnd = formData.get('eventRecurrenceEnd');
+                
+                if (!recurrenceEnd) {
+                    showToast('Please select an end date for recurring events');
+                    return;
+                }
+                
+                const startDate = new Date(eventData.startDate);
+                const endDate = new Date(recurrenceEnd);
+                const events = [];
+                let currentDate = new Date(startDate);
+                let occurrenceCount = 0;
+                
+                // Generate all occurrences
+                while (currentDate <= endDate && occurrenceCount < 100) {
+                    const eventCopy = {
+                        ...eventData,
+                        startDate: currentDate.toISOString().split('T')[0],
+                        isRecurring: true,
+                        recurrenceInfo: `Part of recurring series (every ${interval} ${frequency})`
+                    };
+                    
+                    events.push(eventCopy);
+                    occurrenceCount++;
+                    
+                    // Calculate next occurrence
+                    if (frequency === 'days') {
+                        currentDate.setDate(currentDate.getDate() + interval);
+                    } else if (frequency === 'weeks') {
+                        currentDate.setDate(currentDate.getDate() + (interval * 7));
+                    } else if (frequency === 'months') {
+                        currentDate.setMonth(currentDate.getMonth() + interval);
+                    }
+                }
+                
+                // Save all occurrences to Firebase
+                showToast(`Creating ${occurrenceCount} recurring events...`);
+                
+                for (const eventOccurrence of events) {
+                    await saveEventToFirebase(eventOccurrence);
+                }
+                
+                showToast(`✅ ${occurrenceCount} recurring events created successfully!`);
+                closeCreateEventModal();
+                
+                // Close the creation map and open browse events
+                const modal = document.getElementById('fullscreen-event-map-v2');
+                if (modal) {
+                    modal.style.display = 'none';
+                    modal.remove();
+                    document.body.classList.remove('choreography-active');
+                    journeyMap = null;
+                }
+                toggleSection('events');
             } else {
-                // CREATE new event
+                // CREATE single event
                 const newEventId = await saveEventToFirebase(eventData);
                 
                 // Also save to localStorage as backup
@@ -5901,6 +6140,69 @@
         // Make submit and interaction functions globally accessible
         window.submitSwarm = submitSwarm;
         window.submitEvent = submitEvent;
+        
+        // Toggle recurring event options visibility
+        function toggleRecurringOptions() {
+            const checkbox = document.getElementById('recurringEventCheckbox');
+            const options = document.getElementById('recurringOptions');
+            
+            if (checkbox && options) {
+                options.style.display = checkbox.checked ? 'block' : 'none';
+                if (checkbox.checked) {
+                    updateOccurrencePreview();
+                }
+            }
+        }
+        
+        // Update occurrence preview when recurrence settings change
+        function updateOccurrencePreview() {
+            const startDate = document.querySelector('input[name="eventStartDate"]')?.value;
+            const interval = document.getElementById('recurrenceInterval')?.value || 1;
+            const frequency = document.getElementById('recurrenceFrequency')?.value || 'weeks';
+            const endDate = document.getElementById('recurrenceEndDate')?.value;
+            
+            const preview = document.getElementById('occurrencePreview');
+            if (!preview || !startDate || !endDate) return;
+            
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            
+            if (end <= start) {
+                preview.textContent = '⚠️ End date must be after start date';
+                preview.style.color = '#ff6b6b';
+                return;
+            }
+            
+            // Calculate number of occurrences
+            let count = 0;
+            let currentDate = new Date(start);
+            
+            while (currentDate <= end && count < 100) { // Cap at 100 to prevent infinite loops
+                count++;
+                
+                // Add interval based on frequency
+                if (frequency === 'days') {
+                    currentDate.setDate(currentDate.getDate() + parseInt(interval));
+                } else if (frequency === 'weeks') {
+                    currentDate.setDate(currentDate.getDate() + (parseInt(interval) * 7));
+                } else if (frequency === 'months') {
+                    currentDate.setMonth(currentDate.getMonth() + parseInt(interval));
+                }
+            }
+            
+            const frequencyText = frequency === 'days' ? 'day' : frequency === 'weeks' ? 'week' : 'month';
+            const intervalText = interval == 1 ? frequencyText : `${interval} ${frequencyText}s`;
+            
+            preview.textContent = `✓ This will create ${count} event${count !== 1 ? 's' : ''} (every ${intervalText})`;
+            preview.style.color = 'var(--accent-color)';
+            
+            if (count >= 100) {
+                preview.textContent += ' - Maximum 100 occurrences allowed';
+            }
+        }
+        
+        window.toggleRecurringOptions = toggleRecurringOptions;
+        window.updateOccurrencePreview = updateOccurrencePreview;
         window.addInterest = addInterest;
         window.shareItem = shareItem;
 
@@ -6612,6 +6914,45 @@
                     </div>
                 </div>
 
+                <!-- Recurring Event Options -->
+                <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(40, 40, 40, 0.5); border-radius: 10px; border: 1px solid rgba(107, 155, 158, 0.2);">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; color: #d4d4d4; font-weight: 600; cursor: pointer;">
+                        <input type="checkbox" id="recurringEventCheckbox" onchange="toggleRecurringOptions()" style="width: 20px; height: 20px; cursor: pointer;">
+                        🔄 Recurring Event
+                    </label>
+                    <p style="color: #999; font-size: 0.85rem; margin-top: 0.4rem; margin-bottom: 1rem;">Check if this event repeats (weekly farmers market, monthly meetup, etc.)</p>
+                    
+                    <div id="recurringOptions" style="display: none; margin-top: 1rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Repeat Every</label>
+                                <select name="eventRecurrenceInterval" id="recurrenceInterval" onchange="updateOccurrencePreview()" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem; cursor: pointer;">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Frequency</label>
+                                <select name="eventRecurrenceFrequency" id="recurrenceFrequency" onchange="updateOccurrencePreview()" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem; cursor: pointer;">
+                                    <option value="days">Day(s)</option>
+                                    <option value="weeks" selected>Week(s)</option>
+                                    <option value="months">Month(s)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Repeat Until</label>
+                            <input type="date" name="eventRecurrenceEnd" id="recurrenceEndDate" onchange="updateOccurrencePreview()" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;">
+                            <p style="color: #999; font-size: 0.85rem; margin-top: 0.4rem;">Last date this event will occur</p>
+                        </div>
+                        
+                        <p id="occurrencePreview" style="color: var(--accent-color); font-size: 0.9rem; margin-top: 1rem; font-weight: 600;"></p>
+                    </div>
+                </div>
+
                 <div style="margin-bottom: 1.5rem;">
                     <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Description * (500 characters max)</label>
                     <textarea name="eventDescription" required maxlength="500" rows="4" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem; resize: vertical;" placeholder="Describe your event..."></textarea>
@@ -6747,6 +7088,9 @@
                 <button id="messagesTab" class="dashboard-tab" onclick="switchDashboardTab('messages')" style="padding: 1rem 1.5rem; background: none; border: none; color: #999; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s ease;">
                     <span id="messagesTabLabel">Messages</span> <span id="unreadBadge" style="display: none; background: #ff4444; color: white; padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.75rem; margin-left: 0.3rem;"></span>
                 </button>
+                <button id="accountTab" class="dashboard-tab" onclick="switchDashboardTab('account')" style="padding: 1rem 1.5rem; background: none; border: none; color: #999; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s ease;">
+                    Account
+                </button>
             </div>
             
             <!-- Dashboard Content -->
@@ -6768,6 +7112,9 @@
                 </div>
                 <div id="messagesContent" class="dashboard-section" style="display: none;">
                     <p style="text-align: center; color: #999;">Loading your messages...</p>
+                </div>
+                <div id="accountContent" class="dashboard-section" style="display: none;">
+                    <p style="text-align: center; color: #999;">Loading account settings...</p>
                 </div>
             </div>
         </div>
