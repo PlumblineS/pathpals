@@ -1977,6 +1977,9 @@
             const user = auth.currentUser;
             if (!user) return;
             
+            // Clean up deleted routes (6+ months old)
+            cleanupDeletedRoutes();
+            
             const contentDiv = document.getElementById('routesContent');
             contentDiv.innerHTML = '<p style="text-align: center; color: #999;">Loading...</p>';
             
@@ -1984,7 +1987,11 @@
                 const snapshot = await database.ref('routes').orderByChild('createdBy').equalTo(user.uid).once('value');
                 const routes = [];
                 snapshot.forEach(child => {
-                    routes.push({ id: child.key, ...child.val() });
+                    const route = child.val();
+                    // Exclude soft-deleted routes
+                    if (!route.deleted) {
+                        routes.push({ id: child.key, ...route });
+                    }
                 });
                 
                 if (routes.length === 0) {
@@ -2040,21 +2047,31 @@
                     return;
                 }
                 
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Reset time to start of day for fair comparison
+                
                 let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">';
                 swarms.forEach(swarm => {
+                    const swarmDate = new Date(swarm.date);
+                    const isPastDate = swarmDate < today;
+                    
+                    // Show Edit button only if date hasn't passed
+                    const editButton = !isPastDate ? 
+                        `<button onclick="editSwarm('${swarm.id}')" style="padding: 0.5rem 1rem; background: #5bc0de; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Edit</button>` : '';
+                    
                     html += `
                         <div style="background: rgba(30, 30, 30, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; padding: 1.5rem;">
                             <h3 style="color: var(--accent-light); margin-bottom: 0.5rem;">${swarm.title}</h3>
                             <p style="color: #d4d4d4; font-size: 0.9rem; margin-bottom: 0.5rem;">${swarm.description || 'No description'}</p>
                             <p style="color: #999; font-size: 0.85rem; margin-bottom: 1rem;">
                                 📍 ${swarm.locationCount || 1} location${swarm.locationCount > 1 ? 's' : ''}<br>
-                                📅 ${swarm.date} at ${swarm.time}<br>
+                                📅 ${swarm.date} at ${swarm.time}${isPastDate ? ' <span style="color: #ff6b6b;">(Past)</span>' : ''}<br>
                                 👥 ${swarm.interested || 0} flâneurs interested<br>
                                 ⏱️ ${swarm.duration || 'TBD'}
                             </p>
                             <div style="display: flex; gap: 0.5rem;">
                                 <button onclick="viewSwarmFromDashboard('${swarm.id}')" style="flex: 1; padding: 0.5rem; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">View on Map</button>
-                                <button onclick="editSwarm('${swarm.id}')" style="padding: 0.5rem 1rem; background: #5bc0de; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Edit</button>
+                                ${editButton}
                                 <button onclick="deleteSwarm('${swarm.id}')" style="padding: 0.5rem 1rem; background: #d9534f; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Delete</button>
                             </div>
                         </div>
@@ -2088,20 +2105,30 @@
                     return;
                 }
                 
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Reset time to start of day for fair comparison
+                
                 let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">';
                 events.forEach(event => {
+                    const eventDate = new Date(event.startDate);
+                    const isPastDate = eventDate < today;
+                    
+                    // Show Edit button only if date hasn't passed
+                    const editButton = !isPastDate ?
+                        `<button onclick="editEvent('${event.id}')" style="padding: 0.5rem 1rem; background: #5bc0de; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Edit</button>` : '';
+                    
                     html += `
                         <div style="background: rgba(30, 30, 30, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; padding: 1.5rem;">
                             <h3 style="color: var(--accent-light); margin-bottom: 0.5rem;">${event.name}</h3>
                             <p style="color: #d4d4d4; font-size: 0.9rem; margin-bottom: 0.5rem;">${event.description || 'No description'}</p>
                             <p style="color: #999; font-size: 0.85rem; margin-bottom: 1rem;">
                                 📍 ${event.location}<br>
-                                📅 ${event.startDate} at ${event.startTime}<br>
+                                📅 ${event.startDate} at ${event.startTime}${isPastDate ? ' <span style="color: #ff6b6b;">(Past)</span>' : ''}<br>
                                 👥 ${event.interested || 0} flâneurs interested
                             </p>
                             <div style="display: flex; gap: 0.5rem;">
                                 <button onclick="viewEventFromDashboard('${event.id}')" style="flex: 1; padding: 0.5rem; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">View on Map</button>
-                                <button onclick="editEvent('${event.id}')" style="padding: 0.5rem 1rem; background: #5bc0de; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Edit</button>
+                                ${editButton}
                                 <button onclick="deleteEvent('${event.id}')" style="padding: 0.5rem 1rem; background: #d9534f; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Delete</button>
                             </div>
                         </div>
@@ -2324,12 +2351,16 @@
         
         // Delete route
         async function deleteRoute(routeId) {
-            if (!confirm('Are you sure you want to delete this route? This cannot be undone.')) {
+            if (!confirm('Are you sure you want to delete this route? It will be hidden but recoverable for 6 months.')) {
                 return;
             }
             
             try {
-                await database.ref(`routes/${routeId}`).remove();
+                // Soft delete - mark as deleted but keep in database
+                await database.ref(`routes/${routeId}`).update({
+                    deleted: true,
+                    deletedAt: new Date().toISOString()
+                });
                 showToast('Route deleted successfully');
                 loadMyRoutes();
             } catch (error) {
@@ -2643,6 +2674,197 @@
         window.loadMyEvents = loadMyEvents;
         window.loadMyLikes = loadMyLikes;
         window.deleteRoute = deleteRoute;
+        
+        // === EDIT FUNCTIONS ===
+        
+        // Edit existing route
+        async function editRoute(routeId) {
+            try {
+                const snapshot = await database.ref(`routes/${routeId}`).once('value');
+                const route = snapshot.val();
+                
+                if (!route) {
+                    showToast('Route not found');
+                    return;
+                }
+                
+                // Store the route ID for updating later
+                window.editingRouteId = routeId;
+                
+                // Close dashboard
+                closeDashboard();
+                
+                // Navigate to journey map
+                toggleSection('journey-map');
+                
+                // Wait for map to initialize
+                setTimeout(() => {
+                    // Clear any existing route
+                    clearRoute();
+                    
+                    // Restore waypoints
+                    route.waypoints.forEach((coords, index) => {
+                        const numberIcon = L.divIcon({
+                            className: 'numbered-marker',
+                            html: `<div style="background: #0056b3; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">${index + 1}</div>`,
+                            iconSize: [32, 32],
+                            iconAnchor: [16, 16]
+                        });
+                        
+                        const marker = L.marker(coords, { icon: numberIcon }).addTo(journeyMap);
+                        routeMarkers.push(marker);
+                        routeCoordinates.push(coords);
+                        
+                        // Restore labels
+                        const label = route.waypointLabels && route.waypointLabels[index] ? route.waypointLabels[index] : '';
+                        waypointLabels.push(label);
+                        
+                        // Show waypoint label input
+                        const labelsContainer = document.getElementById('waypointLabelsContainer');
+                        const labelsList = document.getElementById('waypointLabelsList');
+                        if (labelsContainer && labelsList) {
+                            labelsContainer.style.display = 'block';
+                            
+                            const labelInput = document.createElement('div');
+                            labelInput.style.cssText = 'display: flex; align-items: center; gap: 0.5rem;';
+                            labelInput.innerHTML = `
+                                <span style="color: var(--accent-light); font-weight: 600; min-width: 30px;">${index + 1}.</span>
+                                <input type="text" 
+                                       id="waypointLabel${index + 1}" 
+                                       value="${label}"
+                                       placeholder="e.g., Blue Bottle Coffee, Tattered Cover, etc."
+                                       maxlength="50"
+                                       required
+                                       style="flex: 1; padding: 0.5rem; background: rgba(40, 40, 40, 0.8); border: 1px solid rgba(107, 155, 158, 0.3); border-radius: 8px; color: white; font-size: 0.9rem;">
+                            `;
+                            labelsList.appendChild(labelInput);
+                            
+                            // Update waypointLabels array when input changes
+                            const input = document.getElementById(`waypointLabel${index + 1}`);
+                            input.addEventListener('input', (e) => {
+                                waypointLabels[index] = e.target.value;
+                                if (e.target.value.trim() === '') {
+                                    e.target.style.borderColor = 'rgba(220, 38, 38, 0.6)';
+                                } else {
+                                    e.target.style.borderColor = 'rgba(107, 155, 158, 0.3)';
+                                }
+                            });
+                        }
+                    });
+                    
+                    // Draw route if multiple waypoints
+                    if (routeCoordinates.length > 1) {
+                        routePath = L.polyline(routeCoordinates, { color: 'var(--accent-color)', weight: 4 }).addTo(journeyMap);
+                    }
+                    
+                    // Center map on route
+                    if (routeCoordinates.length > 0) {
+                        const bounds = L.latLngBounds(routeCoordinates);
+                        journeyMap.fitBounds(bounds, { padding: [50, 50] });
+                    }
+                    
+                    showToast('✏️ Editing route. Make changes and click Save Route.');
+                }, 500);
+                
+            } catch (error) {
+                console.error('Error loading route for editing:', error);
+                showToast('❌ Error loading route');
+            }
+        }
+        
+        // Edit existing swarm
+        async function editSwarm(swarmId) {
+            try {
+                const snapshot = await database.ref(`swarms/${swarmId}`).once('value');
+                const swarm = snapshot.val();
+                
+                if (!swarm) {
+                    showToast('Swarm not found');
+                    return;
+                }
+                
+                // Check if date has passed
+                const swarmDate = new Date(swarm.date);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (swarmDate < today) {
+                    showToast('Cannot edit swarm - date has passed');
+                    return;
+                }
+                
+                // Store the swarm ID for updating later
+                window.editingSwarmId = swarmId;
+                
+                // Open the swarm modal
+                openCreateSwarmModal();
+                
+                // Populate modal with existing data
+                setTimeout(() => {
+                    document.querySelector('input[name="swarmTitle"]').value = swarm.title;
+                    document.querySelector('textarea[name="swarmDescription"]').value = swarm.description || '';
+                    document.querySelector('input[name="swarmDate"]').value = swarm.date;
+                    document.querySelector('input[name="swarmTime"]').value = swarm.time;
+                    document.querySelector('input[name="swarmDuration"]').value = swarm.duration || '';
+                    
+                    // Update modal title
+                    document.querySelector('#createSwarmModal h2').textContent = 'Edit Shopping Swarm';
+                }, 100);
+                
+            } catch (error) {
+                console.error('Error loading swarm for editing:', error);
+                showToast('❌ Error loading swarm');
+            }
+        }
+        
+        // Edit existing event
+        async function editEvent(eventId) {
+            try {
+                const snapshot = await database.ref(`events/${eventId}`).once('value');
+                const event = snapshot.val();
+                
+                if (!event) {
+                    showToast('Event not found');
+                    return;
+                }
+                
+                // Check if date has passed
+                const eventDate = new Date(event.startDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (eventDate < today) {
+                    showToast('Cannot edit event - date has passed');
+                    return;
+                }
+                
+                // Store the event ID for updating later
+                window.editingEventId = eventId;
+                
+                // Open the event modal
+                openCreateEventModal();
+                
+                // Populate modal with existing data
+                setTimeout(() => {
+                    document.querySelector('input[name="eventName"]').value = event.name;
+                    document.querySelector('textarea[name="eventDescription"]').value = event.description || '';
+                    document.querySelector('input[name="eventLocation"]').value = event.location;
+                    document.querySelector('input[name="eventStartDate"]').value = event.startDate;
+                    document.querySelector('input[name="eventStartTime"]').value = event.startTime;
+                    if (event.endDate) document.querySelector('input[name="eventEndDate"]').value = event.endDate;
+                    if (event.endTime) document.querySelector('input[name="eventEndTime"]').value = event.endTime;
+                    
+                    // Update modal title
+                    document.querySelector('#createEventModal h2').textContent = 'Edit Event';
+                }, 100);
+                
+            } catch (error) {
+                console.error('Error loading event for editing:', error);
+                showToast('❌ Error loading event');
+            }
+        }
+        
+        window.editRoute = editRoute;
         window.deleteSwarm = deleteSwarm;
         window.deleteEvent = deleteEvent;
         window.editRoute = editRoute;
@@ -2793,10 +3015,14 @@
                 database.ref('routes').once('value', (snapshot) => {
                     const routes = [];
                     snapshot.forEach((childSnapshot) => {
-                        routes.push({
-                            id: childSnapshot.key,
-                            ...childSnapshot.val()
-                        });
+                        const route = childSnapshot.val();
+                        // Exclude soft-deleted routes from public view
+                        if (!route.deleted) {
+                            routes.push({
+                                id: childSnapshot.key,
+                                ...route
+                            });
+                        }
                     });
                     resolve(routes);
                 });
@@ -2807,10 +3033,14 @@
             database.ref('routes').on('value', (snapshot) => {
                 const routes = [];
                 snapshot.forEach((childSnapshot) => {
-                    routes.push({
-                        id: childSnapshot.key,
-                        ...childSnapshot.val()
-                    });
+                    const route = childSnapshot.val();
+                    // Exclude soft-deleted routes from public view
+                    if (!route.deleted) {
+                        routes.push({
+                            id: childSnapshot.key,
+                            ...route
+                        });
+                    }
                 });
                 callback(routes);
             });
@@ -4441,16 +4671,19 @@
                     throw new Error('Firebase database not initialized');
                 }
                 
-                const routesRef = window.database.ref('routes');
-                const newRouteRef = await routesRef.push(routeData);
-                const newRouteId = newRouteRef.key;
-                
-                document.getElementById('saveRouteModal').remove();
-                showToast(`Route "${name}" saved successfully!`);
-                
-                // Close the creation map and open browse routes with the new route highlighted
-                if (newRouteId) {
-                    // Close creation section
+                // Check if we're editing an existing route or creating new
+                if (window.editingRouteId) {
+                    // UPDATE existing route
+                    const routeRef = window.database.ref(`routes/${window.editingRouteId}`);
+                    await routeRef.update(routeData);
+                    
+                    document.getElementById('saveRouteModal').remove();
+                    showToast(`Route "${name}" updated successfully!`);
+                    
+                    // Clear editing flag
+                    window.editingRouteId = null;
+                    
+                    // Close the editing map
                     const modal = document.getElementById('fullscreen-journey-map');
                     if (modal) {
                         modal.style.display = 'none';
@@ -4458,13 +4691,41 @@
                         document.body.classList.remove('choreography-active');
                         journeyMap = null;
                         
-                        // Clear route data so it doesn't persist on next create
+                        // Clear route data
                         routeCoordinates = [];
                         waypointLabels = [];
                         routeMarkers = [];
                     }
-                    // Open browse routes immediately showing the new route
-                    toggleSection('search', newRouteId);
+                    
+                    // Open dashboard to show updated route
+                    openDashboard();
+                } else {
+                    // CREATE new route
+                    const routesRef = window.database.ref('routes');
+                    const newRouteRef = await routesRef.push(routeData);
+                    const newRouteId = newRouteRef.key;
+                    
+                    document.getElementById('saveRouteModal').remove();
+                    showToast(`Route "${name}" saved successfully!`);
+                    
+                    // Close the creation map and open browse routes with the new route highlighted
+                    if (newRouteId) {
+                        // Close creation section
+                        const modal = document.getElementById('fullscreen-journey-map');
+                        if (modal) {
+                            modal.style.display = 'none';
+                            modal.remove();
+                            document.body.classList.remove('choreography-active');
+                            journeyMap = null;
+                            
+                            // Clear route data so it doesn't persist on next create
+                            routeCoordinates = [];
+                            waypointLabels = [];
+                            routeMarkers = [];
+                        }
+                        // Open browse routes immediately showing the new route
+                        toggleSection('search', newRouteId);
+                    }
                 }
             } catch (error) {
                 console.error('❌ Error saving route:', error);
@@ -5470,32 +5731,42 @@
             };
             
             // Save to Firebase (also keeps localStorage as backup)
-            const newSwarmId = await saveSwarmToFirebase(swarmData);
-            
-            // Also save to localStorage as backup
-            let swarms = JSON.parse(localStorage.getItem('swarms') || '[]');
-            swarms.push(swarmData);
-            localStorage.setItem('swarms', JSON.stringify(swarms));
-            
-            const locationText = swarmData.locationCount > 1 ? 
-                `Shopping Swarm with ${swarmData.locationCount} locations created successfully!` :
-                'Shopping Swarm created successfully!';
-            showToast(locationText);
-            closeCreateSwarmModal();
-            
-            // Close the creation map and open browse swarms with the new swarm highlighted
-            if (newSwarmId) {
-                // Close creation section without triggering scroll
-                const modal = document.getElementById('fullscreen-swarm-map-v2');
-                if (modal) {
-                    // Remove modal directly without triggering closeBtn onclick
-                    modal.style.display = 'none';
-                    modal.remove();
-                    document.body.classList.remove('choreography-active');
-                    journeyMap = null;
+            if (window.editingSwarmId) {
+                // UPDATE existing swarm
+                await database.ref(`swarms/${window.editingSwarmId}`).update(swarmData);
+                showToast('Swarm updated successfully!');
+                window.editingSwarmId = null; // Clear editing flag
+                closeCreateSwarmModal();
+                openDashboard(); // Show updated swarm in dashboard
+            } else {
+                // CREATE new swarm
+                const newSwarmId = await saveSwarmToFirebase(swarmData);
+                
+                // Also save to localStorage as backup
+                let swarms = JSON.parse(localStorage.getItem('swarms') || '[]');
+                swarms.push(swarmData);
+                localStorage.setItem('swarms', JSON.stringify(swarms));
+                
+                const locationText = swarmData.locationCount > 1 ? 
+                    `Shopping Swarm with ${swarmData.locationCount} locations created successfully!` :
+                    'Shopping Swarm created successfully!';
+                showToast(locationText);
+                closeCreateSwarmModal();
+                
+                // Close the creation map and open browse swarms with the new swarm highlighted
+                if (newSwarmId) {
+                    // Close creation section without triggering scroll
+                    const modal = document.getElementById('fullscreen-swarm-map-v2');
+                    if (modal) {
+                        // Remove modal directly without triggering closeBtn onclick
+                        modal.style.display = 'none';
+                        modal.remove();
+                        document.body.classList.remove('choreography-active');
+                        journeyMap = null;
+                    }
+                    // Open browse swarms immediately (no delay needed)
+                    toggleSection('swarms', newSwarmId);
                 }
-                // Open browse swarms immediately (no delay needed)
-                toggleSection('swarms', newSwarmId);
             }
         }
 
@@ -5544,29 +5815,39 @@
             };
             
             // Save to Firebase (also keeps localStorage as backup)
-            const newEventId = await saveEventToFirebase(eventData);
-            
-            // Also save to localStorage as backup
-            let events = JSON.parse(localStorage.getItem('events') || '[]');
-            events.push(eventData);
-            localStorage.setItem('events', JSON.stringify(events));
-            
-            showToast('Event created successfully!');
-            closeCreateEventModal();
-            
-            // Close the creation map and open browse events with the new event highlighted
-            if (newEventId) {
-                // Close creation section without triggering scroll
-                const modal = document.getElementById('fullscreen-event-map-v2');
-                if (modal) {
-                    // Remove modal directly without triggering closeBtn onclick
-                    modal.style.display = 'none';
-                    modal.remove();
-                    document.body.classList.remove('choreography-active');
-                    journeyMap = null;
+            if (window.editingEventId) {
+                // UPDATE existing event
+                await database.ref(`events/${window.editingEventId}`).update(eventData);
+                showToast('Event updated successfully!');
+                window.editingEventId = null; // Clear editing flag
+                closeCreateEventModal();
+                openDashboard(); // Show updated event in dashboard
+            } else {
+                // CREATE new event
+                const newEventId = await saveEventToFirebase(eventData);
+                
+                // Also save to localStorage as backup
+                let events = JSON.parse(localStorage.getItem('events') || '[]');
+                events.push(eventData);
+                localStorage.setItem('events', JSON.stringify(events));
+                
+                showToast('Event created successfully!');
+                closeCreateEventModal();
+                
+                // Close the creation map and open browse events with the new event highlighted
+                if (newEventId) {
+                    // Close creation section without triggering scroll
+                    const modal = document.getElementById('fullscreen-event-map-v2');
+                    if (modal) {
+                        // Remove modal directly without triggering closeBtn onclick
+                        modal.style.display = 'none';
+                        modal.remove();
+                        document.body.classList.remove('choreography-active');
+                        journeyMap = null;
+                    }
+                    // Open browse events immediately (no delay needed)
+                    toggleSection('events', newEventId);
                 }
-                // Open browse events immediately (no delay needed)
-                toggleSection('events', newEventId);
             }
         }
 
@@ -5979,6 +6260,40 @@
             }
         }
         window.cleanupOldMessages = cleanupOldMessages;
+        
+        // Cleanup deleted routes after 6 months retention
+        async function cleanupDeletedRoutes() {
+            try {
+                const allRoutesSnapshot = await database.ref('routes').once('value');
+                const now = new Date();
+                const deletePromises = [];
+                
+                allRoutesSnapshot.forEach(snap => {
+                    const route = snap.val();
+                    
+                    // Only process routes that have been soft-deleted
+                    if (route.deleted && route.deletedAt) {
+                        const deletedDate = new Date(route.deletedAt);
+                        const daysSinceDeletion = (now - deletedDate) / (1000 * 60 * 60 * 24);
+                        
+                        // PERMANENTLY DELETE routes after 6 months (180 days) retention
+                        if (daysSinceDeletion > 180) {
+                            console.log('Permanently deleting route (6 month retention expired):', snap.key);
+                            deletePromises.push(database.ref(`routes/${snap.key}`).remove());
+                        }
+                    }
+                });
+                
+                // Execute delete operations
+                if (deletePromises.length > 0) {
+                    await Promise.all(deletePromises);
+                    console.log(`Permanently deleted ${deletePromises.length} routes (6+ months old)`);
+                }
+            } catch (error) {
+                console.error('Error cleaning up deleted routes:', error);
+            }
+        }
+        window.cleanupDeletedRoutes = cleanupDeletedRoutes;
         
         // Get unread message count
         async function getUnreadMessageCount() {
