@@ -13,15 +13,15 @@
     <meta name="apple-mobile-web-app-title" content="Flânerie">
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/pathpals/manifest.json">
     
     <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/pathpals/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/pathpals/icons/icon-192x192.png">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-72x72.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/pathpals/icons/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/pathpals/icons/icon-72x72.png">
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700;800&family=Crimson+Text:wght@400;600;700&display=swap" rel="stylesheet">
@@ -243,6 +243,71 @@
         @keyframes bounce {
             0%, 100% { transform: translateX(-50%) translateY(0); }
             50% { transform: translateX(-50%) translateY(-10px); }
+        }
+        
+        /* PWA Install Banner */
+        .pwa-install-banner {
+            display: none;
+            position: fixed;
+            top: 65px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--accent-color), #5a8a8d);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            box-shadow: 0 4px 20px rgba(107, 155, 158, 0.4);
+            z-index: 999;
+            animation: slideDown 0.5s ease-out;
+            max-width: 90%;
+            text-align: center;
+        }
+        
+        .pwa-install-banner.show {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .pwa-install-banner button {
+            background: white;
+            color: var(--accent-color);
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        
+        .pwa-install-banner .close-banner {
+            background: transparent;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            font-size: 1.2rem;
+        }
+        
+        @keyframes slideDown {
+            from {
+                top: -100px;
+                opacity: 0;
+            }
+            to {
+                top: 65px;
+                opacity: 1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .pwa-install-banner {
+                font-size: 0.85rem;
+                padding: 0.6rem 1rem;
+            }
+            .pwa-install-banner button {
+                padding: 0.4rem 1rem;
+                font-size: 0.8rem;
+            }
         }
         
         /* Main Content */
@@ -952,6 +1017,20 @@
             <span style="color: #000; font-size: 0.85rem; opacity: 0.8;">(Auto-checking...)</span>
             <a href="javascript:void(0)" onclick="resendVerificationEmail()" style="color: #000; text-decoration: underline; font-weight: 700; cursor: pointer; margin-left: 1rem;">Resend email</a>
         </p>
+    </div>
+    
+    <!-- PWA Install Banner (Shows device-specific instructions) -->
+    <div id="pwa-install-banner" class="pwa-install-banner">
+        <!-- Android instructions -->
+        <span id="pwa-android-text" style="display: none;">
+            📱 Install Flânerie app! Tap the <strong>Install</strong> button below or use <strong>Menu → Install app</strong>
+        </span>
+        <!-- iPhone instructions -->
+        <span id="pwa-ios-text" style="display: none;">
+            📱 Install Flânerie app! Tap <strong>Share ⬆️</strong> then <strong>Add to Home Screen</strong>
+        </span>
+        <button id="pwa-install-btn" style="display: none;">Install</button>
+        <button class="close-banner" onclick="document.getElementById('pwa-install-banner').classList.remove('show')">✕</button>
     </div>
     
     <!-- Hero Section -->
@@ -7348,7 +7427,7 @@
         // Register service worker for PWA functionality
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
+                navigator.serviceWorker.register('/pathpals/service-worker.js')
                     .then((registration) => {
                         console.log('PWA: Service Worker registered successfully:', registration.scope);
                     })
@@ -7358,8 +7437,58 @@
             });
         }
         
-        // PWA Install Prompt Handler (optional - for custom install button)
+        // PWA Install Prompt Handler with Device Detection
         let deferredPrompt;
+        const installBanner = document.getElementById('pwa-install-banner');
+        const installBtn = document.getElementById('pwa-install-btn');
+        const androidText = document.getElementById('pwa-android-text');
+        const iosText = document.getElementById('pwa-ios-text');
+        
+        // Detect device type
+        function detectDevice() {
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            
+            // Check for iOS (includes iPhone, iPad, iPod)
+            const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+            
+            // Check for Android (includes emulators like Bluestacks)
+            const isAndroid = /android/i.test(userAgent);
+            
+            console.log('PWA: Device detection -', { isIOS, isAndroid, userAgent });
+            
+            return { isIOS, isAndroid };
+        }
+        
+        // Show appropriate banner content based on device
+        function showDeviceSpecificBanner() {
+            const { isIOS, isAndroid } = detectDevice();
+            
+            if (isIOS) {
+                // iPhone/iPad - Show manual instructions (no install button)
+                iosText.style.display = 'inline';
+                androidText.style.display = 'none';
+                installBtn.style.display = 'none';
+                console.log('PWA: Showing iOS instructions');
+            } else if (isAndroid) {
+                // Android - Show install button
+                androidText.style.display = 'inline';
+                iosText.style.display = 'none';
+                installBtn.style.display = 'inline-block';
+                console.log('PWA: Showing Android instructions');
+            } else {
+                // Desktop or unknown - show Android version (has button)
+                androidText.style.display = 'inline';
+                iosText.style.display = 'none';
+                installBtn.style.display = 'inline-block';
+                console.log('PWA: Showing default (Android) instructions');
+            }
+            
+            // Show the banner (only on mobile/tablet)
+            if (window.innerWidth <= 1024) {
+                installBanner.classList.add('show');
+            }
+        }
+        
         window.addEventListener('beforeinstallprompt', (e) => {
             // Prevent the mini-infobar from appearing on mobile
             e.preventDefault();
@@ -7367,14 +7496,58 @@
             deferredPrompt = e;
             console.log('PWA: Install prompt available');
             
-            // You can show a custom install button here if desired
-            // For now, browser will show default prompt
+            // Show device-specific banner
+            showDeviceSpecificBanner();
+        });
+        
+        // Handle install button click (Android only)
+        installBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) {
+                console.log('PWA: No install prompt available');
+                return;
+            }
+            
+            // Show the install prompt
+            deferredPrompt.prompt();
+            
+            // Wait for the user's response
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`PWA: User ${outcome} the install`);
+            
+            // Hide banner after user responds
+            installBanner.classList.remove('show');
+            
+            // Clear the deferredPrompt
+            deferredPrompt = null;
         });
         
         // Track when app is installed
         window.addEventListener('appinstalled', () => {
             console.log('PWA: App installed successfully!');
+            installBanner.classList.remove('show');
             deferredPrompt = null;
+        });
+        
+        // For iOS: Show banner on page load (since beforeinstallprompt doesn't fire on iOS)
+        window.addEventListener('load', () => {
+            const { isIOS } = detectDevice();
+            
+            // Only show for iOS Safari users who haven't installed yet
+            if (isIOS && window.innerWidth <= 1024) {
+                // Check if already running as installed app
+                const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+                
+                if (!isStandalone) {
+                    // Not installed yet, show iOS instructions
+                    setTimeout(() => {
+                        iosText.style.display = 'inline';
+                        androidText.style.display = 'none';
+                        installBtn.style.display = 'none';
+                        installBanner.classList.add('show');
+                        console.log('PWA: Showing iOS banner on page load');
+                    }, 2000); // Show after 2 seconds to not be annoying
+                }
+            }
         });
     </script>
 </body>
