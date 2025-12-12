@@ -1413,32 +1413,16 @@
                 // User is signed in
                 console.log('User signed in:', user.email);
                 
-                // Get username and migrate if needed
+                // Get username from database or use displayName
                 let username = await getUsernameFromId(user.uid);
                 
                 // If no username set up yet, use displayName or email prefix
                 if (username === 'Unknown User') {
                     if (user.displayName) {
                         username = user.displayName;
-                        // Auto-migrate displayName to username for new Google users
-                        try {
-                            const usernameLower = username.toLowerCase().replace(/[^a-z0-9_]/g, '');
-                            if (usernameLower.length >= 3) {
-                                await database.ref('users/' + user.uid + '/username').set(username);
-                            }
-                        } catch (error) {
-                            console.log('Could not auto-migrate username:', error);
-                        }
                     } else if (user.email) {
                         // Use email prefix as temporary display
                         username = user.email.split('@')[0];
-                    }
-                } else {
-                    // User has username - ensure it's in profile
-                    const profileCheck = await database.ref('users/' + user.uid + '/username').once('value');
-                    if (!profileCheck.exists()) {
-                        // Migrate: store username in profile for faster future lookups
-                        await database.ref('users/' + user.uid + '/username').set(username);
                     }
                 }
                 
@@ -1681,11 +1665,8 @@
                     return user.updateProfile({
                         displayName: displayName
                     }).then(() => {
-                        // Save username to database (both in usernames mapping and user profile)
-                        return Promise.all([
-                            database.ref('usernames/' + usernameLower).set(user.uid),
-                            database.ref('users/' + user.uid + '/username').set(displayName)
-                        ]);
+                        // Save username to database (in usernames mapping only)
+                        return database.ref('usernames/' + usernameLower).set(user.uid);
                     }).then(() => {
                         // Send verification email
                         console.log('Sending verification email to:', user.email);
@@ -2467,15 +2448,8 @@
                     return;
                 }
                 
-                // Get old username from profile (faster than scanning)
-                let oldUsername = null;
-                const profileSnapshot = await database.ref('users/' + user.uid + '/username').once('value');
-                if (profileSnapshot.exists()) {
-                    oldUsername = profileSnapshot.val();
-                } else {
-                    // Fallback: try displayName
-                    oldUsername = user.displayName;
-                }
+                // Get old username from displayName
+                const oldUsername = user.displayName;
                 
                 // Remove old username mapping if it exists
                 if (oldUsername && oldUsername !== newUsername) {
@@ -2487,14 +2461,11 @@
                     }
                 }
                 
-                // Update Firebase Auth displayName
+                // Update Firebase Auth displayName (this is what we'll use for lookups)
                 await user.updateProfile({ displayName: newUsername });
                 
-                // Add new username mapping
+                // Add new username mapping (for availability checks)
                 await database.ref('usernames/' + newUsernameLower).set(user.uid);
-                
-                // Store username in user profile for quick lookup
-                await database.ref('users/' + user.uid + '/username').set(newUsername);
                 
                 // Force reload user data
                 await user.reload();
@@ -5083,13 +5054,7 @@
         // Helper function to get username from userId
         async function getUsernameFromId(userId) {
             try {
-                // First try to get username from user profile (faster)
-                const profileSnapshot = await database.ref('users/' + userId + '/username').once('value');
-                if (profileSnapshot.exists()) {
-                    return profileSnapshot.val();
-                }
-                
-                // Second: Search usernames database for this userId
+                // First: Search usernames database for this userId
                 const snapshot = await database.ref('usernames').once('value');
                 let foundUsername = null;
                 snapshot.forEach((child) => {
@@ -5102,14 +5067,14 @@
                     return foundUsername;
                 }
                 
-                // Third: Try to get displayName from auth (for Google sign-in users)
+                // Second: If it's the current user, use their displayName
                 if (auth.currentUser && auth.currentUser.uid === userId) {
                     if (auth.currentUser.displayName) {
                         return auth.currentUser.displayName;
                     }
                 }
                 
-                // Last resort: return email prefix or Unknown User
+                // Last resort: return Unknown User
                 return 'Unknown User';
             } catch (error) {
                 console.error('Error getting username:', error);
