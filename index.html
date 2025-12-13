@@ -4517,12 +4517,22 @@
                                 // Skip past events (check end time first, then start time)
                                 const now = new Date();
                                 
+                                console.log('PWA DEBUG: Checking event:', event.name, {
+                                    startDate: event.startDate,
+                                    startTime: event.startTime,
+                                    endDate: event.endDate,
+                                    endTime: event.endTime,
+                                    recurring: event.recurring
+                                });
+                                
                                 if (event.endDate && event.endTime) {
                                     // Event has end date+time - use that
                                     const [year, month, day] = event.endDate.split('-');
                                     const [hours, minutes] = event.endTime.split(':');
                                     const endDateTime = new Date(year, month - 1, day, hours, minutes);
+                                    console.log('PWA DEBUG: Comparing endDateTime:', endDateTime, 'vs now:', now, 'isPast:', endDateTime < now);
                                     if (endDateTime < now) {
+                                        console.log('PWA DEBUG: FILTERED - Event ended (has endDate+endTime)');
                                         invalidCount++;
                                         return;
                                     }
@@ -4530,7 +4540,9 @@
                                     // Event has end date only
                                     const [year, month, day] = event.endDate.split('-');
                                     const endDate = new Date(year, month - 1, day);
+                                    console.log('PWA DEBUG: Comparing endDate:', endDate, 'vs today:', today, 'isPast:', endDate < today);
                                     if (endDate < today) {
+                                        console.log('PWA DEBUG: FILTERED - Event ended (has endDate only)');
                                         invalidCount++;
                                         return;
                                     }
@@ -4539,7 +4551,9 @@
                                     const [year, month, day] = event.startDate.split('-');
                                     const [hours, minutes] = event.startTime.split(':');
                                     const startDateTime = new Date(year, month - 1, day, hours, minutes);
+                                    console.log('PWA DEBUG: Comparing startDateTime:', startDateTime, 'vs now:', now, 'isPast:', startDateTime < now);
                                     if (startDateTime < now) {
+                                        console.log('PWA DEBUG: FILTERED - Event started in past (has startDate+startTime, no end)');
                                         invalidCount++;
                                         return;
                                     }
@@ -4547,13 +4561,16 @@
                                     // Only start date, no times
                                     const [year, month, day] = event.startDate.split('-');
                                     const startDate = new Date(year, month - 1, day);
+                                    console.log('PWA DEBUG: Comparing startDate:', startDate, 'vs today:', today, 'isPast:', startDate < today);
                                     if (startDate < today) {
+                                        console.log('PWA DEBUG: FILTERED - Event date in past (has startDate only)');
                                         invalidCount++;
                                         return;
                                     }
                                 }
                                 
                                 validCount++;
+                                console.log('PWA DEBUG: ✓ Event PASSED all filters:', event.name);
                                 
                                 const isHighlighted = highlightId !== null && event.id === highlightId;
                                 
@@ -6415,6 +6432,15 @@
                     await saveEventToFirebase(eventOccurrence);
                 }
                 
+                // IMMEDIATELY disable the save button and map clicks (like Journey does)
+                const saveBtn = document.getElementById('saveEventMapBtn');
+                if (saveBtn) saveBtn.disabled = true;
+                
+                // Remove map click handler IMMEDIATELY
+                if (journeyMap) {
+                    journeyMap.off('click');
+                }
+                
                 showToast(`✅ ${occurrenceCount} recurring events created successfully!`);
                 closeCreateEventModal();
                 
@@ -6424,17 +6450,21 @@
                     modal.style.display = 'none';
                     modal.remove();
                     document.body.classList.remove('choreography-active');
-                    
-                    // Remove all map click handlers before nulling
-                    if (journeyMap) {
-                        journeyMap.off('click');
-                    }
                     journeyMap = null;
                 }
                 toggleSection('events');
             } else {
                 // CREATE single event
                 const newEventId = await saveEventToFirebase(eventData);
+                
+                // IMMEDIATELY disable the save button and map clicks (like Journey does)
+                const saveBtn = document.getElementById('saveEventMapBtn');
+                if (saveBtn) saveBtn.disabled = true;
+                
+                // Remove map click handler IMMEDIATELY
+                if (journeyMap) {
+                    journeyMap.off('click');
+                }
                 
                 // Also save to localStorage as backup
                 let events = JSON.parse(localStorage.getItem('events') || '[]');
@@ -6453,11 +6483,6 @@
                         modal.style.display = 'none';
                         modal.remove();
                         document.body.classList.remove('choreography-active');
-                        
-                        // Remove all map click handlers before nulling
-                        if (journeyMap) {
-                            journeyMap.off('click');
-                        }
                         journeyMap = null;
                     }
                     // Open browse events immediately (no delay needed)
