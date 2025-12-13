@@ -5782,10 +5782,12 @@
                 infoPanel.style.display = 'none';
             }
             
-            // Zoom out to show all swarms
+            // Zoom out to city level (zoom 12) like Journey does
             if (window.allSwarmMarkersArray && window.allSwarmMarkersArray.length > 0 && swarmMap) {
-                const group = L.featureGroup(window.allSwarmMarkersArray);
-                swarmMap.fitBounds(group.getBounds(), { padding: [50, 50] });
+                // Use first swarm's coordinates to center, or default to Denver
+                const firstMarker = window.allSwarmMarkersArray[0];
+                const centerCoords = firstMarker ? firstMarker.getLatLng() : [39.7392, -104.9903];
+                swarmMap.setView(centerCoords, 12);
             }
         }
         window.closeSwarmInfo = closeSwarmInfo;
@@ -5797,10 +5799,12 @@
                 infoPanel.style.display = 'none';
             }
             
-            // Zoom out to show all events
+            // Zoom out to city level (zoom 12) like Journey does
             if (window.allEventMarkersArray && window.allEventMarkersArray.length > 0 && eventMap) {
-                const group = L.featureGroup(window.allEventMarkersArray);
-                eventMap.fitBounds(group.getBounds(), { padding: [50, 50] });
+                // Use first event's coordinates to center, or default to Denver
+                const firstMarker = window.allEventMarkersArray[0];
+                const centerCoords = firstMarker ? firstMarker.getLatLng() : [39.7392, -104.9903];
+                eventMap.setView(centerCoords, 12);
             }
         }
         window.closeEventInfo = closeEventInfo;
