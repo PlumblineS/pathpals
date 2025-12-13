@@ -1577,6 +1577,45 @@
         
         // ===== FIREBASE AUTHENTICATION =====
         
+        // ===== SITE LOCKDOWN (Remove this section when ready to launch) =====
+        // This blocks the entire site until an authorized user logs in
+        const lockdownOverlay = document.createElement('div');
+        lockdownOverlay.id = 'lockdown-overlay';
+        lockdownOverlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Poppins', sans-serif;
+        `;
+        lockdownOverlay.innerHTML = `
+            <div style="text-align: center; padding: 3rem; background: rgba(25, 25, 25, 0.95); border-radius: 20px; border: 2px solid rgba(107, 155, 158, 0.3); max-width: 500px;">
+                <h1 style="color: #8DBCC0; font-family: 'Playfair Display', serif; font-size: 3rem; margin-bottom: 1rem;">Flânerie</h1>
+                <p style="color: #8DBCC0; margin-bottom: 2rem; font-size: 1.1rem;">Admin Access Only</p>
+                <p style="color: #999; margin-bottom: 2rem;">This site is currently in private testing.</p>
+                <button id="admin-login-btn" style="background: linear-gradient(135deg, #6B9B9E, #8dbcc0); color: white; border: none; padding: 1rem 2rem; border-radius: 25px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1.3rem;">G</span> Sign in with Google
+                </button>
+            </div>
+        `;
+        document.body.appendChild(lockdownOverlay);
+        
+        // Handle admin login button
+        document.getElementById('admin-login-btn').addEventListener('click', function() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).catch(function(error) {
+                console.error('Login error:', error);
+                alert('Login failed: ' + error.message);
+            });
+        });
+        // ===== END SITE LOCKDOWN =====
+        
         // Auth state listener - runs when user signs in/out
         auth.onAuthStateChanged(async function(user) {
             if (user) {
@@ -1584,6 +1623,12 @@
                 console.log('User signed in:', user.email);
                 console.log('User displayName:', user.displayName);
                 console.log('User UID:', user.uid);
+                
+                // Remove lockdown overlay - site is now accessible
+                const overlay = document.getElementById('lockdown-overlay');
+                if (overlay) {
+                    overlay.remove();
+                }
                 
                 // Get username from database or use displayName
                 let username = await getUsernameFromId(user.uid);
