@@ -303,10 +303,24 @@
             .pwa-install-banner {
                 font-size: 0.85rem;
                 padding: 0.6rem 1rem;
+                top: auto;
+                bottom: 80px;
+                animation: slideUp 0.5s ease-out;
             }
             .pwa-install-banner button {
                 padding: 0.4rem 1rem;
                 font-size: 0.8rem;
+            }
+        }
+        
+        @keyframes slideUp {
+            from {
+                bottom: -100px;
+                opacity: 0;
+            }
+            to {
+                bottom: 80px;
+                opacity: 1;
             }
         }
         
@@ -875,6 +889,33 @@
             
             #slide-paragraph-with-image .image-section img {
                 max-height: 30vh !important;
+            }
+            
+            /* FIX: Profile modal content cutoff */
+            .modal-content {
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* FIX: Map cards in search results cut off at bottom */
+            .leaflet-container {
+                min-height: 250px !important;
+                height: 250px !important;
+            }
+            
+            /* FIX: Modal close button overlapping content */
+            .close {
+                position: absolute !important;
+                top: 10px !important;
+                right: 10px !important;
+                z-index: 10001 !important;
+                background: rgba(0,0,0,0.5) !important;
+                border-radius: 50% !important;
+                width: 35px !important;
+                height: 35px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
             }
         }
         
