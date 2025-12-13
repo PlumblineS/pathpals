@@ -2235,30 +2235,44 @@
                 }
                 
                 const today = new Date();
-                today.setHours(0, 0, 0, 0); // Reset time to start of day for fair comparison
+                const now = new Date();
+                
+                // Filter out swarms that are past (with 2-hour buffer)
+                const activeSwarms = swarms.filter(swarm => {
+                    if (swarm.date && swarm.time) {
+                        const [year, month, day] = swarm.date.split('-');
+                        const [hours, minutes] = swarm.time.split(':');
+                        const swarmDateTime = new Date(year, month - 1, day, hours, minutes);
+                        const swarmEndWithBuffer = new Date(swarmDateTime.getTime() + 7200000); // 2 hour buffer
+                        return swarmEndWithBuffer >= now;
+                    } else if (swarm.date) {
+                        const swarmDate = new Date(swarm.date);
+                        swarmDate.setHours(0, 0, 0, 0);
+                        return swarmDate >= today;
+                    }
+                    return true; // Keep swarms without dates
+                });
+                
+                if (activeSwarms.length === 0) {
+                    contentDiv.innerHTML = '<p style="text-align: center; color: #999;">You haven\'t created any active swarms.<br><span style="font-size: 0.85rem; color: #777;">(Past swarms are automatically hidden)</span></p>';
+                    return;
+                }
                 
                 let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">';
-                swarms.forEach(swarm => {
-                    const swarmDate = new Date(swarm.date);
-                    const isPastDate = swarmDate < today;
-                    
-                    // Show Edit button only if date hasn't passed
-                    const editButton = !isPastDate ? 
-                        `<button onclick="editSwarm('${swarm.id}')" style="padding: 0.5rem 1rem; background: #5bc0de; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Edit</button>` : '';
-                    
+                activeSwarms.forEach(swarm => {
                     html += `
                         <div style="background: rgba(30, 30, 30, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; padding: 1.5rem;">
                             <h3 style="color: var(--accent-light); margin-bottom: 0.5rem;">${swarm.title}</h3>
                             <p style="color: #d4d4d4; font-size: 0.9rem; margin-bottom: 0.5rem;">${swarm.description || 'No description'}</p>
                             <p style="color: #999; font-size: 0.85rem; margin-bottom: 1rem;">
                                 📍 ${swarm.locationCount || 1} location${swarm.locationCount > 1 ? 's' : ''}<br>
-                                📅 ${swarm.date} at ${swarm.time}${isPastDate ? ' <span style="color: #ff6b6b;">(Past)</span>' : ''}<br>
+                                📅 ${swarm.date} at ${swarm.time}<br>
                                 👥 ${swarm.interested || 0} flâneurs interested<br>
                                 ⏱️ ${swarm.duration || 'TBD'}
                             </p>
                             <div style="display: flex; gap: 0.5rem;">
                                 <button onclick="viewSwarmFromDashboard('${swarm.id}')" style="flex: 1; padding: 0.5rem; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">View on Map</button>
-                                ${editButton}
+                                <button onclick="editSwarm('${swarm.id}')" style="padding: 0.5rem 1rem; background: #5bc0de; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Edit</button>
                                 <button onclick="deleteSwarm('${swarm.id}')" style="padding: 0.5rem 1rem; background: #d9534f; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Delete</button>
                             </div>
                         </div>
@@ -2293,17 +2307,44 @@
                 }
                 
                 const today = new Date();
-                today.setHours(0, 0, 0, 0); // Reset time to start of day for fair comparison
+                const now = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                // Filter out events that are past (with 2-hour buffer)
+                const activeEvents = events.filter(event => {
+                    if (event.endDate && event.endTime) {
+                        const [year, month, day] = event.endDate.split('-');
+                        const [hours, minutes] = event.endTime.split(':');
+                        const endDateTime = new Date(year, month - 1, day, hours, minutes);
+                        const endWithBuffer = new Date(endDateTime.getTime() + 7200000); // 2 hour buffer
+                        return endWithBuffer >= now;
+                    } else if (event.endDate) {
+                        const [year, month, day] = event.endDate.split('-');
+                        const endDate = new Date(year, month - 1, day, 23, 59, 59);
+                        const endWithBuffer = new Date(endDate.getTime() + 7200000);
+                        return endWithBuffer >= now;
+                    } else if (event.startDate && event.startTime) {
+                        const [year, month, day] = event.startDate.split('-');
+                        const [hours, minutes] = event.startTime.split(':');
+                        const startDateTime = new Date(year, month - 1, day, hours, minutes);
+                        const startWithBuffer = new Date(startDateTime.getTime() + 7200000);
+                        return startWithBuffer >= now;
+                    } else if (event.startDate) {
+                        const eventDate = new Date(event.startDate);
+                        eventDate.setHours(23, 59, 59);
+                        const eventWithBuffer = new Date(eventDate.getTime() + 7200000);
+                        return eventWithBuffer >= now;
+                    }
+                    return true; // Keep events without dates
+                });
+                
+                if (activeEvents.length === 0) {
+                    contentDiv.innerHTML = '<p style="text-align: center; color: #999;">You haven\'t created any active events.<br><span style="font-size: 0.85rem; color: #777;">(Past events are automatically hidden)</span></p>';
+                    return;
+                }
                 
                 let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">';
-                events.forEach(event => {
-                    const eventDate = new Date(event.startDate);
-                    const isPastDate = eventDate < today;
-                    
-                    // Show Edit button only if date hasn't passed
-                    const editButton = !isPastDate ?
-                        `<button onclick="editEvent('${event.id}')" style="padding: 0.5rem 1rem; background: #5bc0de; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Edit</button>` : '';
-                    
+                activeEvents.forEach(event => {
                     // Show recurring badge if this is a recurring event
                     const recurringBadge = event.isRecurring ? 
                         `<span style="display: inline-block; background: rgba(107, 155, 158, 0.3); color: var(--accent-light); padding: 0.25rem 0.6rem; border-radius: 10px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem;">🔄 Recurring</span>` : '';
@@ -2315,12 +2356,12 @@
                             ${event.recurrenceInfo ? `<p style="color: #999; font-size: 0.8rem; font-style: italic; margin-bottom: 0.5rem;">${event.recurrenceInfo}</p>` : ''}
                             <p style="color: #999; font-size: 0.85rem; margin-bottom: 1rem;">
                                 📍 ${event.location}<br>
-                                📅 ${event.startDate} at ${event.startTime}${isPastDate ? ' <span style="color: #ff6b6b;">(Past)</span>' : ''}<br>
+                                📅 ${event.startDate} at ${event.startTime}<br>
                                 👥 ${event.interested || 0} flâneurs interested
                             </p>
                             <div style="display: flex; gap: 0.5rem;">
                                 <button onclick="viewEventFromDashboard('${event.id}')" style="flex: 1; padding: 0.5rem; background: var(--accent-color); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">View on Map</button>
-                                ${editButton}
+                                <button onclick="editEvent('${event.id}')" style="padding: 0.5rem 1rem; background: #5bc0de; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Edit</button>
                                 <button onclick="deleteEvent('${event.id}')" style="padding: 0.5rem 1rem; background: #d9534f; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Delete</button>
                             </div>
                         </div>
@@ -4313,15 +4354,19 @@
                                 }
                                 
                                 // Skip past swarms (check date AND time)
+                                // BUT keep visible for 2 hours after start time as buffer
                                 if (swarm.date && swarm.time) {
                                     // Combine date and time into full datetime
                                     const [year, month, day] = swarm.date.split('-');
                                     const [hours, minutes] = swarm.time.split(':');
                                     const swarmDateTime = new Date(year, month - 1, day, hours, minutes);
                                     
-                                    // Compare to current moment (not just today at midnight)
+                                    // Add 2-hour buffer (7200000 ms = 2 hours)
+                                    const swarmEndWithBuffer = new Date(swarmDateTime.getTime() + 7200000);
+                                    
+                                    // Compare to current moment
                                     const now = new Date();
-                                    if (swarmDateTime < now) {
+                                    if (swarmEndWithBuffer < now) {
                                         invalidCount++;
                                         return;
                                     }
@@ -4408,6 +4453,7 @@
                                             <p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">📍 Meeting Location:</strong> ${swarm.meetingLocation || swarm.location || 'Location TBD'}</p>
                                             ${swarm.locationCount && swarm.locationCount > 1 ? `<p style="color: var(--accent-color); margin: 0.5rem 0; font-weight: 600;"><strong>🎯 Multi-Business Swarm:</strong> ${swarm.locationCount} locations</p>` : ''}
                                             <p style="color: #d4d4d4; margin: 0.5rem 0;"><strong style="color: var(--accent-light);">📅 When:</strong> ${swarm.date} at ${swarm.time}</p>
+                                            <p style="color: #999; font-size: 0.85rem; margin: 0.3rem 0 0.5rem 0; font-style: italic;">⏰ Time shown in organizer's local timezone</p>
                                             ${swarm.duration ? `<p style="color: #d4d4d4; margin: 0.5rem 0;"><strong style="color: var(--accent-light);">⏱️ Duration:</strong> ${swarm.duration}</p>` : ''}
                                             ${swarm.description ? `<p style="color: #d4d4d4; margin: 0.8rem 0 0 0; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word;">${swarm.description}</p>` : ''}
                                             ${swarm.identifier ? `<p style="color: #d4d4d4; margin: 0.8rem 0 0 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">🔍 Look for:</strong> ${swarm.identifier}</p>` : ''}
@@ -4515,6 +4561,7 @@
                                 }
                                 
                                 // Skip past events (check end time first, then start time)
+                                // BUT keep visible for 2 hours after end time as buffer
                                 const now = new Date();
                                 
                                 console.log('PWA DEBUG: Checking event:', event.name, {
@@ -4526,43 +4573,53 @@
                                 });
                                 
                                 if (event.endDate && event.endTime) {
-                                    // Event has end date+time - use that
+                                    // Event has end date+time - use that PLUS 2-hour buffer
                                     const [year, month, day] = event.endDate.split('-');
                                     const [hours, minutes] = event.endTime.split(':');
                                     const endDateTime = new Date(year, month - 1, day, hours, minutes);
-                                    console.log('PWA DEBUG: Comparing endDateTime:', endDateTime, 'vs now:', now, 'isPast:', endDateTime < now);
-                                    if (endDateTime < now) {
+                                    
+                                    // Add 2-hour buffer (7200000 ms = 2 hours)
+                                    const endWithBuffer = new Date(endDateTime.getTime() + 7200000);
+                                    
+                                    console.log('PWA DEBUG: Comparing endDateTime+buffer:', endWithBuffer, 'vs now:', now, 'isPast:', endWithBuffer < now);
+                                    if (endWithBuffer < now) {
                                         console.log('PWA DEBUG: FILTERED - Event ended (has endDate+endTime)');
                                         invalidCount++;
                                         return;
                                     }
                                 } else if (event.endDate) {
-                                    // Event has end date only
+                                    // Event has end date only - add buffer to end of day
                                     const [year, month, day] = event.endDate.split('-');
-                                    const endDate = new Date(year, month - 1, day);
-                                    console.log('PWA DEBUG: Comparing endDate:', endDate, 'vs today:', today, 'isPast:', endDate < today);
-                                    if (endDate < today) {
+                                    const endDate = new Date(year, month - 1, day, 23, 59, 59);
+                                    const endWithBuffer = new Date(endDate.getTime() + 7200000);
+                                    
+                                    console.log('PWA DEBUG: Comparing endDate+buffer:', endWithBuffer, 'vs now:', now, 'isPast:', endWithBuffer < now);
+                                    if (endWithBuffer < now) {
                                         console.log('PWA DEBUG: FILTERED - Event ended (has endDate only)');
                                         invalidCount++;
                                         return;
                                     }
                                 } else if (event.startDate && event.startTime) {
-                                    // No end date - use start date+time
+                                    // No end date - use start date+time PLUS 2-hour buffer
                                     const [year, month, day] = event.startDate.split('-');
                                     const [hours, minutes] = event.startTime.split(':');
                                     const startDateTime = new Date(year, month - 1, day, hours, minutes);
-                                    console.log('PWA DEBUG: Comparing startDateTime:', startDateTime, 'vs now:', now, 'isPast:', startDateTime < now);
-                                    if (startDateTime < now) {
+                                    const startWithBuffer = new Date(startDateTime.getTime() + 7200000);
+                                    
+                                    console.log('PWA DEBUG: Comparing startDateTime+buffer:', startWithBuffer, 'vs now:', now, 'isPast:', startWithBuffer < now);
+                                    if (startWithBuffer < now) {
                                         console.log('PWA DEBUG: FILTERED - Event started in past (has startDate+startTime, no end)');
                                         invalidCount++;
                                         return;
                                     }
                                 } else if (event.startDate) {
-                                    // Only start date, no times
+                                    // Only start date, no times - use end of day + buffer
                                     const [year, month, day] = event.startDate.split('-');
-                                    const startDate = new Date(year, month - 1, day);
-                                    console.log('PWA DEBUG: Comparing startDate:', startDate, 'vs today:', today, 'isPast:', startDate < today);
-                                    if (startDate < today) {
+                                    const startDate = new Date(year, month - 1, day, 23, 59, 59);
+                                    const startWithBuffer = new Date(startDate.getTime() + 7200000);
+                                    
+                                    console.log('PWA DEBUG: Comparing startDate+buffer:', startWithBuffer, 'vs now:', now, 'isPast:', startWithBuffer < now);
+                                    if (startWithBuffer < now) {
                                         console.log('PWA DEBUG: FILTERED - Event date in past (has startDate only)');
                                         invalidCount++;
                                         return;
@@ -4629,6 +4686,7 @@
                                             ${userDisplay}
                                             <p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">📍 Location:</strong> ${event.location}</p>
                                             <p style="color: #d4d4d4; margin: 0.5rem 0;"><strong style="color: var(--accent-light);">📅 When:</strong> ${dateTimeStr}</p>
+                                            <p style="color: #999; font-size: 0.85rem; margin: 0.3rem 0 0.5rem 0; font-style: italic;">⏰ Time shown in organizer's local timezone</p>
                                             ${event.description ? `<p style="color: #d4d4d4; margin: 0.8rem 0; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word;">${event.description}</p>` : ''}
                                             ${event.postedBy ? `<p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">👤 Contact Name:</strong> ${event.postedBy}</p>` : ''}
                                             ${event.createdBy !== (user ? user.uid : null) ? `<button onclick="openMessageModal('${event.createdBy}', '${username.replace(/'/g, "\\'")}', 'event', '${(event.name || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}')" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin: 0.5rem 0; font-size: 0.9rem;">📧 Contact Organizer</button>` : ''}
