@@ -1619,7 +1619,21 @@
         // Auth state listener - runs when user signs in/out
         auth.onAuthStateChanged(async function(user) {
             if (user) {
-                // User is signed in
+                // AUTHORIZED USERS ONLY - Add your email addresses here
+                const authorizedEmails = [
+                    'highdefpants@gmail.com',  // Replace with your actual email
+                    // 'friend@gmail.com',    // Uncomment and add more emails as needed
+                ];
+                
+                // Check if user is authorized
+                if (!authorizedEmails.includes(user.email)) {
+                    // NOT AUTHORIZED - Sign them out and show error
+                    await auth.signOut();
+                    alert('Access denied. This site is currently in private testing. Your email (' + user.email + ') is not authorized.');
+                    return;
+                }
+                
+                // User is signed in AND authorized
                 console.log('User signed in:', user.email);
                 console.log('User displayName:', user.displayName);
                 console.log('User UID:', user.uid);
