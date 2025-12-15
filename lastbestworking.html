@@ -6540,6 +6540,7 @@
             } else {
                 // CREATE new event
                 const newEventId = await saveEventToFirebase(eventData);
+                console.log('EVENT DEBUG: newEventId =', newEventId);
                 
                 // Also save to localStorage as backup
                 let events = JSON.parse(localStorage.getItem('events') || '[]');
@@ -6548,12 +6549,16 @@
                 
                 showToast('Event created successfully!');
                 closeCreateEventModal();
+                console.log('EVENT DEBUG: Modal closed, about to check for fullscreen modal');
                 
                 // Close the creation map and open browse events with the new event highlighted
                 if (newEventId) {
+                    console.log('EVENT DEBUG: newEventId exists, looking for modal');
                     // Close creation section without triggering scroll
                     const modal = document.getElementById('fullscreen-event-map-v2');
+                    console.log('EVENT DEBUG: Found modal?', !!modal, 'Modal:', modal);
                     if (modal) {
+                        console.log('EVENT DEBUG: Removing modal');
                         // Remove modal directly without triggering closeBtn onclick
                         modal.style.display = 'none';
                         modal.remove();
@@ -6564,9 +6569,14 @@
                             journeyMap.off('click');
                         }
                         journeyMap = null;
+                        console.log('EVENT DEBUG: Modal removed, about to call toggleSection');
                     }
                     // Open browse events immediately (no delay needed)
+                    console.log('EVENT DEBUG: Calling toggleSection with events and', newEventId);
                     toggleSection('events', newEventId);
+                    console.log('EVENT DEBUG: toggleSection called');
+                } else {
+                    console.log('EVENT DEBUG: newEventId is null/undefined!');
                 }
             }
         }
