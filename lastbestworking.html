@@ -6570,21 +6570,23 @@
                 
                 // Close the creation map and open browse events with the new event highlighted
                 if (newEventId) {
-                    console.log('PWA DEBUG: Closing creation modal and opening browse events');
-                    // Close creation section without triggering scroll
-                    const modal = document.getElementById('fullscreen-event-map-v2');
-                    console.log('PWA DEBUG: Found modal?', !!modal);
-                    if (modal) {
-                        // Remove modal directly without triggering closeBtn onclick
-                        modal.style.display = 'none';
-                        modal.remove();
-                        document.body.classList.remove('choreography-active');
-                        journeyMap = null;
-                        console.log('PWA DEBUG: Modal removed, calling toggleSection');
-                    }
-                    // Open browse events immediately (no delay needed)
-                    toggleSection('events', newEventId);
-                    console.log('PWA DEBUG: toggleSection called with events and', newEventId);
+                    // Add small delay to ensure modal is closed
+                    setTimeout(() => {
+                        const modal = document.getElementById('fullscreen-event-map-v2');
+                        if (modal) {
+                            modal.style.display = 'none';
+                            modal.remove();
+                            document.body.classList.remove('choreography-active');
+                            
+                            // Remove all map click handlers before nulling
+                            if (journeyMap) {
+                                journeyMap.off('click');
+                            }
+                            journeyMap = null;
+                        }
+                        // Open browse events immediately after cleanup
+                        toggleSection('events', newEventId);
+                    }, 100);
                 }
             }
         }
