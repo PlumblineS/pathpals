@@ -3724,19 +3724,6 @@
                     <div id="map" style="height: calc(100vh - 400px); width: 100%;"></div>
                     
                     <!-- Multi-business link (only shows for swarm mode) -->
-                    <div id="multiBusinessContainer" style="display: none; padding: 1rem 2rem; background: rgba(25, 25, 25, 0.95); border-top: 1px solid rgba(107, 155, 158, 0.2); text-align: center;">
-                        <p style="color: #d4d4d4; margin: 0; font-size: 0.9rem;">
-                            Planning to visit multiple businesses? 
-                            <a href="#" id="addBusinessLink" onclick="event.preventDefault(); addAnotherBusiness();" style="color: var(--accent-color); font-weight: 600; text-decoration: underline; margin-left: 0.5rem;">Add another location</a>
-                        </p>
-                        <p id="businessCount" style="color: var(--accent-light); margin: 0.5rem 0 0 0; font-size: 0.85rem; font-weight: 600;"></p>
-                    </div>
-                    
-                    <!-- Swarm Business Labels (only shows for swarm mode) -->
-                    <div id="swarmBusinessLabelsContainer" style="display: none; padding: 1rem 2rem; background: rgba(25, 25, 25, 0.95); max-height: 200px; overflow-y: auto; border-top: 1px solid rgba(107, 155, 158, 0.2);">
-                        <h4 style="color: var(--accent-color); margin-bottom: 0.75rem; font-size: 0.95rem;">🏪 Label Your Businesses (Required)</h4>
-                        <div id="swarmBusinessLabelsList" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
-                    </div>
                     
                     <!-- Waypoint Labels (only shows for journey mode) -->
                     <div id="waypointLabelsContainer" style="display: none; padding: 1rem 2rem; background: rgba(25, 25, 25, 0.95); max-height: 200px; overflow-y: auto;">
@@ -3917,19 +3904,9 @@
                                 addWaypoint(e.latlng);
                             });
                         } else if (mapMode === 'swarm') {
-                            // Always reset swarm markers array when opening creation map
-                            window.swarmMarkers = [];
-                            window.swarmLocations = [];
-                            window.swarmBusinessLabels = [];
-                            
-                            // Reset multi-business mode flag
-                            window.swarmMultiBusinessMode = false;
-                            
-                            // Show multi-business container
-                            const multiBusinessContainer = document.getElementById('multiBusinessContainer');
-                            if (multiBusinessContainer) {
-                                multiBusinessContainer.style.display = 'block';
-                            }
+                            // Reset swarm marker when opening creation map
+                            window.swarmMarker = null;
+                            window.swarmLocation = null;
                             
                             journeyMap.on('click', function(e) {
                                 addSwarmMarker(e.latlng);
@@ -4483,21 +4460,6 @@
                                 const marker = L.marker([swarm.lat, swarm.lng], { icon: swarmPinIcon }).addTo(swarmMap);
                                 window.allSwarmMarkersArray.push(marker); // Store for zoom out
                                 
-                                // Add additional markers if multiple locations exist
-                                if (swarm.locations && swarm.locations.length > 1) {
-                                    swarm.locations.slice(1).forEach((location, idx) => {
-                                        const additionalMarkerOptions = {
-                                            icon: L.divIcon({
-                                                className: 'swarm-additional-marker',
-                                                html: `<div style="background: rgba(0, 86, 179, 0.9); color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">${idx + 2}</div>`,
-                                                iconSize: [28, 28],
-                                                iconAnchor: [14, 14]
-                                            })
-                                        };
-                                        L.marker([location.lat, location.lng], additionalMarkerOptions).addTo(swarmMap);
-                                    });
-                                }
-                                
                                 // Click handler to populate info panel
                                 marker.on('click', async function() {
                                     // Zoom to pin location at street level
@@ -4539,7 +4501,6 @@
                                             </div>
                                             ${userDisplay}
                                             <p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">📍 Meeting Location:</strong> ${swarm.meetingLocation || swarm.location || 'Location TBD'}</p>
-                                            ${swarm.locationCount && swarm.locationCount > 1 ? `<p style="color: var(--accent-color); margin: 0.5rem 0; font-weight: 600;"><strong>🎯 Multi-Business Swarm:</strong> ${swarm.locationCount} locations</p>` : ''}
                                             <p style="color: #d4d4d4; margin: 0.5rem 0;"><strong style="color: var(--accent-light);">📅 When:</strong> ${swarm.date} at ${swarm.time}</p>
                                             <p style="color: #999; font-size: 0.85rem; margin: 0.3rem 0 0.5rem 0; font-style: italic;">⏰ Time shown in organizer's local timezone</p>
                                             ${swarm.duration ? `<p style="color: #d4d4d4; margin: 0.5rem 0;"><strong style="color: var(--accent-light);">⏱️ Duration:</strong> ${swarm.duration}</p>` : ''}
@@ -4941,27 +4902,14 @@
         }
         
         function clearSwarm() {
-            // Clear all markers from map
-            if (window.swarmMarkers && journeyMap) {
-                window.swarmMarkers.forEach(marker => {
-                    journeyMap.removeLayer(marker);
-                });
+            // Clear marker from map
+            if (window.swarmMarker && journeyMap) {
+                journeyMap.removeLayer(window.swarmMarker);
             }
             
-            // Reset all swarm data
-            window.swarmMarkers = [];
-            window.swarmLocations = [];
-            window.swarmBusinessLabels = [];
-            window.swarmMultiBusinessMode = false;
-            
-            // Clear and hide business labels container
-            const labelsContainer = document.getElementById('swarmBusinessLabelsContainer');
-            const labelsList = document.getElementById('swarmBusinessLabelsList');
-            if (labelsContainer) labelsContainer.style.display = 'none';
-            if (labelsList) labelsList.innerHTML = '';
-            
-            // Update count display
-            updateBusinessCount();
+            // Reset swarm data
+            window.swarmMarker = null;
+            window.swarmLocation = null;
             
             // Disable save button
             const saveBtn = document.getElementById('saveSwarmMapBtn');
@@ -6153,134 +6101,39 @@
         }
         window.confirmPinEvent = confirmPinEvent;
 
-        // Multi-Business Swarm Functions
+        // Swarm Pin Functions (Single Pin)
         function addSwarmMarker(latlng) {
-            // Check if multi-business mode is enabled
-            if (!window.swarmMultiBusinessMode && window.swarmMarkers.length >= 1) {
-                showToast('Click "Add another location" to add more businesses');
-                return;
+            // Remove any existing marker (single pin only)
+            if (window.swarmMarker && journeyMap) {
+                journeyMap.removeLayer(window.swarmMarker);
             }
             
-            const markerNumber = window.swarmMarkers.length + 1;
+            // Create pin icon
+            const swarmPinIcon = L.divIcon({
+                className: 'swarm-marker-pin',
+                html: '<div style="background: #0056b3; color: white; border-radius: 50% 50% 50% 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; transform: rotate(-45deg); box-shadow: 0 2px 8px rgba(0,0,0,0.3);"><span style="transform: rotate(45deg);">🛍️</span></div>',
+                iconSize: [32, 32],
+                iconAnchor: [16, 32]
+            });
             
-            // Create numbered marker for multi-business
-            const markerIcon = window.swarmMarkers.length === 0 ? 
-                L.divIcon({
-                    className: 'swarm-marker-first',
-                    html: '<div style="background: #0056b3; color: white; border-radius: 50% 50% 50% 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; transform: rotate(-45deg); box-shadow: 0 2px 8px rgba(0,0,0,0.3);"><span style="transform: rotate(45deg);">' + markerNumber + '</span></div>',
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 32]
-                }) :
-                L.divIcon({
-                    className: 'swarm-marker',
-                    html: '<div style="background: #0056b3; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">' + markerNumber + '</div>',
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16]
-                });
-            
-            const marker = L.marker([latlng.lat, latlng.lng], { icon: markerIcon }).addTo(journeyMap);
-            window.swarmMarkers.push(marker);
-            
-            // Initialize business labels array if needed
-            if (!window.swarmBusinessLabels) {
-                window.swarmBusinessLabels = [];
-            }
-            window.swarmBusinessLabels.push(''); // Initialize empty label
-            
-            // Add label input field
-            addSwarmLabelInput(markerNumber, latlng);
+            window.swarmMarker = L.marker([latlng.lat, latlng.lng], { icon: swarmPinIcon }).addTo(journeyMap);
             
             // Store location with reverse geocoding for address
             reverseGeocode(latlng.lat, latlng.lng).then(address => {
-                window.swarmLocations.push({ 
+                window.swarmLocation = { 
                     lat: latlng.lat, 
                     lng: latlng.lng,
                     address: address
-                });
-                
-                // Auto-fill business name from geocoding
-                const labelInput = document.getElementById(`swarmBusinessLabel${markerNumber}`);
-                if (labelInput && address) {
-                    const businessName = address.split(',')[0].trim();
-                    labelInput.value = businessName;
-                    window.swarmBusinessLabels[markerNumber - 1] = businessName;
-                }
+                };
             });
-            
-            // Update business count display
-            updateBusinessCount();
             
             // Enable the Save Swarm button
             const saveBtn = document.getElementById('saveSwarmMapBtn');
             if (saveBtn) saveBtn.disabled = false;
-            
-            const message = markerNumber === 1 ? 
-                'Location pinned! Label the business below.' :
-                `Location ${markerNumber} added!`;
-            showToast(message);
+            showToast('Location pinned! Click "Save Swarm" to continue.');
         }
         window.addSwarmMarker = addSwarmMarker;
         
-        function addAnotherBusiness() {
-            window.swarmMultiBusinessMode = true;
-            showToast('Multi-business mode enabled! Click the map to add more locations.');
-        }
-        window.addAnotherBusiness = addAnotherBusiness;
-        
-        function addSwarmLabelInput(markerNumber, latlng) {
-            const labelsContainer = document.getElementById('swarmBusinessLabelsContainer');
-            const labelsList = document.getElementById('swarmBusinessLabelsList');
-            
-            if (labelsContainer && labelsList) {
-                labelsContainer.style.display = 'block';
-                
-                const labelInput = document.createElement('div');
-                labelInput.style.cssText = 'display: flex; align-items: center; gap: 0.5rem;';
-                labelInput.innerHTML = `
-                    <span style="color: var(--accent-light); font-weight: 600; min-width: 30px;">${markerNumber}.</span>
-                    <input type="text" 
-                           id="swarmBusinessLabel${markerNumber}" 
-                           placeholder="Loading business name..."
-                           maxlength="50"
-                           required
-                           style="flex: 1; padding: 0.5rem; background: rgba(40, 40, 40, 0.8); border: 1px solid rgba(107, 155, 158, 0.3); border-radius: 8px; color: white; font-size: 0.9rem;">
-                `;
-                labelsList.appendChild(labelInput);
-                
-                // Update swarmBusinessLabels array when input changes
-                const input = document.getElementById(`swarmBusinessLabel${markerNumber}`);
-                input.addEventListener('input', (e) => {
-                    window.swarmBusinessLabels[markerNumber - 1] = e.target.value;
-                    // Visual feedback for empty labels
-                    if (e.target.value.trim() === '') {
-                        e.target.style.borderColor = 'rgba(220, 38, 38, 0.6)';
-                    } else {
-                        e.target.style.borderColor = 'rgba(107, 155, 158, 0.3)';
-                    }
-                });
-                
-                // Initial check if label is empty after timeout (allows auto-fill to work)
-                setTimeout(() => {
-                    if (!input.value || input.value.trim() === '') {
-                        input.style.borderColor = 'rgba(220, 38, 38, 0.6)';
-                    }
-                }, 500);
-            }
-        }
-        window.addSwarmLabelInput = addSwarmLabelInput;
-        
-        function updateBusinessCount() {
-            const countElement = document.getElementById('businessCount');
-            if (countElement && window.swarmLocations) {
-                const count = window.swarmLocations.length;
-                if (count > 0) {
-                    countElement.textContent = `${count} location${count !== 1 ? 's' : ''} pinned`;
-                    countElement.style.display = 'block';
-                } else {
-                    countElement.style.display = 'none';
-                }
-            }
-        }
 
         // Modal Functions
         function openCreateSwarmModalWithLocation(location) {
@@ -6303,26 +6156,14 @@
         }
         
         function openCreateSwarmModal() {
-            // Check if locations have been pinned
-            if (!window.swarmLocations || window.swarmLocations.length === 0) {
-                showToast('Please pin at least one location on the map first!');
+            // Check if location has been pinned
+            if (!window.swarmLocation) {
+                showToast('Please pin a location on the map first!');
                 return;
             }
             
-            // Validate that all businesses have labels BEFORE opening modal
-            if (!window.swarmBusinessLabels || window.swarmBusinessLabels.length !== window.swarmLocations.length) {
-                showToast('Please label all businesses before saving!');
-                return;
-            }
-            
-            const emptyLabels = window.swarmBusinessLabels.filter((label, idx) => !label || label.trim() === '');
-            if (emptyLabels.length > 0) {
-                showToast('Please label all businesses before saving!');
-                return;
-            }
-            
-            // Use first location for the modal (primary meeting point)
-            openCreateSwarmModalWithLocation(window.swarmLocations[0]);
+            // Open the modal with the location
+            openCreateSwarmModalWithLocation(window.swarmLocation);
         }
 
         function closeCreateSwarmModal() {
@@ -6330,27 +6171,12 @@
             document.getElementById('createSwarmForm').reset();
             // Disable button again
             document.getElementById('createSwarmBtn').disabled = true;
-            // Clear all markers and locations
-            if (window.swarmMarkers && journeyMap) {
-                window.swarmMarkers.forEach(marker => {
-                    journeyMap.removeLayer(marker);
-                });
-                window.swarmMarkers = [];
+            // Clear marker
+            if (window.swarmMarker && journeyMap) {
+                journeyMap.removeLayer(window.swarmMarker);
+                window.swarmMarker = null;
             }
-            if (window.swarmLocations) {
-                window.swarmLocations = [];
-            }
-            if (window.swarmBusinessLabels) {
-                window.swarmBusinessLabels = [];
-            }
-            // Reset multi-business mode
-            window.swarmMultiBusinessMode = false;
-            // Clear and hide labels container
-            const labelsContainer = document.getElementById('swarmBusinessLabelsContainer');
-            const labelsList = document.getElementById('swarmBusinessLabelsList');
-            if (labelsContainer) labelsContainer.style.display = 'none';
-            if (labelsList) labelsList.innerHTML = '';
-            updateBusinessCount();
+            window.swarmLocation = null;
         }
 
         function openCreateEventModal() {
@@ -6425,36 +6251,24 @@
             
             const formData = new FormData(event.target);
             
-            // Get coordinates from the pins (first one is primary meeting point)
-            if (!window.swarmLocations || window.swarmLocations.length === 0) {
-                showToast('Please place at least one pin on the map to set the location.');
+            // Get coordinates from the pin
+            const lat = window.swarmLocation?.lat;
+            const lng = window.swarmLocation?.lng;
+            
+            if (!lat || !lng) {
+                showToast('Please place a pin on the map to set the location.');
                 return;
             }
             
-            // Validate that all businesses have labels
-            if (!window.swarmBusinessLabels || window.swarmBusinessLabels.length !== window.swarmLocations.length) {
-                showToast('Please label all businesses before saving!');
-                return;
-            }
-            
-            const emptyLabels = window.swarmBusinessLabels.filter((label, idx) => !label || label.trim() === '');
-            if (emptyLabels.length > 0) {
-                showToast('Please label all businesses before saving!');
-                return;
-            }
-            
-            const primaryLocation = window.swarmLocations[0];
             const user = auth.currentUser;
             const displayName = user.displayName || user.email.split('@')[0];
             
             const swarmData = {
                 title: formData.get('swarmTitle'),
                 meetingLocation: formData.get('swarmMeetingLocation'), // Manual text field
-                lat: primaryLocation.lat, // Primary pin
-                lng: primaryLocation.lng, // Primary pin
-                locations: window.swarmLocations, // All pinned locations
-                businessLabels: window.swarmBusinessLabels, // Business names
-                locationCount: window.swarmLocations.length,
+                lat: lat, // From pin
+                lng: lng, // From pin
+                location: window.swarmLocation.address || formData.get('swarmMeetingLocation'),
                 date: formData.get('swarmDate'),
                 time: formData.get('swarmTime'),
                 description: formData.get('swarmDescription'),
@@ -6485,10 +6299,7 @@
                 swarms.push(swarmData);
                 localStorage.setItem('swarms', JSON.stringify(swarms));
                 
-                const locationText = swarmData.locationCount > 1 ? 
-                    `Shopping Swarm with ${swarmData.locationCount} locations created successfully!` :
-                    'Shopping Swarm created successfully!';
-                showToast(locationText);
+                showToast('Shopping Swarm created successfully!');
                 closeCreateSwarmModal();
                 
                 // Close the creation map and open browse swarms with the new swarm highlighted
