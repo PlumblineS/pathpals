@@ -3899,6 +3899,20 @@
                         
                         // Set up click handler based on mode
                         if (mapMode === 'journey') {
+                            // Always reset journey arrays when opening creation map
+                            routeMarkers = [];
+                            routeCoordinates = [];
+                            waypointLabels = [];
+                            routePath = null;
+                            
+                            // Clear and hide waypoint labels container
+                            const labelsContainer = document.getElementById('waypointLabelsContainer');
+                            const labelsList = document.getElementById('waypointLabelsList');
+                            if (labelsContainer && labelsList) {
+                                labelsContainer.style.display = 'none';
+                                labelsList.innerHTML = '';
+                            }
+                            
                             journeyMap.on('click', function(e) {
                                 addWaypoint(e.latlng);
                             });
@@ -5114,9 +5128,16 @@
             }
             
             // Validate that all waypoints have labels BEFORE opening modal
-            const emptyLabels = waypointLabels.filter((label, idx) => !label || label.trim() === '');
-            if (emptyLabels.length > 0) {
-                showToast('Please label all waypoints before saving!');
+            const emptyLabelIndex = waypointLabels.findIndex((label, idx) => !label || label.trim() === '');
+            if (emptyLabelIndex !== -1) {
+                showToast(`Please label Waypoint #${emptyLabelIndex + 1} before saving!`);
+                // Highlight the empty field
+                const emptyField = document.getElementById(`waypointLabel${emptyLabelIndex + 1}`);
+                if (emptyField) {
+                    emptyField.style.borderColor = 'rgba(220, 38, 38, 0.8)';
+                    emptyField.focus();
+                    emptyField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
                 return;
             }
             
