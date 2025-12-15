@@ -6538,27 +6538,8 @@
                 closeCreateEventModal();
                 openDashboard(); // Show updated event in dashboard
             } else {
-                // CREATE single event
+                // CREATE new event
                 const newEventId = await saveEventToFirebase(eventData);
-                
-                // IMMEDIATELY disable both buttons and map clicks (like Journey does)
-                const saveBtn = document.getElementById('saveEventMapBtn');
-                if (saveBtn) saveBtn.disabled = true;
-                
-                // Find and disable Clear Event button
-                const clearBtns = document.querySelectorAll('button');
-                clearBtns.forEach(btn => {
-                    if (btn.textContent.includes('Clear Event')) {
-                        btn.disabled = true;
-                        btn.style.opacity = '0.5';
-                        btn.style.cursor = 'not-allowed';
-                    }
-                });
-                
-                // Remove map click handler IMMEDIATELY
-                if (journeyMap) {
-                    journeyMap.off('click');
-                }
                 
                 // Also save to localStorage as backup
                 let events = JSON.parse(localStorage.getItem('events') || '[]');
@@ -6570,23 +6551,22 @@
                 
                 // Close the creation map and open browse events with the new event highlighted
                 if (newEventId) {
-                    // Add small delay to ensure modal is closed
-                    setTimeout(() => {
-                        const modal = document.getElementById('fullscreen-event-map-v2');
-                        if (modal) {
-                            modal.style.display = 'none';
-                            modal.remove();
-                            document.body.classList.remove('choreography-active');
-                            
-                            // Remove all map click handlers before nulling
-                            if (journeyMap) {
-                                journeyMap.off('click');
-                            }
-                            journeyMap = null;
+                    // Close creation section without triggering scroll
+                    const modal = document.getElementById('fullscreen-event-map-v2');
+                    if (modal) {
+                        // Remove modal directly without triggering closeBtn onclick
+                        modal.style.display = 'none';
+                        modal.remove();
+                        document.body.classList.remove('choreography-active');
+                        
+                        // Remove all map click handlers before nulling
+                        if (journeyMap) {
+                            journeyMap.off('click');
                         }
-                        // Open browse events immediately after cleanup
-                        toggleSection('events', newEventId);
-                    }, 100);
+                        journeyMap = null;
+                    }
+                    // Open browse events immediately (no delay needed)
+                    toggleSection('events', newEventId);
                 }
             }
         }
