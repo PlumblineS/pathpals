@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,15 +13,15 @@
     <meta name="apple-mobile-web-app-title" content="Flânerie">
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/pathpals/manifest.json">
     
     <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/pathpals/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/pathpals/icons/icon-192x192.png">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-72x72.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/pathpals/icons/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/pathpals/icons/icon-72x72.png">
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700;800&family=Crimson+Text:wght@400;600;700&display=swap" rel="stylesheet">
@@ -81,7 +80,6 @@
             display: flex;
             gap: 3rem;
             list-style: none;
-            margin-right: 300px;
         }
         
         .nav-links a {
@@ -102,16 +100,15 @@
             align-items: center;
             gap: 0.5rem;
             position: absolute;
-            right: 2rem;
-
+            right: 0;
+            margin-left: 6rem;
         }
         
         #user-name {
             font-size: 0.85rem;
             margin-right: 0.5rem;
-            display: flex;
-            align-items: center;
-            line-height: 1;
+            position: relative;
+            top: 1px;
         }
         
         .auth-btn {
@@ -609,9 +606,8 @@
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
             width: 100%;
+            height: 100vh;
             background: #0a0a0a;
             z-index: 10000;
             display: flex;
@@ -1627,11 +1623,14 @@
         // Auth state listener - runs when user signs in/out
         auth.onAuthStateChanged(async function(user) {
             if (user) {
-                // AUTHORIZED USERS ONLY - Only checked on Firebase, not GitHub Pages
-                if (window.location.hostname.includes('firebaseapp.com') || window.location.hostname.includes('web.app')) {
+                // AUTHORIZED USERS ONLY - Check email whitelist on production sites
+                if (window.location.hostname.includes('firebaseapp.com') || 
+                    window.location.hostname.includes('web.app') || 
+                    window.location.hostname.includes('pages.dev')) {
                     const authorizedEmails = [
-                        'highdefpants@gmail.com',  // Replace with your actual email
-                        // 'friend@gmail.com',    // Uncomment and add more emails as needed
+                        'highdefpants@gmail.com',  // Your email - only this email can access
+                        // Add more authorized emails below as needed:
+                        // 'friend@gmail.com',
                     ];
                     
                     // Check if user is authorized
@@ -1649,9 +1648,9 @@
                 console.log('User UID:', user.uid);
                 
                 // Remove lockdown overlay - site is now accessible
-                const overlay = document.getElementById('lockdown-overlay');
-                if (overlay) {
-                    overlay.remove();
+                const lockdownOverlay = document.getElementById('lockdown-overlay');
+                if (lockdownOverlay) {
+                    lockdownOverlay.remove();
                 }
                 
                 // Get username from database or use displayName
@@ -2419,7 +2418,8 @@
                 let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">';
                 activeEvents.forEach(event => {
                     // Show recurring badge if this is a recurring event
-                    const recurringBadge = ''; // Recurring removed per user request
+                    const recurringBadge = event.isRecurring ? 
+                        `<span style="display: inline-block; background: rgba(107, 155, 158, 0.3); color: var(--accent-light); padding: 0.25rem 0.6rem; border-radius: 10px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem;">🔄 Recurring</span>` : '';
                     
                     html += `
                         <div style="background: rgba(30, 30, 30, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; padding: 1.5rem;">
@@ -3641,7 +3641,7 @@
             const modal = document.createElement('div');
             modal.className = 'modal-fullscreen show';
             modal.id = 'fullscreen-' + sectionId;
-            modal.style.cssText = 'display: block; position: fixed; z-index: 2000; left: 0; top: 0; right: 0; bottom: 0; width: 100%; background-color: rgba(10, 10, 10, 0.98);';
+            modal.style.cssText = 'display: block; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100vh; background-color: rgba(10, 10, 10, 0.98);';
             
             const closeBtn = document.createElement('button');
             closeBtn.innerHTML = '&times;';
@@ -3665,14 +3665,14 @@
             };
             
             const content = document.createElement('div');
-            content.style.cssText = 'padding: 2rem; max-width: 1600px; margin: 0 auto; padding-bottom: 3rem; position: absolute; top: 0; bottom: 0; left: 0; right: 0; overflow: hidden;';
+            content.style.cssText = 'padding: 2rem; max-width: 1600px; margin: 0 auto; padding-bottom: 3rem; height: 100vh; overflow: hidden;';
             
             // Create content based on section
             const mapMode = sectionId.includes('swarm') ? 'swarm' : sectionId.includes('event') ? 'event' : 'journey';
             
             if (sectionId === 'journey-map' || sectionId === 'swarm-map-v2' || sectionId === 'event-map-v2') {
                 // Universal map section - changes based on mode
-                content.style.cssText = 'padding: 0; max-width: none; margin: 0; position: absolute; top: 0; bottom: 0; left: 0; right: 0; overflow: hidden; display: flex; flex-direction: column;';
+                content.style.cssText = 'padding: 0; max-width: none; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column;';
                 
                 const titles = {
                     journey: 'Share Your Journey',
@@ -3725,6 +3725,19 @@
                     <div id="map" style="height: calc(100vh - 400px); width: 100%;"></div>
                     
                     <!-- Multi-business link (only shows for swarm mode) -->
+                    <div id="multiBusinessContainer" style="display: none; padding: 1rem 2rem; background: rgba(25, 25, 25, 0.95); border-top: 1px solid rgba(107, 155, 158, 0.2); text-align: center;">
+                        <p style="color: #d4d4d4; margin: 0; font-size: 0.9rem;">
+                            Planning to visit multiple businesses? 
+                            <a href="#" id="addBusinessLink" onclick="event.preventDefault(); addAnotherBusiness();" style="color: var(--accent-color); font-weight: 600; text-decoration: underline; margin-left: 0.5rem;">Add another location</a>
+                        </p>
+                        <p id="businessCount" style="color: var(--accent-light); margin: 0.5rem 0 0 0; font-size: 0.85rem; font-weight: 600;"></p>
+                    </div>
+                    
+                    <!-- Swarm Business Labels (only shows for swarm mode) -->
+                    <div id="swarmBusinessLabelsContainer" style="display: none; padding: 1rem 2rem; background: rgba(25, 25, 25, 0.95); max-height: 200px; overflow-y: auto; border-top: 1px solid rgba(107, 155, 158, 0.2);">
+                        <h4 style="color: var(--accent-color); margin-bottom: 0.75rem; font-size: 0.95rem;">🏪 Label Your Businesses (Required)</h4>
+                        <div id="swarmBusinessLabelsList" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+                    </div>
                     
                     <!-- Waypoint Labels (only shows for journey mode) -->
                     <div id="waypointLabelsContainer" style="display: none; padding: 1rem 2rem; background: rgba(25, 25, 25, 0.95); max-height: 200px; overflow-y: auto;">
@@ -3887,27 +3900,23 @@
                         
                         // Set up click handler based on mode
                         if (mapMode === 'journey') {
-                            // Always reset journey arrays when opening creation map
-                            routeMarkers = [];
-                            routeCoordinates = [];
-                            waypointLabels = [];
-                            routePath = null;
-                            
-                            // Clear and hide waypoint labels container
-                            const labelsContainer = document.getElementById('waypointLabelsContainer');
-                            const labelsList = document.getElementById('waypointLabelsList');
-                            if (labelsContainer && labelsList) {
-                                labelsContainer.style.display = 'none';
-                                labelsList.innerHTML = '';
-                            }
-                            
                             journeyMap.on('click', function(e) {
                                 addWaypoint(e.latlng);
                             });
                         } else if (mapMode === 'swarm') {
-                            // Reset swarm marker when opening creation map
-                            window.swarmMarker = null;
-                            window.swarmLocation = null;
+                            // Always reset swarm markers array when opening creation map
+                            window.swarmMarkers = [];
+                            window.swarmLocations = [];
+                            window.swarmBusinessLabels = [];
+                            
+                            // Reset multi-business mode flag
+                            window.swarmMultiBusinessMode = false;
+                            
+                            // Show multi-business container
+                            const multiBusinessContainer = document.getElementById('multiBusinessContainer');
+                            if (multiBusinessContainer) {
+                                multiBusinessContainer.style.display = 'block';
+                            }
                             
                             journeyMap.on('click', function(e) {
                                 addSwarmMarker(e.latlng);
@@ -4461,6 +4470,21 @@
                                 const marker = L.marker([swarm.lat, swarm.lng], { icon: swarmPinIcon }).addTo(swarmMap);
                                 window.allSwarmMarkersArray.push(marker); // Store for zoom out
                                 
+                                // Add additional markers if multiple locations exist
+                                if (swarm.locations && swarm.locations.length > 1) {
+                                    swarm.locations.slice(1).forEach((location, idx) => {
+                                        const additionalMarkerOptions = {
+                                            icon: L.divIcon({
+                                                className: 'swarm-additional-marker',
+                                                html: `<div style="background: rgba(0, 86, 179, 0.9); color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">${idx + 2}</div>`,
+                                                iconSize: [28, 28],
+                                                iconAnchor: [14, 14]
+                                            })
+                                        };
+                                        L.marker([location.lat, location.lng], additionalMarkerOptions).addTo(swarmMap);
+                                    });
+                                }
+                                
                                 // Click handler to populate info panel
                                 marker.on('click', async function() {
                                     // Zoom to pin location at street level
@@ -4502,6 +4526,7 @@
                                             </div>
                                             ${userDisplay}
                                             <p style="color: #d4d4d4; margin: 0.5rem 0; word-wrap: break-word;"><strong style="color: var(--accent-light);">📍 Meeting Location:</strong> ${swarm.meetingLocation || swarm.location || 'Location TBD'}</p>
+                                            ${swarm.locationCount && swarm.locationCount > 1 ? `<p style="color: var(--accent-color); margin: 0.5rem 0; font-weight: 600;"><strong>🎯 Multi-Business Swarm:</strong> ${swarm.locationCount} locations</p>` : ''}
                                             <p style="color: #d4d4d4; margin: 0.5rem 0;"><strong style="color: var(--accent-light);">📅 When:</strong> ${swarm.date} at ${swarm.time}</p>
                                             <p style="color: #999; font-size: 0.85rem; margin: 0.3rem 0 0.5rem 0; font-style: italic;">⏰ Time shown in organizer's local timezone</p>
                                             ${swarm.duration ? `<p style="color: #d4d4d4; margin: 0.5rem 0;"><strong style="color: var(--accent-light);">⏱️ Duration:</strong> ${swarm.duration}</p>` : ''}
@@ -4903,14 +4928,27 @@
         }
         
         function clearSwarm() {
-            // Clear marker from map
-            if (window.swarmMarker && journeyMap) {
-                journeyMap.removeLayer(window.swarmMarker);
+            // Clear all markers from map
+            if (window.swarmMarkers && journeyMap) {
+                window.swarmMarkers.forEach(marker => {
+                    journeyMap.removeLayer(marker);
+                });
             }
             
-            // Reset swarm data
-            window.swarmMarker = null;
-            window.swarmLocation = null;
+            // Reset all swarm data
+            window.swarmMarkers = [];
+            window.swarmLocations = [];
+            window.swarmBusinessLabels = [];
+            window.swarmMultiBusinessMode = false;
+            
+            // Clear and hide business labels container
+            const labelsContainer = document.getElementById('swarmBusinessLabelsContainer');
+            const labelsList = document.getElementById('swarmBusinessLabelsList');
+            if (labelsContainer) labelsContainer.style.display = 'none';
+            if (labelsList) labelsList.innerHTML = '';
+            
+            // Update count display
+            updateBusinessCount();
             
             // Disable save button
             const saveBtn = document.getElementById('saveSwarmMapBtn');
@@ -5077,16 +5115,9 @@
             }
             
             // Validate that all waypoints have labels BEFORE opening modal
-            const emptyLabelIndex = waypointLabels.findIndex((label, idx) => !label || label.trim() === '');
-            if (emptyLabelIndex !== -1) {
-                showToast(`Please label Waypoint #${emptyLabelIndex + 1} before saving!`);
-                // Highlight the empty field
-                const emptyField = document.getElementById(`waypointLabel${emptyLabelIndex + 1}`);
-                if (emptyField) {
-                    emptyField.style.borderColor = 'rgba(220, 38, 38, 0.8)';
-                    emptyField.focus();
-                    emptyField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
+            const emptyLabels = waypointLabels.filter((label, idx) => !label || label.trim() === '');
+            if (emptyLabels.length > 0) {
+                showToast('Please label all waypoints before saving!');
                 return;
             }
             
@@ -5590,7 +5621,8 @@
                         const sectionMap = { 'route': 'search', 'swarm': 'swarms', 'event': 'events' };
                         
                         // Add recurring badge for events
-                        const recurringBadge = ''; // Recurring removed per user request
+                        const recurringBadge = item.type === 'event' && item.isRecurring ? 
+                            `<span style="display: inline-block; background: rgba(107, 155, 158, 0.3); color: var(--accent-light); padding: 0.25rem 0.6rem; border-radius: 10px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem;">🔄 Recurring</span>` : '';
                         
                         // Add event-specific date/time if it's an event
                         const eventDateTime = item.type === 'event' && item.startDate ? 
@@ -5898,7 +5930,7 @@
             // Create fullscreen map modal for pin selection
             const modal = document.createElement('div');
             modal.id = 'pinSelectionModal';
-            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; flex-direction: column;';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; height: 100vh; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; flex-direction: column;';
             
             modal.innerHTML = `
                 <div style="padding: 2rem; text-align: center; background: rgba(20, 20, 20, 0.98); position: relative;">
@@ -5945,16 +5977,9 @@
                     }, 500);
                 });
                 
-                // Click to place pin (locked after first placement)
-                let pinPlaced = false;
+                // Click to place pin
                 pinCreationMap.on('click', async function(e) {
-                    // Prevent moving pin after its been placed
-                    if (pinPlaced) {
-                        showToast('Pin already placed. Click Confirm to continue or Cancel to start over.');
-                        return;
-                    }
-                    
-                    // Remove existing marker (shouldn't happen but just in case)
+                    // Remove existing marker
                     if (pinCreationMarker) {
                         pinCreationMap.removeLayer(pinCreationMarker);
                     }
@@ -5962,7 +5987,6 @@
                     // Place new marker
                     pinCreationMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(pinCreationMap);
                     selectedPinLocation = { lat: e.latlng.lat, lng: e.latlng.lng };
-                    pinPlaced = true;  // Lock the pin
                     
                     // Show loading toast
                     showToast('Getting address...');
@@ -5975,7 +5999,6 @@
                         pinCreationMarker.bindPopup(`<strong>Selected Location:</strong><br>${address}<br><button onclick="confirmPinSwarm()" style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: var(--accent-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">✓ Confirm & Continue</button>`).openPopup();
                     } else {
                         showToast('Could not get address. Please try another location.');
-                        pinPlaced = false;  // Allow trying again if address lookup fails
                     }
                 });
             }, 500);
@@ -5986,7 +6009,7 @@
             // Create fullscreen map modal for pin selection
             const modal = document.createElement('div');
             modal.id = 'pinSelectionModal';
-            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; flex-direction: column;';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; height: 100vh; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; flex-direction: column;';
             
             modal.innerHTML = `
                 <div style="padding: 2rem; text-align: center; background: rgba(20, 20, 20, 0.98); position: relative;">
@@ -6033,16 +6056,9 @@
                     }, 500);
                 });
                 
-                // Click to place pin (locked after first placement)
-                let pinPlaced = false;
+                // Click to place pin
                 pinCreationMap.on('click', async function(e) {
-                    // Prevent moving pin after its been placed
-                    if (pinPlaced) {
-                        showToast('Pin already placed. Click Confirm to continue or Cancel to start over.');
-                        return;
-                    }
-                    
-                    // Remove existing marker (shouldn't happen but just in case)
+                    // Remove existing marker
                     if (pinCreationMarker) {
                         pinCreationMap.removeLayer(pinCreationMarker);
                     }
@@ -6050,7 +6066,6 @@
                     // Place new marker
                     pinCreationMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(pinCreationMap);
                     selectedPinLocation = { lat: e.latlng.lat, lng: e.latlng.lng };
-                    pinPlaced = true;  // Lock the pin
                     
                     // Show loading toast
                     showToast('Getting address...');
@@ -6063,7 +6078,6 @@
                         pinCreationMarker.bindPopup(`<strong>Selected Location:</strong><br>${address}<br><button onclick="confirmPinEvent()" style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: var(--accent-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">✓ Confirm & Continue</button>`).openPopup();
                     } else {
                         showToast('Could not get address. Please try another location.');
-                        pinPlaced = false;  // Allow trying again if address lookup fails
                     }
                 });
             }, 500);
@@ -6102,39 +6116,134 @@
         }
         window.confirmPinEvent = confirmPinEvent;
 
-        // Swarm Pin Functions (Single Pin)
+        // Multi-Business Swarm Functions
         function addSwarmMarker(latlng) {
-            // Remove any existing marker (single pin only)
-            if (window.swarmMarker && journeyMap) {
-                journeyMap.removeLayer(window.swarmMarker);
+            // Check if multi-business mode is enabled
+            if (!window.swarmMultiBusinessMode && window.swarmMarkers.length >= 1) {
+                showToast('Click "Add another location" to add more businesses');
+                return;
             }
             
-            // Create pin icon
-            const swarmPinIcon = L.divIcon({
-                className: 'swarm-marker-pin',
-                html: '<div style="background: #0056b3; color: white; border-radius: 50% 50% 50% 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; transform: rotate(-45deg); box-shadow: 0 2px 8px rgba(0,0,0,0.3);"><span style="transform: rotate(45deg);">🛍️</span></div>',
-                iconSize: [32, 32],
-                iconAnchor: [16, 32]
-            });
+            const markerNumber = window.swarmMarkers.length + 1;
             
-            window.swarmMarker = L.marker([latlng.lat, latlng.lng], { icon: swarmPinIcon }).addTo(journeyMap);
+            // Create numbered marker for multi-business
+            const markerIcon = window.swarmMarkers.length === 0 ? 
+                L.divIcon({
+                    className: 'swarm-marker-first',
+                    html: '<div style="background: #0056b3; color: white; border-radius: 50% 50% 50% 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; transform: rotate(-45deg); box-shadow: 0 2px 8px rgba(0,0,0,0.3);"><span style="transform: rotate(45deg);">' + markerNumber + '</span></div>',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 32]
+                }) :
+                L.divIcon({
+                    className: 'swarm-marker',
+                    html: '<div style="background: #0056b3; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">' + markerNumber + '</div>',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16]
+                });
+            
+            const marker = L.marker([latlng.lat, latlng.lng], { icon: markerIcon }).addTo(journeyMap);
+            window.swarmMarkers.push(marker);
+            
+            // Initialize business labels array if needed
+            if (!window.swarmBusinessLabels) {
+                window.swarmBusinessLabels = [];
+            }
+            window.swarmBusinessLabels.push(''); // Initialize empty label
+            
+            // Add label input field
+            addSwarmLabelInput(markerNumber, latlng);
             
             // Store location with reverse geocoding for address
             reverseGeocode(latlng.lat, latlng.lng).then(address => {
-                window.swarmLocation = { 
+                window.swarmLocations.push({ 
                     lat: latlng.lat, 
                     lng: latlng.lng,
                     address: address
-                };
+                });
+                
+                // Auto-fill business name from geocoding
+                const labelInput = document.getElementById(`swarmBusinessLabel${markerNumber}`);
+                if (labelInput && address) {
+                    const businessName = address.split(',')[0].trim();
+                    labelInput.value = businessName;
+                    window.swarmBusinessLabels[markerNumber - 1] = businessName;
+                }
             });
+            
+            // Update business count display
+            updateBusinessCount();
             
             // Enable the Save Swarm button
             const saveBtn = document.getElementById('saveSwarmMapBtn');
             if (saveBtn) saveBtn.disabled = false;
-            showToast('Location pinned! Click "Save Swarm" to continue.');
+            
+            const message = markerNumber === 1 ? 
+                'Location pinned! Label the business below.' :
+                `Location ${markerNumber} added!`;
+            showToast(message);
         }
         window.addSwarmMarker = addSwarmMarker;
         
+        function addAnotherBusiness() {
+            window.swarmMultiBusinessMode = true;
+            showToast('Multi-business mode enabled! Click the map to add more locations.');
+        }
+        window.addAnotherBusiness = addAnotherBusiness;
+        
+        function addSwarmLabelInput(markerNumber, latlng) {
+            const labelsContainer = document.getElementById('swarmBusinessLabelsContainer');
+            const labelsList = document.getElementById('swarmBusinessLabelsList');
+            
+            if (labelsContainer && labelsList) {
+                labelsContainer.style.display = 'block';
+                
+                const labelInput = document.createElement('div');
+                labelInput.style.cssText = 'display: flex; align-items: center; gap: 0.5rem;';
+                labelInput.innerHTML = `
+                    <span style="color: var(--accent-light); font-weight: 600; min-width: 30px;">${markerNumber}.</span>
+                    <input type="text" 
+                           id="swarmBusinessLabel${markerNumber}" 
+                           placeholder="Loading business name..."
+                           maxlength="50"
+                           required
+                           style="flex: 1; padding: 0.5rem; background: rgba(40, 40, 40, 0.8); border: 1px solid rgba(107, 155, 158, 0.3); border-radius: 8px; color: white; font-size: 0.9rem;">
+                `;
+                labelsList.appendChild(labelInput);
+                
+                // Update swarmBusinessLabels array when input changes
+                const input = document.getElementById(`swarmBusinessLabel${markerNumber}`);
+                input.addEventListener('input', (e) => {
+                    window.swarmBusinessLabels[markerNumber - 1] = e.target.value;
+                    // Visual feedback for empty labels
+                    if (e.target.value.trim() === '') {
+                        e.target.style.borderColor = 'rgba(220, 38, 38, 0.6)';
+                    } else {
+                        e.target.style.borderColor = 'rgba(107, 155, 158, 0.3)';
+                    }
+                });
+                
+                // Initial check if label is empty after timeout (allows auto-fill to work)
+                setTimeout(() => {
+                    if (!input.value || input.value.trim() === '') {
+                        input.style.borderColor = 'rgba(220, 38, 38, 0.6)';
+                    }
+                }, 500);
+            }
+        }
+        window.addSwarmLabelInput = addSwarmLabelInput;
+        
+        function updateBusinessCount() {
+            const countElement = document.getElementById('businessCount');
+            if (countElement && window.swarmLocations) {
+                const count = window.swarmLocations.length;
+                if (count > 0) {
+                    countElement.textContent = `${count} location${count !== 1 ? 's' : ''} pinned`;
+                    countElement.style.display = 'block';
+                } else {
+                    countElement.style.display = 'none';
+                }
+            }
+        }
 
         // Modal Functions
         function openCreateSwarmModalWithLocation(location) {
@@ -6157,14 +6266,26 @@
         }
         
         function openCreateSwarmModal() {
-            // Check if location has been pinned
-            if (!window.swarmLocation) {
-                showToast('Please pin a location on the map first!');
+            // Check if locations have been pinned
+            if (!window.swarmLocations || window.swarmLocations.length === 0) {
+                showToast('Please pin at least one location on the map first!');
                 return;
             }
             
-            // Open the modal with the location
-            openCreateSwarmModalWithLocation(window.swarmLocation);
+            // Validate that all businesses have labels BEFORE opening modal
+            if (!window.swarmBusinessLabels || window.swarmBusinessLabels.length !== window.swarmLocations.length) {
+                showToast('Please label all businesses before saving!');
+                return;
+            }
+            
+            const emptyLabels = window.swarmBusinessLabels.filter((label, idx) => !label || label.trim() === '');
+            if (emptyLabels.length > 0) {
+                showToast('Please label all businesses before saving!');
+                return;
+            }
+            
+            // Use first location for the modal (primary meeting point)
+            openCreateSwarmModalWithLocation(window.swarmLocations[0]);
         }
 
         function closeCreateSwarmModal() {
@@ -6172,12 +6293,27 @@
             document.getElementById('createSwarmForm').reset();
             // Disable button again
             document.getElementById('createSwarmBtn').disabled = true;
-            // Clear marker
-            if (window.swarmMarker && journeyMap) {
-                journeyMap.removeLayer(window.swarmMarker);
-                window.swarmMarker = null;
+            // Clear all markers and locations
+            if (window.swarmMarkers && journeyMap) {
+                window.swarmMarkers.forEach(marker => {
+                    journeyMap.removeLayer(marker);
+                });
+                window.swarmMarkers = [];
             }
-            window.swarmLocation = null;
+            if (window.swarmLocations) {
+                window.swarmLocations = [];
+            }
+            if (window.swarmBusinessLabels) {
+                window.swarmBusinessLabels = [];
+            }
+            // Reset multi-business mode
+            window.swarmMultiBusinessMode = false;
+            // Clear and hide labels container
+            const labelsContainer = document.getElementById('swarmBusinessLabelsContainer');
+            const labelsList = document.getElementById('swarmBusinessLabelsList');
+            if (labelsContainer) labelsContainer.style.display = 'none';
+            if (labelsList) labelsList.innerHTML = '';
+            updateBusinessCount();
         }
 
         function openCreateEventModal() {
@@ -6198,16 +6334,11 @@
         }
 
         function closeCreateEventModal() {
-            const modal = document.getElementById('createEventModal');
-            const form = document.getElementById('createEventForm');
-            const customField = document.getElementById('customEventTypeField');
-            const btn = document.getElementById('createEventBtn');
-            
-            if (modal) modal.style.display = 'none';
-            if (form) form.reset();
-            if (customField) customField.style.display = 'none';
-            if (btn) btn.disabled = true;
-            
+            document.getElementById('createEventModal').style.display = 'none';
+            document.getElementById('createEventForm').reset();
+            document.getElementById('customEventTypeField').style.display = 'none';
+            // Disable button again
+            document.getElementById('createEventBtn').disabled = true;
             // Clear window location
             window.eventLocation = null;
             if (window.eventMarker && journeyMap) {
@@ -6252,24 +6383,36 @@
             
             const formData = new FormData(event.target);
             
-            // Get coordinates from the pin
-            const lat = window.swarmLocation?.lat;
-            const lng = window.swarmLocation?.lng;
-            
-            if (!lat || !lng) {
-                showToast('Please place a pin on the map to set the location.');
+            // Get coordinates from the pins (first one is primary meeting point)
+            if (!window.swarmLocations || window.swarmLocations.length === 0) {
+                showToast('Please place at least one pin on the map to set the location.');
                 return;
             }
             
+            // Validate that all businesses have labels
+            if (!window.swarmBusinessLabels || window.swarmBusinessLabels.length !== window.swarmLocations.length) {
+                showToast('Please label all businesses before saving!');
+                return;
+            }
+            
+            const emptyLabels = window.swarmBusinessLabels.filter((label, idx) => !label || label.trim() === '');
+            if (emptyLabels.length > 0) {
+                showToast('Please label all businesses before saving!');
+                return;
+            }
+            
+            const primaryLocation = window.swarmLocations[0];
             const user = auth.currentUser;
             const displayName = user.displayName || user.email.split('@')[0];
             
             const swarmData = {
                 title: formData.get('swarmTitle'),
                 meetingLocation: formData.get('swarmMeetingLocation'), // Manual text field
-                lat: lat, // From pin
-                lng: lng, // From pin
-                location: window.swarmLocation.address || formData.get('swarmMeetingLocation'),
+                lat: primaryLocation.lat, // Primary pin
+                lng: primaryLocation.lng, // Primary pin
+                locations: window.swarmLocations, // All pinned locations
+                businessLabels: window.swarmBusinessLabels, // Business names
+                locationCount: window.swarmLocations.length,
                 date: formData.get('swarmDate'),
                 time: formData.get('swarmTime'),
                 description: formData.get('swarmDescription'),
@@ -6300,7 +6443,10 @@
                 swarms.push(swarmData);
                 localStorage.setItem('swarms', JSON.stringify(swarms));
                 
-                showToast('Shopping Swarm created successfully!');
+                const locationText = swarmData.locationCount > 1 ? 
+                    `Shopping Swarm with ${swarmData.locationCount} locations created successfully!` :
+                    'Shopping Swarm created successfully!';
+                showToast(locationText);
                 closeCreateSwarmModal();
                 
                 // Close the creation map and open browse swarms with the new swarm highlighted
@@ -6378,9 +6524,27 @@
                 closeCreateEventModal();
                 openDashboard(); // Show updated event in dashboard
             } else {
-                // CREATE new event
+                // CREATE single event
                 const newEventId = await saveEventToFirebase(eventData);
-                console.log('EVENT DEBUG: newEventId =', newEventId);
+                
+                // IMMEDIATELY disable both buttons and map clicks (like Journey does)
+                const saveBtn = document.getElementById('saveEventMapBtn');
+                if (saveBtn) saveBtn.disabled = true;
+                
+                // Find and disable Clear Event button
+                const clearBtns = document.querySelectorAll('button');
+                clearBtns.forEach(btn => {
+                    if (btn.textContent.includes('Clear Event')) {
+                        btn.disabled = true;
+                        btn.style.opacity = '0.5';
+                        btn.style.cursor = 'not-allowed';
+                    }
+                });
+                
+                // Remove map click handler IMMEDIATELY
+                if (journeyMap) {
+                    journeyMap.off('click');
+                }
                 
                 // Also save to localStorage as backup
                 let events = JSON.parse(localStorage.getItem('events') || '[]');
@@ -6389,34 +6553,24 @@
                 
                 showToast('Event created successfully!');
                 closeCreateEventModal();
-                console.log('EVENT DEBUG: Modal closed, about to check for fullscreen modal');
                 
                 // Close the creation map and open browse events with the new event highlighted
                 if (newEventId) {
-                    console.log('EVENT DEBUG: newEventId exists, looking for modal');
+                    console.log('PWA DEBUG: Closing creation modal and opening browse events');
                     // Close creation section without triggering scroll
                     const modal = document.getElementById('fullscreen-event-map-v2');
-                    console.log('EVENT DEBUG: Found modal?', !!modal, 'Modal:', modal);
+                    console.log('PWA DEBUG: Found modal?', !!modal);
                     if (modal) {
-                        console.log('EVENT DEBUG: Removing modal');
                         // Remove modal directly without triggering closeBtn onclick
                         modal.style.display = 'none';
                         modal.remove();
                         document.body.classList.remove('choreography-active');
-                        
-                        // Remove all map click handlers before nulling
-                        if (journeyMap) {
-                            journeyMap.off('click');
-                        }
                         journeyMap = null;
-                        console.log('EVENT DEBUG: Modal removed, about to call toggleSection');
+                        console.log('PWA DEBUG: Modal removed, calling toggleSection');
                     }
                     // Open browse events immediately (no delay needed)
-                    console.log('EVENT DEBUG: Calling toggleSection with events and', newEventId);
                     toggleSection('events', newEventId);
-                    console.log('EVENT DEBUG: toggleSection called');
-                } else {
-                    console.log('EVENT DEBUG: newEventId is null/undefined!');
+                    console.log('PWA DEBUG: toggleSection called with events and', newEventId);
                 }
             }
         }
@@ -7356,7 +7510,7 @@
         // Register service worker for PWA functionality
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
+                navigator.serviceWorker.register('/pathpals/service-worker.js')
                     .then((registration) => {
                         console.log('PWA: Service Worker registered successfully:', registration.scope);
                     })
