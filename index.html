@@ -2384,6 +2384,9 @@
             const user = auth.currentUser;
             if (!user) return;
             
+            // Clean up deleted swarms (6+ months old)
+            cleanupDeletedSwarms();
+            
             const contentDiv = document.getElementById('swarmsContent');
             contentDiv.innerHTML = '<p style="text-align: center; color: #999;">Loading...</p>';
             
@@ -2391,7 +2394,11 @@
                 const snapshot = await database.ref('swarms').orderByChild('createdBy').equalTo(user.uid).once('value');
                 const swarms = [];
                 snapshot.forEach(child => {
-                    swarms.push({ id: child.key, ...child.val() });
+                    const swarm = child.val();
+                    // Exclude soft-deleted swarms
+                    if (!swarm.deleted) {
+                        swarms.push({ id: child.key, ...swarm });
+                    }
                 });
                 
                 if (swarms.length === 0) {
@@ -2456,6 +2463,9 @@
             const user = auth.currentUser;
             if (!user) return;
             
+            // Clean up deleted events (6+ months old)
+            cleanupDeletedEvents();
+            
             const contentDiv = document.getElementById('eventsContent');
             contentDiv.innerHTML = '<p style="text-align: center; color: #999;">Loading...</p>';
             
@@ -2463,7 +2473,11 @@
                 const snapshot = await database.ref('events').orderByChild('createdBy').equalTo(user.uid).once('value');
                 const events = [];
                 snapshot.forEach(child => {
-                    events.push({ id: child.key, ...child.val() });
+                    const event = child.val();
+                    // Exclude soft-deleted events
+                    if (!event.deleted) {
+                        events.push({ id: child.key, ...event });
+                    }
                 });
                 
                 if (events.length === 0) {
@@ -2946,41 +2960,73 @@
             const user = auth.currentUser;
             if (!user) return;
             
-            const confirmation = prompt('This will permanently delete your account and all data. Type "DELETE" to confirm:');
+            const confirmation = prompt('This will delete your account. Your content will remain visible for historical purposes but will show as "Deleted User". All data retained for 3 years per our privacy policy. Type "DELETE" to confirm:');
             if (confirmation !== 'DELETE') {
                 showToast('Account deletion cancelled');
                 return;
             }
             
             try {
-                // Delete user data from Firebase
+                const deletionDate = new Date().toISOString();
+                
+                // SOFT DELETE all user's content (keep for 3 years per privacy policy)
+                // Mark routes as deleted (3 year retention for account deletions)
                 await database.ref(`routes`).orderByChild('createdBy').equalTo(user.uid).once('value', async (snapshot) => {
-                    const deletePromises = [];
+                    const updatePromises = [];
                     snapshot.forEach(child => {
-                        deletePromises.push(database.ref(`routes/${child.key}`).remove());
+                        updatePromises.push(database.ref(`routes/${child.key}`).update({
+                            deleted: true,
+                            deletedAt: deletionDate,
+                            deletedReason: 'account_deletion'
+                        }));
                     });
-                    await Promise.all(deletePromises);
+                    await Promise.all(updatePromises);
                 });
                 
+                // Mark swarms as deleted (3 year retention for account deletions)
                 await database.ref(`swarms`).orderByChild('createdBy').equalTo(user.uid).once('value', async (snapshot) => {
-                    const deletePromises = [];
+                    const updatePromises = [];
                     snapshot.forEach(child => {
-                        deletePromises.push(database.ref(`swarms/${child.key}`).remove());
+                        updatePromises.push(database.ref(`swarms/${child.key}`).update({
+                            deleted: true,
+                            deletedAt: deletionDate,
+                            deletedReason: 'account_deletion'
+                        }));
                     });
-                    await Promise.all(deletePromises);
+                    await Promise.all(updatePromises);
                 });
                 
+                // Mark events as deleted (3 year retention for account deletions)
                 await database.ref(`events`).orderByChild('createdBy').equalTo(user.uid).once('value', async (snapshot) => {
-                    const deletePromises = [];
+                    const updatePromises = [];
                     snapshot.forEach(child => {
-                        deletePromises.push(database.ref(`events/${child.key}`).remove());
+                        updatePromises.push(database.ref(`events/${child.key}`).update({
+                            deleted: true,
+                            deletedAt: deletionDate,
+                            deletedReason: 'account_deletion'
+                        }));
                     });
-                    await Promise.all(deletePromises);
+                    await Promise.all(updatePromises);
                 });
                 
-                // Delete user account
+                // Mark username as deleted (3 year retention for account deletions)
+                const usernameSnapshot = await database.ref('usernames').once('value');
+                usernameSnapshot.forEach(async (child) => {
+                    if (child.val() === user.uid) {
+                        await database.ref(`deletedUsernames/${child.key}`).set({
+                            userId: user.uid,
+                            deletedAt: deletionDate
+                        });
+                        await database.ref(`usernames/${child.key}`).remove();
+                    }
+                });
+                
+                // Sign out and delete Firebase Auth account
+                // Note: Their content stays in database as soft-deleted for 3 years per privacy policy
+                await auth.signOut();
                 await user.delete();
-                showToast('Account deleted successfully');
+                
+                showToast('Account deleted. Your content will be permanently removed after 3 years.');
                 window.location.reload();
             } catch (error) {
                 console.error('Error deleting account:', error);
@@ -3022,12 +3068,16 @@
         
         // Delete swarm
         async function deleteSwarm(swarmId) {
-            if (!confirm('Are you sure you want to delete this swarm? This cannot be undone.')) {
+            if (!confirm('Are you sure you want to delete this swarm? It will be hidden but recoverable for 6 months.')) {
                 return;
             }
             
             try {
-                await database.ref(`swarms/${swarmId}`).remove();
+                // Soft delete - mark as deleted but keep in database
+                await database.ref(`swarms/${swarmId}`).update({
+                    deleted: true,
+                    deletedAt: new Date().toISOString()
+                });
                 showToast('Swarm deleted successfully');
                 loadMySwarms();
             } catch (error) {
@@ -3037,13 +3087,18 @@
         }
         
         // Delete event
+        // Delete event
         async function deleteEvent(eventId) {
-            if (!confirm('Are you sure you want to delete this event? This cannot be undone.')) {
+            if (!confirm('Are you sure you want to delete this event? It will be hidden but recoverable for 6 months.')) {
                 return;
             }
             
             try {
-                await database.ref(`events/${eventId}`).remove();
+                // Soft delete - mark as deleted but keep in database
+                await database.ref(`events/${eventId}`).update({
+                    deleted: true,
+                    deletedAt: new Date().toISOString()
+                });
                 showToast('Event deleted successfully');
                 loadMyEvents();
             } catch (error) {
@@ -3596,10 +3651,14 @@
                 const snapshot = await database.ref('events').once('value');
                 const events = [];
                 snapshot.forEach((childSnapshot) => {
-                    events.push({
-                        id: childSnapshot.key,
-                        ...childSnapshot.val()
-                    });
+                    const event = childSnapshot.val();
+                    // Exclude soft-deleted events from public view
+                    if (!event.deleted) {
+                        events.push({
+                            id: childSnapshot.key,
+                            ...event
+                        });
+                    }
                 });
                 return events;
             } catch (error) {
@@ -3614,10 +3673,14 @@
                 const snapshot = await database.ref('swarms').once('value');
                 const swarms = [];
                 snapshot.forEach((childSnapshot) => {
-                    swarms.push({
-                        id: childSnapshot.key,
-                        ...childSnapshot.val()
-                    });
+                    const swarm = childSnapshot.val();
+                    // Exclude soft-deleted swarms from public view
+                    if (!swarm.deleted) {
+                        swarms.push({
+                            id: childSnapshot.key,
+                            ...swarm
+                        });
+                    }
                 });
                 return swarms;
             } catch (error) {
@@ -5471,6 +5534,19 @@
         // Helper function to get username from userId
         async function getUsernameFromId(userId) {
             try {
+                // PRIORITY 0: Check if user account was deleted
+                const deletedSnapshot = await database.ref('deletedUsernames').once('value');
+                let isDeletedUser = false;
+                deletedSnapshot.forEach((child) => {
+                    if (child.val().userId === userId) {
+                        isDeletedUser = true;
+                    }
+                });
+                
+                if (isDeletedUser) {
+                    return 'Deleted User';
+                }
+                
                 // PRIORITY 1: Check database for custom username FIRST
                 const snapshot = await database.ref('usernames').once('value');
                 let foundUsername = null;
@@ -6925,7 +7001,7 @@
         }
         window.cleanupOldMessages = cleanupOldMessages;
         
-        // Cleanup deleted routes after 6 months retention
+        // Cleanup deleted routes after 6 months retention (or 3 years for account deletions)
         async function cleanupDeletedRoutes() {
             try {
                 const allRoutesSnapshot = await database.ref('routes').once('value');
@@ -6940,9 +7016,12 @@
                         const deletedDate = new Date(route.deletedAt);
                         const daysSinceDeletion = (now - deletedDate) / (1000 * 60 * 60 * 24);
                         
-                        // PERMANENTLY DELETE routes after 6 months (180 days) retention
-                        if (daysSinceDeletion > 180) {
-                            console.log('Permanently deleting route (6 month retention expired):', snap.key);
+                        // Determine retention period based on deletion reason
+                        const retentionDays = route.deletedReason === 'account_deletion' ? 1095 : 180; // 3 years vs 6 months
+                        
+                        // PERMANENTLY DELETE routes after retention period expires
+                        if (daysSinceDeletion > retentionDays) {
+                            console.log(`Permanently deleting route (${retentionDays}-day retention expired):`, snap.key);
                             deletePromises.push(database.ref(`routes/${snap.key}`).remove());
                         }
                     }
@@ -6951,13 +7030,87 @@
                 // Execute delete operations
                 if (deletePromises.length > 0) {
                     await Promise.all(deletePromises);
-                    console.log(`Permanently deleted ${deletePromises.length} routes (6+ months old)`);
+                    console.log(`Permanently deleted ${deletePromises.length} routes past retention period`);
                 }
             } catch (error) {
                 console.error('Error cleaning up deleted routes:', error);
             }
         }
         window.cleanupDeletedRoutes = cleanupDeletedRoutes;
+        
+        // Cleanup deleted swarms after 6 months retention (or 3 years for account deletions)
+        async function cleanupDeletedSwarms() {
+            try {
+                const allSwarmsSnapshot = await database.ref('swarms').once('value');
+                const now = new Date();
+                const deletePromises = [];
+                
+                allSwarmsSnapshot.forEach(snap => {
+                    const swarm = snap.val();
+                    
+                    // Only process swarms that have been soft-deleted
+                    if (swarm.deleted && swarm.deletedAt) {
+                        const deletedDate = new Date(swarm.deletedAt);
+                        const daysSinceDeletion = (now - deletedDate) / (1000 * 60 * 60 * 24);
+                        
+                        // Determine retention period based on deletion reason
+                        const retentionDays = swarm.deletedReason === 'account_deletion' ? 1095 : 180; // 3 years vs 6 months
+                        
+                        // PERMANENTLY DELETE swarms after retention period expires
+                        if (daysSinceDeletion > retentionDays) {
+                            console.log(`Permanently deleting swarm (${retentionDays}-day retention expired):`, snap.key);
+                            deletePromises.push(database.ref(`swarms/${snap.key}`).remove());
+                        }
+                    }
+                });
+                
+                // Execute delete operations
+                if (deletePromises.length > 0) {
+                    await Promise.all(deletePromises);
+                    console.log(`Permanently deleted ${deletePromises.length} swarms past retention period`);
+                }
+            } catch (error) {
+                console.error('Error cleaning up deleted swarms:', error);
+            }
+        }
+        window.cleanupDeletedSwarms = cleanupDeletedSwarms;
+        
+        // Cleanup deleted events after 6 months retention (or 3 years for account deletions)
+        async function cleanupDeletedEvents() {
+            try {
+                const allEventsSnapshot = await database.ref('events').once('value');
+                const now = new Date();
+                const deletePromises = [];
+                
+                allEventsSnapshot.forEach(snap => {
+                    const event = snap.val();
+                    
+                    // Only process events that have been soft-deleted
+                    if (event.deleted && event.deletedAt) {
+                        const deletedDate = new Date(event.deletedAt);
+                        const daysSinceDeletion = (now - deletedDate) / (1000 * 60 * 60 * 24);
+                        
+                        // Determine retention period based on deletion reason
+                        const retentionDays = event.deletedReason === 'account_deletion' ? 1095 : 180; // 3 years vs 6 months
+                        
+                        // PERMANENTLY DELETE events after retention period expires
+                        if (daysSinceDeletion > retentionDays) {
+                            console.log(`Permanently deleting event (${retentionDays}-day retention expired):`, snap.key);
+                            deletePromises.push(database.ref(`events/${snap.key}`).remove());
+                        }
+                    }
+                });
+                
+                // Execute delete operations
+                if (deletePromises.length > 0) {
+                    await Promise.all(deletePromises);
+                    console.log(`Permanently deleted ${deletePromises.length} events past retention period`);
+                }
+            } catch (error) {
+                console.error('Error cleaning up deleted events:', error);
+            }
+        }
+        window.cleanupDeletedEvents = cleanupDeletedEvents;
         
         // Get unread message count
         async function getUnreadMessageCount() {
