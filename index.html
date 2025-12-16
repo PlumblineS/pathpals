@@ -2972,6 +2972,7 @@
                 const routeIds = [];
                 const swarmIds = [];
                 const eventIds = [];
+                const messageIds = [];
                 
                 const routesSnapshot = await database.ref('routes').orderByChild('createdBy').equalTo(user.uid).once('value');
                 routesSnapshot.forEach(child => routeIds.push(child.key));
@@ -2981,6 +2982,15 @@
                 
                 const eventsSnapshot = await database.ref('events').orderByChild('createdBy').equalTo(user.uid).once('value');
                 eventsSnapshot.forEach(child => eventIds.push(child.key));
+                
+                // Collect all messages where user was sender OR recipient
+                const allMessagesSnapshot = await database.ref('messages').once('value');
+                allMessagesSnapshot.forEach(child => {
+                    const message = child.val();
+                    if (message.senderId === user.uid || message.recipientId === user.uid) {
+                        messageIds.push(child.key);
+                    }
+                });
                 
                 // Get username
                 let username = null;
@@ -3000,10 +3010,13 @@
                     routeIds: routeIds,
                     swarmIds: swarmIds,
                     eventIds: eventIds,
+                    messageIds: messageIds,
                     totalRoutes: routeIds.length,
                     totalSwarms: swarmIds.length,
                     totalEvents: eventIds.length,
-                    retentionExpiresAt: new Date(Date.now() + (1095 * 24 * 60 * 60 * 1000)).toISOString() // 3 years from now
+                    totalMessages: messageIds.length,
+                    retentionExpiresAt: new Date(Date.now() + (1095 * 24 * 60 * 60 * 1000)).toISOString(), // 3 years from now
+                    note: "Messages retain their own 3-year timeline from creation date, not deletion date"
                 });
                 
                 // STEP 3: SOFT DELETE all user's content (keep for 3 years per privacy policy)
@@ -7210,11 +7223,15 @@
                     console.log('  - Routes:', foundAccount.totalRoutes, '→', foundAccount.routeIds);
                     console.log('  - Swarms:', foundAccount.totalSwarms, '→', foundAccount.swarmIds);
                     console.log('  - Events:', foundAccount.totalEvents, '→', foundAccount.eventIds);
+                    console.log('  - Messages:', foundAccount.totalMessages, '→ (sent + received)', foundAccount.messageIds?.length > 10 ? foundAccount.messageIds.slice(0, 10) + ' ...(truncated)' : foundAccount.messageIds);
+                    console.log('───────────────────────────────────────────────────');
+                    console.log('NOTE:', foundAccount.note);
                     console.log('═══════════════════════════════════════════════════');
                     console.log('To retrieve full content data, use these IDs to query:');
                     console.log('  database.ref("routes/{routeId}").once("value")');
                     console.log('  database.ref("swarms/{swarmId}").once("value")');
                     console.log('  database.ref("events/{eventId}").once("value")');
+                    console.log('  database.ref("messages/{messageId}").once("value")');
                     console.log('═══════════════════════════════════════════════════');
                     return foundAccount;
                 } else {
@@ -7260,6 +7277,9 @@
                     console.log('  - Routes:', foundAccount.totalRoutes, '→', foundAccount.routeIds);
                     console.log('  - Swarms:', foundAccount.totalSwarms, '→', foundAccount.swarmIds);
                     console.log('  - Events:', foundAccount.totalEvents, '→', foundAccount.eventIds);
+                    console.log('  - Messages:', foundAccount.totalMessages, '→ (sent + received)', foundAccount.messageIds?.length > 10 ? foundAccount.messageIds.slice(0, 10) + ' ...(truncated)' : foundAccount.messageIds);
+                    console.log('───────────────────────────────────────────────────');
+                    console.log('NOTE:', foundAccount.note);
                     console.log('═══════════════════════════════════════════════════');
                     return foundAccount;
                 } else {
