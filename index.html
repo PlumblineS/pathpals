@@ -1655,6 +1655,25 @@
                     overlay.remove();
                 }
                 
+                // Check if this is a Google user's first time (no username in database)
+                const isGoogleUser = user.providerData[0]?.providerId === 'google.com';
+                if (isGoogleUser) {
+                    // Check if username exists in database
+                    const usernameSnapshot = await database.ref('usernames').once('value');
+                    let hasUsername = false;
+                    usernameSnapshot.forEach((child) => {
+                        if (child.val() === user.uid) {
+                            hasUsername = true;
+                        }
+                    });
+                    
+                    // If no username set, show setup modal and wait
+                    if (!hasUsername) {
+                        await showUsernameSetupModal(user);
+                        // Function will wait for username to be saved before continuing
+                    }
+                }
+                
                 // Get username from database or use displayName
                 let username = await getUsernameFromId(user.uid);
                 console.log('Username from getUsernameFromId:', username);
@@ -2064,6 +2083,74 @@
             document.getElementById('signUpForm').reset();
         }
         
+        // Username Setup Modal (for first-time Google users)
+        function showUsernameSetupModal(user) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('usernameSetupModal');
+                modal.style.display = 'flex';
+                
+                // Store resolve function to call after username is saved
+                window.usernameSetupResolve = resolve;
+            });
+        }
+        
+        async function saveUsername(event) {
+            event.preventDefault();
+            
+            const usernameInput = document.getElementById('newUsername');
+            const errorMsg = document.getElementById('usernameError');
+            const submitBtn = document.getElementById('saveUsernameBtn');
+            const username = usernameInput.value.trim().toLowerCase();
+            
+            // Validate format
+            if (!/^[a-z0-9_]{3,20}$/.test(username)) {
+                errorMsg.textContent = 'Username must be 3-20 characters (letters, numbers, underscores only)';
+                errorMsg.style.display = 'block';
+                return;
+            }
+            
+            // Disable button while checking
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Checking...';
+            errorMsg.style.display = 'none';
+            
+            try {
+                // Check if username already exists
+                const snapshot = await database.ref(`usernames/${username}`).once('value');
+                
+                if (snapshot.exists()) {
+                    // Username taken
+                    errorMsg.textContent = 'This username is already taken. Please choose another.';
+                    errorMsg.style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Continue';
+                    return;
+                }
+                
+                // Username available - save it
+                const user = auth.currentUser;
+                await database.ref(`usernames/${username}`).set(user.uid);
+                
+                // Close modal
+                document.getElementById('usernameSetupModal').style.display = 'none';
+                
+                // Resolve the promise to continue auth flow
+                if (window.usernameSetupResolve) {
+                    window.usernameSetupResolve();
+                    window.usernameSetupResolve = null;
+                }
+                
+                showToast(`Welcome, ${username}! Your username has been set.`);
+                
+            } catch (error) {
+                console.error('Error saving username:', error);
+                errorMsg.textContent = 'Error saving username. Please try again.';
+                errorMsg.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Continue';
+            }
+        }
+        
         // Check if user can create content (signed in AND email verified)
         function checkAuthAndVerification() {
             const user = auth.currentUser;
@@ -2165,6 +2252,7 @@
         window.signOut = signOut;
         window.showSignInModal = showSignInModal;
         window.closeSignInModal = closeSignInModal;
+        window.saveUsername = saveUsername;
         window.switchAuthTab = switchAuthTab;
         window.checkAuthAndVerification = checkAuthAndVerification;
         window.resendVerificationEmail = resendVerificationEmail;
@@ -7225,6 +7313,29 @@
             <div style="text-align: center; margin: 1.5rem 0; color: #999;">
                 ───── OR ─────
             </div>
+    
+    <!-- Username Setup Modal (for first-time Google sign-ins) -->
+    <div id="usernameSetupModal" class="modal" style="display: none; z-index: 10001;">
+        <div class="modal-content" style="max-width: 500px;">
+            <h2 style="text-align: center; color: var(--accent-color); margin-bottom: 1rem;">Choose Your Username</h2>
+            <p style="text-align: center; color: #999; margin-bottom: 2rem;">Pick a unique username that others will see when you share routes, swarms, and events.</p>
+            
+            <form id="usernameSetupForm" onsubmit="saveUsername(event); return false;">
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Username</label>
+                    <input type="text" id="newUsername" required minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]+" 
+                           placeholder="e.g., urban_explorer"
+                           style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;">
+                    <p style="color: #999; font-size: 0.85rem; margin-top: 0.5rem;">3-20 characters, letters, numbers, and underscores only</p>
+                    <p id="usernameError" style="color: #d9534f; font-size: 0.9rem; margin-top: 0.5rem; display: none;"></p>
+                </div>
+                
+                <button type="submit" id="saveUsernameBtn" style="width: 100%; padding: 1rem; background: var(--accent-color); color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                    Continue
+                </button>
+            </form>
+        </div>
+    </div>
             
             <!-- Email/Password Tabs -->
             <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid rgba(107, 155, 158, 0.2);">
