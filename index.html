@@ -5575,17 +5575,20 @@
         // Helper function to get username from userId
         async function getUsernameFromId(userId) {
             try {
-                // PRIORITY 0: Check if user account was deleted
+                // PRIORITY 0: Check if user account was deleted (only if deletedUsernames node exists)
                 const deletedSnapshot = await database.ref('deletedUsernames').once('value');
-                let isDeletedUser = false;
-                deletedSnapshot.forEach((child) => {
-                    if (child.val().userId === userId) {
-                        isDeletedUser = true;
+                if (deletedSnapshot.exists()) {
+                    let isDeletedUser = false;
+                    deletedSnapshot.forEach((child) => {
+                        const data = child.val();
+                        if (data && data.userId === userId) {
+                            isDeletedUser = true;
+                        }
+                    });
+                    
+                    if (isDeletedUser) {
+                        return 'Deleted User';
                     }
-                });
-                
-                if (isDeletedUser) {
-                    return 'Deleted User';
                 }
                 
                 // PRIORITY 1: Check database for custom username FIRST
