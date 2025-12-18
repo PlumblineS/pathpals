@@ -80,7 +80,7 @@
             display: flex;
             gap: 3rem;
             list-style: none;
-            margin-right: 300px;
+            margin-right: 200px;
         }
         
         .nav-links a {
@@ -1189,7 +1189,7 @@
             
             <ul class="nav-links" id="mobile-nav">
                 <li><a href="#home" onclick="closeMobileMenu()">Home</a></li>
-                <li><a href="javascript:void(0)" onclick="scrollToContent(); closeMobileMenu()">How It Works</a></li>
+                <li><a href="javascript:void(0)" onclick="scrollToContent(); closeMobileMenu()">What is Flânerie?</a></li>
                 <li><a href="javascript:void(0)" onclick="scrollToExplore(); closeMobileMenu()">Explore</a></li>
                 <li><a href="/for-businesses.html" onclick="closeMobileMenu()">For Businesses</a></li>
                 <li><a href="/about.html" onclick="closeMobileMenu()">About</a></li>
@@ -1549,7 +1549,7 @@
         }
         
         function scrollToExplore() {
-            document.getElementById('features-content').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('tagline-reveal').scrollIntoView({ behavior: 'smooth' });
         }
         
         // Scroll to any section by ID
