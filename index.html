@@ -1300,9 +1300,12 @@
                     </p>
                 </div>
                 
-                <p id="tagline-reveal">Share your journey. Retrace theirs.</p>
             </section>
             
+            <!-- Explore Section -->
+            <section id="explore-section" class="explore-section">
+                <p id="tagline-reveal">Share your journey. Retrace theirs.</p>
+                
             <!-- Feature Cards - 3 cards with 2 buttons each -->
             <div id="features-content" class="features-section">
                 <div class="feature-grid">
@@ -1340,6 +1343,7 @@
                     </div>
                 </div>
             </div>
+            </section>
         </div>
     </main>
     
@@ -1549,7 +1553,7 @@
         }
         
         function scrollToExplore() {
-            document.getElementById('tagline-reveal').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById('explore-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
         
         // Scroll to any section by ID
