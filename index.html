@@ -227,6 +227,21 @@
                 display: none; /* Hide username on mobile */
             }
             
+            #mobile-user-info {
+                display: flex;
+                flex-direction: column;
+                gap: 0.8rem;
+                width: 100%;
+            }
+            
+            #mobile-user-name {
+                display: block !important;
+                text-align: center;
+                padding: 0.5rem 0;
+                font-size: 0.95rem;
+                word-break: break-word;
+            }
+            
             .desktop-auth {
                 display: none !important; /* Hide desktop auth on mobile */
             }
@@ -6221,7 +6236,7 @@
         // Toast Notification
         function showToast(message) {
             const toast = document.createElement('div');
-            toast.style.cssText = 'position: fixed; bottom: 2rem; right: 2rem; background: rgba(107, 155, 158, 0.95); color: white; padding: 1rem 2rem; border-radius: 10px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3); z-index: 3000;';
+            toast.style.cssText = 'position: fixed; bottom: 2rem; right: 2rem; background: rgba(107, 155, 158, 0.95); color: white; padding: 1rem 2rem; border-radius: 10px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3); z-index: 15000;';
             toast.textContent = message;
             document.body.appendChild(toast);
             
