@@ -1549,13 +1549,16 @@
         }
         
         function scrollToExplore() {
-            const element = document.getElementById('tagline-reveal');
+            // Scroll to show the tagline and cards together
+            const tagline = document.getElementById('tagline-reveal');
             const navHeight = document.querySelector('nav').offsetHeight;
-            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-            const offsetPosition = elementPosition - navHeight - 40; // Account for nav + some padding
+            
+            // Position tagline just below the nav bar
+            const taglineTop = tagline.offsetTop;
+            const scrollPosition = taglineTop - navHeight - 20;
             
             window.scrollTo({
-                top: offsetPosition,
+                top: scrollPosition,
                 behavior: 'smooth'
             });
         }
