@@ -1154,7 +1154,7 @@
             
             <ul class="nav-links" id="mobile-nav">
                 <li><a href="#home" onclick="closeMobileMenu()">Home</a></li>
-                <li><a href="javascript:void(0)" onclick="scrollToContent(); closeMobileMenu()">How It Works</a></li>
+                <li><a href="javascript:void(0)" onclick="scrollToContent(); closeMobileMenu()">What is Flânerie?</a></li>
                 <li><a href="javascript:void(0)" onclick="scrollToExplore(); closeMobileMenu()">Explore</a></li>
                 <li><a href="/for-businesses.html" onclick="closeMobileMenu()">For Businesses</a></li>
                 <li><a href="/about.html" onclick="closeMobileMenu()">About</a></li>
@@ -1226,7 +1226,7 @@
     <main class="main-content">
         <div class="container">
             <!-- Definition Section -->
-            <section class="info-section">
+            <section class="info-section" id="what-is-flanerie">
                 <div class="definition-box-animated">
                     <h2>flânerie</h2>
                     <p style="font-size: 1rem; color: var(--accent-light); margin-bottom: 0.3rem;">
@@ -1309,7 +1309,6 @@
                 <h4>Legal & Info</h4>
                 <ul>
                     <li><a href="/about.html">About Us</a></li>
-                    <li><a href="/for-businesses.html">For Businesses</a></li>
                     <li><a href="/privacy.html">Privacy Policy</a></li>
                     <li><a href="/terms.html">Terms of Use</a></li>
                 </ul>
@@ -1318,8 +1317,7 @@
                 <h4>Community</h4>
                 <ul>
                     <li><a href="javascript:void(0)" onclick="scrollToExplore()">Explore Routes</a></li>
-                    <li><a href="javascript:void(0)" onclick="scrollToSection('events')">Browse Events</a></li>
-                    <li><a href="javascript:void(0)" onclick="scrollToSection('swarms')">Discover Swarms</a></li>
+                    <li><a href="/for-businesses.html">For Businesses</a></li>
                 </ul>
             </div>
             <div class="footer-section">
@@ -1502,7 +1500,7 @@
         
         // Scroll to content
         function scrollToContent() {
-            document.querySelector('.main-content').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('what-is-flanerie').scrollIntoView({ behavior: 'smooth' });
         }
         
         function scrollToExplore() {
