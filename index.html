@@ -264,6 +264,14 @@
         @media (max-width: 768px) {
             .hero {
                 background-attachment: scroll;
+                -webkit-transform: translateZ(0);
+                transform: translateZ(0);
+            }
+            
+            .hero::before {
+                -webkit-backdrop-filter: none;
+                backdrop-filter: none;
+                background: rgba(10, 10, 10, 0.65);
             }
         }
         
