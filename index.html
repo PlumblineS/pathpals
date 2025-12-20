@@ -26,6 +26,9 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700;800&family=Crimson+Text:wght@400;600;700&display=swap" rel="stylesheet">
     
+    <!-- Cloudflare Turnstile -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    
     <style>
         * {
             margin: 0;
@@ -2065,6 +2068,13 @@
         // Sign up with Email/Password
         async function signUpWithEmail(event) {
             event.preventDefault();
+            
+            // TURNSTILE CHECK: Verify bot protection token
+            const turnstileResponse = document.querySelector('[name="cf-turnstile-response"]');
+            if (!turnstileResponse || !turnstileResponse.value) {
+                showToast('Please complete the security check');
+                return;
+            }
             
             // ANTI-BOT CHECK 1: Honeypot field
             const honeypot = document.getElementById('website').value;
@@ -7881,6 +7891,10 @@
                 </div>
                 <!-- Honeypot field (hidden from humans, bots will fill it) -->
                 <input type="text" id="website" name="website" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1" autocomplete="off">
+                
+                <!-- Cloudflare Turnstile Widget -->
+                <div class="cf-turnstile" data-sitekey="0x4AAAAAAAcmTByseXXZDX4c3yc" data-theme="dark" style="margin-bottom: 1rem;"></div>
+                
                 <button type="submit" class="feature-btn" style="width: 100%;">Sign Up</button>
                 <p style="color: #999; font-size: 0.85rem; margin-top: 1rem; text-align: center;">
                     You'll receive a verification email after signing up
