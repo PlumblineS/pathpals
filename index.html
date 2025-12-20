@@ -1767,81 +1767,86 @@
         
         // ===== FIREBASE AUTHENTICATION =====
         
-        // ===== SITE LOCKDOWN (Remove this section when ready to launch) =====
-        // This blocks the entire site until an authorized user logs in
-        // ONLY ACTIVATES ON PRODUCTION SITES - GitHub Pages remains open for testing
+        // ===== SITE LOCKDOWN - INVITE CODE CHECK =====
+        // This blocks the entire site until correct invite code is entered
+        // ONLY ACTIVATES ON PRODUCTION SITES
         if (window.location.hostname.includes('firebaseapp.com') || 
             window.location.hostname.includes('web.app') || 
             window.location.hostname.includes('pages.dev')) {
-            const lockdownOverlay = document.createElement('div');
-            lockdownOverlay.id = 'lockdown-overlay';
-            lockdownOverlay.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-                z-index: 999999;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-family: 'Poppins', sans-serif;
-            `;
-            lockdownOverlay.innerHTML = `
-                <div style="text-align: center; padding: 3rem; background: rgba(25, 25, 25, 0.95); border-radius: 20px; border: 2px solid rgba(107, 155, 158, 0.3); max-width: 500px;">
-                    <h1 style="color: #8DBCC0; font-family: 'Playfair Display', serif; font-size: 3rem; margin-bottom: 1rem;">Flânerie</h1>
-                    <p style="color: #8DBCC0; margin-bottom: 2rem; font-size: 1.1rem;">Admin Access Only</p>
-                    <p style="color: #999; margin-bottom: 2rem;">This site is currently in private testing.</p>
-                    <button id="admin-login-btn" style="background: linear-gradient(135deg, #6B9B9E, #8dbcc0); color: white; border: none; padding: 1rem 2rem; border-radius: 25px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;">
-                        <span style="font-size: 1.3rem;">G</span> Sign in with Google
-                    </button>
-                </div>
-            `;
-            document.body.appendChild(lockdownOverlay);
             
-            // Handle admin login button
-            document.getElementById('admin-login-btn').addEventListener('click', function() {
-                const provider = new firebase.auth.GoogleAuthProvider();
-                auth.signInWithPopup(provider).catch(function(error) {
-                    console.error('Login error:', error);
-                    alert('Login failed: ' + error.message);
+            // Check if user has already entered correct code (stored in sessionStorage)
+            const hasAccess = sessionStorage.getItem('flanerie_access') === 'granted';
+            
+            if (!hasAccess) {
+                const lockdownOverlay = document.createElement('div');
+                lockdownOverlay.id = 'lockdown-overlay';
+                lockdownOverlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+                    z-index: 999999;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-family: 'Poppins', sans-serif;
+                `;
+                lockdownOverlay.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; background: rgba(25, 25, 25, 0.95); border-radius: 20px; border: 2px solid rgba(107, 155, 158, 0.3); max-width: 500px;">
+                        <h1 style="color: #8DBCC0; font-family: 'Playfair Display', serif; font-size: 3rem; margin-bottom: 1rem;">Flânerie</h1>
+                        <p style="color: #8DBCC0; margin-bottom: 1rem; font-size: 1.1rem;">Private Testing</p>
+                        <p style="color: #999; margin-bottom: 2rem;">Enter your invite code to access the site</p>
+                        <input type="text" id="gate-invite-code" placeholder="Enter invite code" style="width: 100%; padding: 1rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem; margin-bottom: 1rem;">
+                        <p id="gate-error" style="color: #ff4444; margin-bottom: 1rem; display: none; font-size: 0.9rem;">Incorrect invite code</p>
+                        <button id="gate-submit-btn" style="background: linear-gradient(135deg, #6B9B9E, #8dbcc0); color: white; border: none; padding: 1rem 2rem; border-radius: 25px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; width: 100%;">
+                            Enter Site
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(lockdownOverlay);
+                
+                // Handle invite code submission
+                const submitBtn = document.getElementById('gate-submit-btn');
+                const codeInput = document.getElementById('gate-invite-code');
+                const errorMsg = document.getElementById('gate-error');
+                
+                function checkInviteCode() {
+                    const enteredCode = codeInput.value.trim();
+                    if (enteredCode === 'Flanerie-80884bob') {
+                        // Correct code!
+                        sessionStorage.setItem('flanerie_access', 'granted');
+                        lockdownOverlay.remove();
+                    } else {
+                        // Wrong code
+                        errorMsg.style.display = 'block';
+                        codeInput.value = '';
+                        codeInput.focus();
+                    }
+                }
+                
+                submitBtn.addEventListener('click', checkInviteCode);
+                codeInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        checkInviteCode();
+                    }
                 });
-            });
+                
+                // Focus input on load
+                setTimeout(() => codeInput.focus(), 100);
+            }
         }
         // ===== END SITE LOCKDOWN =====
         
         // Auth state listener - runs when user signs in/out
         auth.onAuthStateChanged(async function(user) {
             if (user) {
-                // AUTHORIZED USERS ONLY - Check email on all production sites
-                if (window.location.hostname.includes('firebaseapp.com') || 
-                    window.location.hostname.includes('web.app') || 
-                    window.location.hostname.includes('pages.dev')) {
-                    const authorizedEmails = [
-                        'highdefpants@gmail.com',  // Replace with your actual email
-                        // 'friend@gmail.com',    // Uncomment and add more emails as needed
-                    ];
-                    
-                    // Check if user is authorized
-                    if (!authorizedEmails.includes(user.email)) {
-                        // NOT AUTHORIZED - Sign them out and show error
-                        await auth.signOut();
-                        alert('Access denied. This site is currently in private testing. Your email (' + user.email + ') is not authorized.');
-                        return;
-                    }
-                }
-                
-                // User is signed in AND authorized (or on GitHub Pages)
+                // User is signed in
                 console.log('User signed in:', user.email);
                 console.log('User displayName:', user.displayName);
                 console.log('User UID:', user.uid);
-                
-                // Remove lockdown overlay - site is now accessible
-                const overlay = document.getElementById('lockdown-overlay');
-                if (overlay) {
-                    overlay.remove();
-                }
+
                 
                 // Check if this is a Google user's first time (no username in database)
                 const isGoogleUser = user.providerData[0]?.providerId === 'google.com';
@@ -2073,13 +2078,6 @@
             const turnstileResponse = document.querySelector('[name="cf-turnstile-response"]');
             if (!turnstileResponse || !turnstileResponse.value) {
                 showToast('Please complete the security check');
-                return;
-            }
-            
-            // INVITE CODE CHECK: Verify invite code
-            const inviteCode = document.getElementById('inviteCode').value.trim();
-            if (inviteCode !== 'Flanerie-80884bob') {
-                showToast('Invalid invite code. Please check and try again.');
                 return;
             }
             
@@ -7895,10 +7893,6 @@
                     <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Username</label>
                     <input type="text" id="signUpDisplayName" required oninput="checkUsernameAvailability()" pattern="[a-zA-Z0-9_]+" minlength="3" maxlength="20" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="Letters, numbers, underscore only">
                     <p id="usernameStatus" style="margin-top: 0.5rem; font-size: 0.85rem; color: #999;"></p>
-                </div>
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; color: #d4d4d4; margin-bottom: 0.5rem; font-weight: 600;">Invite Code</label>
-                    <input type="text" id="inviteCode" required style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="Enter your invite code">
                 </div>
                 <!-- Honeypot field (hidden from humans, bots will fill it) -->
                 <input type="text" id="website" name="website" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1" autocomplete="off">
