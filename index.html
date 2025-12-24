@@ -596,13 +596,6 @@
         async function signUpWithEmail(event) {
             event.preventDefault();
             
-            // TURNSTILE CHECK: Verify bot protection token
-            const turnstileResponse = document.querySelector('[name="cf-turnstile-response"]');
-            if (!turnstileResponse || !turnstileResponse.value) {
-                showToast('Please complete the security check');
-                return;
-            }
-            
             // ANTI-BOT CHECK 1: Honeypot field
             const honeypot = document.getElementById('website').value;
             if (honeypot) {
@@ -6454,7 +6447,6 @@ function getBobbyResponse(question) {
         <strong>1️⃣ Email & Password:</strong><br>
         • Click <strong>"Sign In"</strong> → Switch to "Sign Up" tab<br>
         • Enter: Email, password (6+ characters), username<br>
-        • Complete the Cloudflare verification (usually invisible)<br>
         • Check your email for verification link<br>
         • Click the link to activate your account<br><br>
         <strong>2️⃣ Google Sign-In:</strong><br>
@@ -6702,8 +6694,7 @@ function getBobbyResponse(question) {
         <strong>Data security:</strong><br>
         • Stored on Firebase (industry-standard encryption)<br>
         • Passwords are encrypted (we can't see them)<br>
-        • Regular security updates<br>
-        • Protected by Cloudflare<br><br>
+        • Regular security updates<br><br>
         <strong>Your rights:</strong><br>
         • View all your data in Dashboard<br>
         • Delete your account anytime<br>
@@ -6762,7 +6753,6 @@ function getBobbyResponse(question) {
         • Screenshot if possible<br>
         • Contact support with details<br><br>
         <strong>Known issues:</strong><br>
-        • Cloudflare Turnstile errors (harmless, working on it)<br>
         • Route editing occasionally requires refresh<br>
         • Maps load slowly on very slow connections<br><br>
         <em>We're constantly improving! Report bugs to help us fix them faster.</em>`;
