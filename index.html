@@ -24,15 +24,17 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-72x72.png">
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700;800&family=Crimson+Text:wght@400;600;700&display=swap" rel="stylesheet">
     
     <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-S0NQ9Z93FK"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-S0WD0Z93FK"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag("js", new Date());
-      gtag("config", "G-S0NQ9Z93FK");
+      gtag("config", "G-S0WD0Z93FK");
     </script>
     
     <!-- Microsoft Clarity -->
@@ -49,6 +51,11 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+        
+        /* Hide scrollbar but allow scrolling for search section */
+        .search-content-scroll::-webkit-scrollbar {
+            display: none;
         }
         
         html {
@@ -88,24 +95,22 @@
             max-width: 1400px;
             margin: 0 auto;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            position: relative;
-            padding: 0 2rem;
+            padding: 0 1rem;
         }
         
         .nav-links {
             display: flex;
-            gap: 3rem;
+            gap: 2rem;
             list-style: none;
-            margin-right: 300px;
         }
         
         .nav-links a {
             text-decoration: none;
             color: var(--accent-light);
             font-weight: 500;
-            font-size: 1.1rem;
+            font-size: 1rem;
             transition: color 0.3s ease;
         }
         
@@ -113,17 +118,40 @@
             color: #ffffff;
         }
         
-        /* Auth UI - Way over on the right */
+        /* Buy Me a Coffee - left side */
+        .nav-support {
+            flex-shrink: 0;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .nav-support a {
+            display: flex;
+            align-items: center;
+            transition: opacity 0.3s ease;
+        }
+        
+        .nav-support a:hover {
+            opacity: 0.85;
+        }
+        
+        /* Auth UI - right side */
         .nav-auth {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            position: absolute;
-            right: 2rem;
+            gap: 0.3rem;
+            flex-shrink: 0;
+        }
+        
+        .desktop-auth {
+            display: flex;
         }
         
         .mobile-auth-section {
-            display: none; /* Hidden on desktop, auth is positioned absolutely */
+            display: none;
+        }
+        
+        .mobile-support-link {
+            display: none; /* Hidden on desktop, shown in mobile menu */
         }
         
         #user-name {
@@ -136,8 +164,8 @@
         
         /* Desktop username styling - better spacing and alignment */
         #desktop-user-name {
-            font-size: 0.9rem;
-            margin-right: 1.2rem;
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
             display: flex;
             align-items: center;
             line-height: 1;
@@ -190,6 +218,10 @@
                 padding: 0 1rem;
             }
             
+            .nav-support {
+                display: none;
+            }
+            
             .mobile-menu-toggle {
                 display: block;
             }
@@ -220,6 +252,10 @@
                 font-size: 1.2rem;
                 padding: 0.5rem 0;
                 border-bottom: 1px solid rgba(107, 155, 158, 0.2);
+            }
+            
+            .mobile-support-link {
+                display: block; /* Show on mobile */
             }
             
             .mobile-auth-section {
@@ -585,9 +621,10 @@
         /* Feature Cards - 3 Cards */
         .features-section {
             min-height: 100vh;
-            padding: 10rem 2rem 2rem;
+            padding: 8rem 2rem 4rem;
             scroll-margin-top: 0;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             background: #0a0a0a;
@@ -618,7 +655,7 @@
         .feature-card-large {
             background: rgba(30, 30, 30, 0.9);
             border-radius: 20px;
-            padding: 1.5rem;
+            padding: 2rem 1.5rem;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             transition: all 0.3s ease;
             cursor: pointer;
@@ -626,8 +663,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 280px;
-            max-height: 360px;
+            min-height: 380px;
+            max-height: 420px;
         }
         
         .feature-card-large:hover {
@@ -644,15 +681,21 @@
         }
         
         .feature-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
-            border-radius: 15px;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            margin: 0 auto 1rem;
+            margin: 0 auto 1.5rem;
+            overflow: hidden;
+        }
+        
+        .feature-icon img {
+            width: 140px !important;
+            height: 140px !important;
+            object-fit: cover;
+            border-radius: 50%;
         }
         
         .feature-card-large h3 {
@@ -992,6 +1035,17 @@
                 min-height: 300px !important;
             }
             
+            /* Fix waypoint labels on mobile */
+            #waypointLabelsContainer {
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                max-height: 40vh !important;
+                z-index: 9999 !important;
+                border-top: 2px solid rgba(107, 155, 158, 0.5);
+            }
+            
             /* Fix Slideshow Images - Issue 2 */
             .slideshow-slide img {
                 max-width: 100%;
@@ -1213,6 +1267,11 @@
     <!-- Navigation -->
     <nav>
         <div class="nav-container">
+            <!-- Buy Me a Coffee - left side -->
+            <div class="nav-support">
+                <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="flanerie" data-color="#8dbcc0" data-emoji="" data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#FFDD00"></script>
+            </div>
+            
             <!-- Mobile hamburger menu -->
             <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">
                 ☰
@@ -1224,6 +1283,7 @@
                 <li><a href="javascript:void(0)" onclick="scrollToExplore(); closeMobileMenu()">Explore</a></li>
                 <li><a href="/for-businesses.html" onclick="closeMobileMenu()">For Businesses</a></li>
                 <li><a href="/about.html" onclick="closeMobileMenu()">About</a></li>
+                <li class="mobile-support-link"><a href="https://buymeacoffee.com/flanerie" target="_blank" rel="noopener" onclick="closeMobileMenu()">☕ Support Us</a></li>
                 
                 <!-- Auth UI inside mobile menu -->
                 <li class="mobile-auth-section">
@@ -1340,7 +1400,7 @@
                     <!-- Card 1: Journeys & Routes -->
                     <div class="feature-card-large">
                         <div class="feature-content">
-                            <div class="feature-icon">📍</div>
+                            <div class="feature-icon"><img src="journey-icon.png" alt="Journey" style="width: 32px; height: 32px;"></div>
                             <h3>Journeys & Routes</h3>
                             <p>Share your path or discover new ones</p>
                             <button class="feature-btn" onclick="toggleSection('journey-map')" style="margin-bottom: 0.75rem;">Share Your Journey</button>
@@ -1351,7 +1411,7 @@
                     <!-- Card 2: Shopping Swarms -->
                     <div class="feature-card-large">
                         <div class="feature-content">
-                            <div class="feature-icon">🛍️</div>
+                            <div class="feature-icon"><img src="swarm-icon.png" alt="Swarm" style="width: 32px; height: 32px;"></div>
                             <h3>Shopping Swarms</h3>
                             <p>Create or join community walks</p>
                             <button class="feature-btn" onclick="toggleSection('swarm-map-v2')" style="margin-bottom: 0.75rem;">Create Shopping Swarm</button>
@@ -1362,7 +1422,7 @@
                     <!-- Card 3: Local Events -->
                     <div class="feature-card-large">
                         <div class="feature-content">
-                            <div class="feature-icon">🎉</div>
+                            <div class="feature-icon"><img src="event-icon.png" alt="Event" style="width: 32px; height: 32px;"></div>
                             <h3>Local Events</h3>
                             <p>Promote events or discover celebrations</p>
                             <button class="feature-btn" onclick="toggleSection('event-map-v2')" style="margin-bottom: 0.75rem;">Promote Your Event</button>
@@ -1370,45 +1430,45 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Footer inside features section -->
+                <footer style="width: 100%; margin-top: auto;">
+                    <div class="footer-content">
+                        <div class="footer-section">
+                            <h4>Flânerie</h4>
+                            <p>The art of urban wandering.</p>
+                        </div>
+                        <div class="footer-section">
+                            <h4>Legal & Info</h4>
+                            <ul>
+                                <li><a href="/privacy.html">Privacy Policy</a></li>
+                                <li><a href="/safety.html">Safety Tips</a></li>
+                                <li><a href="/terms.html">Terms of Use</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-section">
+                            <h4>Community</h4>
+                            <ul>
+                                <li><a href="javascript:void(0)" onclick="scrollToExplore()">Explore Routes</a></li>
+                                <li><a href="/for-businesses.html">For Businesses</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-section">
+                            <h4>Connect</h4>
+                            <div style="display: flex; gap: 1.5rem; font-size: 1.8rem; margin-top: 1rem;">
+                                <a href="https://instagram.com" target="_blank" title="Instagram" style="color: var(--accent-light); transition: color 0.3s;">📷</a>
+                                <a href="https://facebook.com" target="_blank" title="Facebook" style="color: var(--accent-light); transition: color 0.3s;">👥</a>
+                                <a href="https://x.com" target="_blank" title="X (Twitter)" style="color: var(--accent-light); transition: color 0.3s;">🐦</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer-bottom">
+                        <p>&copy; 2025 Flânerie. All rights reserved. Made with ❤️ for urban explorers.</p>
+                    </div>
+                </footer>
             </div>
         </div>
     </main>
-    
-    <!-- Footer -->
-    <footer>
-        <div class="footer-content">
-            <div class="footer-section">
-                <h4>Flânerie</h4>
-                <p>The art of urban wandering.</p>
-            </div>
-            <div class="footer-section">
-                <h4>Legal & Info</h4>
-                <ul>
-                    <li><a href="/privacy.html">Privacy Policy</a></li>
-                    <li><a href="/safety.html">Safety Tips</a></li>
-                    <li><a href="/terms.html">Terms of Use</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Community</h4>
-                <ul>
-                    <li><a href="javascript:void(0)" onclick="scrollToExplore()">Explore Routes</a></li>
-                    <li><a href="/for-businesses.html">For Businesses</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Connect</h4>
-                <div style="display: flex; gap: 1.5rem; font-size: 1.8rem; margin-top: 1rem;">
-                    <a href="https://instagram.com" target="_blank" title="Instagram" style="color: var(--accent-light); transition: color 0.3s;">📷</a>
-                    <a href="https://facebook.com" target="_blank" title="Facebook" style="color: var(--accent-light); transition: color 0.3s;">👥</a>
-                    <a href="https://x.com" target="_blank" title="X (Twitter)" style="color: var(--accent-light); transition: color 0.3s;">🐦</a>
-                </div>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2025 Flânerie. All rights reserved. Made with ❤️ for urban explorers.</p>
-        </div>
-    </footer>
     
     <script>
         // SLIDESHOW - APPROVED TIMING
@@ -1643,7 +1703,6 @@
                 const latlng = { lat: coords.lat, lng: coords.lng };
                 addWaypoint(latlng);
                 journeyMap.setView([coords.lat, coords.lng], 16);
-                showToast('✅ Waypoint added at your location!');
             });
         }
         
@@ -1739,11 +1798,13 @@
     
     <!-- Leaflet JavaScript -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check-compat.js"></script>
     
     <script>
         // ===== FIREBASE CONFIGURATION =====
@@ -1759,6 +1820,11 @@
         
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
+        
+        // Initialize App Check with reCAPTCHA v3 - TEMPORARILY DISABLED FOR DEBUGGING
+        // const appCheck = firebase.appCheck();
+        // appCheck.activate('6LcLWTosAAAAKi1ATnM6VMyInW6kw9rE_vRWopc', true);
+        
         window.database = firebase.database();
         const database = window.database; // Keep local reference for this script block
         
@@ -2005,15 +2071,27 @@
         async function signUpWithEmail(event) {
             event.preventDefault();
             
-            // ANTI-BOT CHECK 1: Honeypot field
-            const honeypot = document.getElementById('website').value;
-            if (honeypot) {
+            // ANTI-BOT CHECK 1: Multiple honeypot fields
+            const honeypot1 = document.getElementById('website').value;
+            const honeypot2 = document.getElementById('phone_number').value;
+            const honeypot3 = document.getElementById('confirm_email').value;
+            const honeypot4 = document.getElementById('address').value;
+            if (honeypot1 || honeypot2 || honeypot3 || honeypot4) {
                 console.log('Bot detected: honeypot filled');
                 showToast('Error creating account');
                 return; // Bot detected, silently reject
             }
             
-            // ANTI-BOT CHECK 2: Rate limiting (max 3 signups per hour from this browser)
+            // ANTI-BOT CHECK 2: Time-based check (form filled too fast = bot)
+            const formLoadTime = parseInt(document.getElementById('formLoadTime').value) || 0;
+            const timeTaken = Date.now() - formLoadTime;
+            if (formLoadTime && timeTaken < 3000) { // Less than 3 seconds
+                console.log('Bot detected: form submitted too fast (' + timeTaken + 'ms)');
+                showToast('Error creating account');
+                return; // Bot detected, silently reject
+            }
+            
+            // ANTI-BOT CHECK 3: Rate limiting (max 3 signups per hour from this browser)
             const signupAttempts = JSON.parse(localStorage.getItem('signupAttempts') || '[]');
             const now = Date.now();
             const oneHourAgo = now - (60 * 60 * 1000);
@@ -2204,6 +2282,11 @@
         // Modal controls
         function showSignInModal() {
             document.getElementById('signInModal').style.display = 'flex';
+            // Set form load time for bot detection when signup form is visible
+            const formLoadTimeField = document.getElementById('formLoadTime');
+            if (formLoadTimeField) {
+                formLoadTimeField.value = Date.now();
+            }
         }
         
         function closeSignInModal() {
@@ -2376,6 +2459,8 @@
                 signInTab.style.color = '#999';
                 signUpForm.style.display = 'block';
                 signInForm.style.display = 'none';
+                // Set form load time for bot detection
+                document.getElementById('formLoadTime').value = Date.now();
             }
         }
         
@@ -3298,34 +3383,6 @@
             toggleSection('events', eventId);
         }
         
-        // Edit functions (placeholder - to be implemented)
-        function editRoute(routeId) {
-            showToast('Edit functionality coming soon! For now, you can delete and recreate the route.');
-            // TODO: Implement route editing
-            // 1. Fetch route data from Firebase
-            // 2. Open journey creation map
-            // 3. Pre-fill form with existing data
-            // 4. Update instead of create new
-        }
-        
-        function editSwarm(swarmId) {
-            showToast('Edit functionality coming soon! For now, you can delete and recreate the swarm.');
-            // TODO: Implement swarm editing
-            // 1. Fetch swarm data from Firebase
-            // 2. Open swarm creation map
-            // 3. Pre-fill form and markers with existing data
-            // 4. Update instead of create new
-        }
-        
-        function editEvent(eventId) {
-            showToast('Edit functionality coming soon! For now, you can delete and recreate the event.');
-            // TODO: Implement event editing
-            // 1. Fetch event data from Firebase
-            // 2. Open event creation map
-            // 3. Pre-fill form and marker with existing data
-            // 4. Update instead of create new
-        }
-        
         // Make dashboard functions globally accessible
         window.openDashboard = openDashboard;
         window.closeDashboard = closeDashboard;
@@ -3351,6 +3408,7 @@
                 const draftData = {
                     waypoints: routeCoordinates,
                     waypointLabels: waypointLabels,
+                    waypointAddresses: waypointAddresses,
                     createdBy: user.uid,
                     createdAt: new Date().toISOString(),
                     lastModified: new Date().toISOString()
@@ -3586,11 +3644,12 @@
                     // Clear any existing route
                     clearRoute();
                     
-                    // Restore waypoints
+                    // Restore waypoints with two-field layout
                     route.waypoints.forEach((coords, index) => {
+                        const waypointNumber = index + 1;
                         const numberIcon = L.divIcon({
                             className: 'numbered-marker',
-                            html: `<div style="background: #0056b3; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">${index + 1}</div>`,
+                            html: `<div style="background: #0056b3; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">${waypointNumber}</div>`,
                             iconSize: [32, 32],
                             iconAnchor: [16, 16]
                         });
@@ -3599,39 +3658,61 @@
                         routeMarkers.push(marker);
                         routeCoordinates.push(coords);
                         
-                        // Restore labels
+                        // Restore labels and addresses
                         const label = route.waypointLabels && route.waypointLabels[index] ? route.waypointLabels[index] : '';
+                        const address = route.waypointAddresses && route.waypointAddresses[index] ? route.waypointAddresses[index] : '';
                         waypointLabels.push(label);
+                        waypointAddresses.push(address);
                         
-                        // Show waypoint label input
+                        // Show waypoint label input with two-field layout
                         const labelsContainer = document.getElementById('waypointLabelsContainer');
                         const labelsList = document.getElementById('waypointLabelsList');
                         if (labelsContainer && labelsList) {
                             labelsContainer.style.display = 'block';
                             
                             const labelInput = document.createElement('div');
-                            labelInput.style.cssText = 'display: flex; align-items: center; gap: 0.5rem;';
+                            labelInput.id = `waypointLabelRow${waypointNumber}`;
+                            labelInput.style.cssText = 'margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(107, 155, 158, 0.2);';
                             labelInput.innerHTML = `
-                                <span style="color: var(--accent-light); font-weight: 600; min-width: 30px;">${index + 1}.</span>
-                                <input type="text" 
-                                       id="waypointLabel${index + 1}" 
-                                       value="${label}"
-                                       placeholder="e.g., Blue Bottle Coffee, Tattered Cover, etc."
-                                       maxlength="50"
-                                       required
-                                       style="flex: 1; padding: 0.5rem; background: rgba(40, 40, 40, 0.8); border: 1px solid rgba(107, 155, 158, 0.3); border-radius: 8px; color: white; font-size: 0.9rem;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <span style="color: var(--accent-light); font-weight: 600; min-width: 30px;">${waypointNumber}.</span>
+                                    <input type="text" 
+                                           id="waypointName${waypointNumber}" 
+                                           value="${label}"
+                                           placeholder="Business/location name *"
+                                           maxlength="50"
+                                           required
+                                           style="flex: 1; padding: 0.5rem; background: rgba(40, 40, 40, 0.8); border: 1px solid ${label ? 'rgba(107, 155, 158, 0.3)' : 'rgba(220, 38, 38, 0.6)'}; border-radius: 8px; color: white; font-size: 0.9rem;">
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; padding-left: 38px;">
+                                    <input type="text" 
+                                           id="waypointAddress${waypointNumber}" 
+                                           value="${address}"
+                                           placeholder="Address"
+                                           maxlength="100"
+                                           style="flex: 1; padding: 0.5rem; background: rgba(40, 40, 40, 0.8); border: 1px solid rgba(107, 155, 158, 0.3); border-radius: 8px; color: #aaa; font-size: 0.85rem;">
+                                </div>
+                                <div style="padding-left: 38px; margin-top: 0.25rem;">
+                                    <span style="font-size: 0.75rem; color: #888; font-style: italic;">Address may not be exact</span>
+                                </div>
                             `;
                             labelsList.appendChild(labelInput);
                             
-                            // Update waypointLabels array when input changes
-                            const input = document.getElementById(`waypointLabel${index + 1}`);
-                            input.addEventListener('input', (e) => {
+                            // Update waypointLabels array when name input changes
+                            const nameInput = document.getElementById(`waypointName${waypointNumber}`);
+                            nameInput.addEventListener('input', (e) => {
                                 waypointLabels[index] = e.target.value;
                                 if (e.target.value.trim() === '') {
                                     e.target.style.borderColor = 'rgba(220, 38, 38, 0.6)';
                                 } else {
                                     e.target.style.borderColor = 'rgba(107, 155, 158, 0.3)';
                                 }
+                            });
+                            
+                            // Update waypointAddresses array when address input changes
+                            const addressInput = document.getElementById(`waypointAddress${waypointNumber}`);
+                            addressInput.addEventListener('input', (e) => {
+                                waypointAddresses[index] = e.target.value;
                             });
                         }
                     });
@@ -3647,7 +3728,7 @@
                         journeyMap.fitBounds(bounds, { padding: [50, 50] });
                     }
                     
-                    showToast('✏️ Editing route. Make changes and click Save Route.');
+                    showToast('✏️ Editing route. To change stops, use "Clear Route" and re-pin them.');
                 }, 500);
                 
             } catch (error) {
@@ -3679,6 +3760,13 @@
                 
                 // Store the swarm ID for updating later
                 window.editingSwarmId = swarmId;
+                
+                // Set the swarm location from existing data
+                window.swarmLocation = {
+                    lat: swarm.lat,
+                    lng: swarm.lng,
+                    address: swarm.location || swarm.meetingLocation
+                };
                 
                 // Open the swarm modal
                 openCreateSwarmModal();
@@ -3725,6 +3813,13 @@
                 // Store the event ID for updating later
                 window.editingEventId = eventId;
                 
+                // Set the event location from existing data
+                window.eventLocation = {
+                    lat: event.lat,
+                    lng: event.lng,
+                    address: event.location
+                };
+                
                 // Open the event modal
                 openCreateEventModal();
                 
@@ -3764,7 +3859,7 @@
         // Geocode address to get lat/lng coordinates
         async function geocodeAddress(address) {
             try {
-                const accessToken = 'pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3cifQ.EPETOMFI41QInYccb4Cehg';
+                const accessToken = 'pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg';
                 
                 // No proximity bias - users must be specific with city/state
                 // Examples: "Baker Neighborhood, Denver" or "Little Italy, Manhattan, NY"
@@ -3795,6 +3890,8 @@
                     id: newEventRef.key,
                     created: new Date().toISOString()
                 });
+                // Invalidate events cache
+                invalidateCache('events');
                 return newEventRef.key;
             } catch (error) {
                 console.error('Error saving event:', error);
@@ -3811,6 +3908,8 @@
                     id: newSwarmRef.key,
                     created: new Date().toISOString()
                 });
+                // Invalidate swarms cache
+                invalidateCache('swarms');
                 return newSwarmRef.key;
             } catch (error) {
                 console.error('Error saving swarm:', error);
@@ -3993,6 +4092,15 @@
             return (Date.now() - cache.timestamp) < cache.ttl;
         }
         
+        // Invalidate cache for a specific key (call after creating/editing/deleting)
+        function invalidateCache(cacheKey) {
+            if (dataCache[cacheKey]) {
+                dataCache[cacheKey].data = null;
+                dataCache[cacheKey].timestamp = null;
+                console.log(`Cache invalidated for: ${cacheKey}`);
+            }
+        }
+        
         // Map variables
         let journeyMap = null;
         let searchMap = null;
@@ -4001,9 +4109,77 @@
         let routeMarkers = [];
         let routePath = null;
         let routeCoordinates = [];
-        let waypointLabels = []; // Store custom labels for each waypoint
+        let waypointLabels = []; // Store business names for each waypoint
+        let waypointAddresses = []; // Store addresses for each waypoint
         let allRoutesData = []; // Store all routes for search map
         let selectedRoute = null; // Currently selected route
+        
+        // Banned locations - loaded from Firebase
+        let bannedLocations = [];
+        
+        // Load banned locations from Firebase
+        async function loadBannedLocations() {
+            try {
+                const snapshot = await database.ref('bannedLocations').once('value');
+                const data = snapshot.val();
+                if (data) {
+                    bannedLocations = Object.values(data);
+                    console.log('Loaded banned locations:', bannedLocations.length);
+                }
+            } catch (error) {
+                // Silently ignore - bannedLocations may not exist yet
+            }
+        }
+        
+        // Check if a waypoint is banned (must match both name AND location)
+        function isWaypointBanned(label, lat, lng) {
+            const labelNormalized = normalizeName(label || '');
+            
+            for (const banned of bannedLocations) {
+                const bannedNormalized = normalizeName(banned.name || '');
+                
+                // Check if name matches (partial match on normalized names)
+                if (labelNormalized.includes(bannedNormalized) || bannedNormalized.includes(labelNormalized)) {
+                    // Name matches - now check coordinates
+                    const distance = getDistanceMeters(lat, lng, banned.lat, banned.lng);
+                    if (distance <= (banned.radius || 30)) {
+                        return true; // Both name AND location match
+                    }
+                }
+            }
+            return false;
+        }
+        
+        // Normalize business name for comparison (handles abbreviations, punctuation, etc.)
+        function normalizeName(name) {
+            return name
+                .toLowerCase()
+                .replace(/\bstreet\b/g, 'st')
+                .replace(/\bavenue\b/g, 'ave')
+                .replace(/\bboulevard\b/g, 'blvd')
+                .replace(/\bdrive\b/g, 'dr')
+                .replace(/\broad\b/g, 'rd')
+                .replace(/\blane\b/g, 'ln')
+                .replace(/\bcourt\b/g, 'ct')
+                .replace(/\bplace\b/g, 'pl')
+                .replace(/\band\b/g, '&')
+                .replace(/[''`]/g, '')        // Remove apostrophes
+                .replace(/[.,\-]/g, ' ')      // Replace punctuation with spaces
+                .replace(/\s+/g, ' ')         // Collapse multiple spaces
+                .trim();
+        }
+        
+        // Calculate distance between two points in meters
+        function getDistanceMeters(lat1, lng1, lat2, lng2) {
+            const R = 6371000; // Earth's radius in meters
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLng/2) * Math.sin(dLng/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
         
         // Toggle Sections - Opens fullscreen modal with maps
         function toggleSection(sectionId, highlightId = null) {
@@ -4046,6 +4222,7 @@
                 routeMarkers = [];
                 routeCoordinates = [];
                 waypointLabels = [];
+                waypointAddresses = [];
                 if (routePath && journeyMap) {
                     journeyMap.removeLayer(routePath);
                 }
@@ -4065,7 +4242,7 @@
             };
             
             const content = document.createElement('div');
-            content.style.cssText = 'padding: 2rem; max-width: 1600px; margin: 0 auto; padding-bottom: 3rem; position: absolute; top: 0; bottom: 0; left: 0; right: 0; overflow: hidden;';
+            content.style.cssText = 'padding: 2rem; max-width: 1600px; margin: 0 auto; padding-bottom: 3rem; position: absolute; top: 0; bottom: 0; left: 0; right: 0; overflow-y: auto; overflow-x: hidden; box-sizing: border-box; width: 100%;';
             
             // Create content based on section
             const mapMode = sectionId.includes('swarm') ? 'swarm' : sectionId.includes('event') ? 'event' : 'journey';
@@ -4127,7 +4304,7 @@
                     <!-- Multi-business link (only shows for swarm mode) -->
                     
                     <!-- Waypoint Labels (only shows for journey mode) -->
-                    <div id="waypointLabelsContainer" style="display: none; padding: 1rem 2rem; background: rgba(25, 25, 25, 0.95); max-height: 200px; overflow-y: auto;">
+                    <div id="waypointLabelsContainer" style="display: none; padding: 1rem 2rem; background: rgba(25, 25, 25, 0.95); max-height: 300px; overflow-y: auto;">
                         <h4 style="color: var(--accent-color); margin-bottom: 0.75rem; font-size: 0.95rem;">📍 Label Your Stops (Required)</h4>
                         <div id="waypointLabelsList" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
                     </div>
@@ -4138,6 +4315,8 @@
                     </div>
                 `;
              } else if (sectionId === 'search') {
+                content.style.cssText = 'padding: 2rem; max-width: 1600px; margin: 0 auto; padding-bottom: 3rem; position: absolute; top: 0; bottom: 0; left: 0; right: 0; overflow-y: auto; overflow-x: hidden; box-sizing: border-box; width: 100%; scrollbar-width: none; -ms-overflow-style: none;';
+                content.classList.add('search-content-scroll');
                 content.innerHTML = `
                     <h2 style="color: var(--accent-color); margin-bottom: 0.5rem;">Search Routes</h2>
                     <p style="color: #d4d4d4; margin-bottom: 1rem;">Discover community-shared walking routes and find your next adventure</p>
@@ -4209,19 +4388,24 @@
                             <input type="text" id="mapSearch" placeholder="👉 Enter your zip code to find routes near you..." style="width: 100%; padding: 1rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif; font-size: 1rem; animation: searchPulse 2s ease-in-out 3;">
                             <div id="mapSearchSuggestions" style="position: absolute; top: 100%; left: 0; right: 0; background: rgba(30, 30, 30, 0.98); border: 2px solid rgba(107, 155, 158, 0.3); border-top: none; border-radius: 0 0 15px 15px; max-height: 300px; overflow-y: auto; z-index: 1000; display: none;"></div>
                         </div>
-                        <button class="feature-btn" onclick="showToast('Searching routes...')">Search</button>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="feature-btn" onclick="showToast('Searching routes...')">Search</button>
+                            <button class="feature-btn" onclick="locateMe()" style="background: linear-gradient(135deg, #5a8a8d, #7aacaf);">📍 Locate Me</button>
+                        </div>
                     </div>
                     
-                    <div id="search-map" style="height: 450px; border-radius: 15px; margin: 0.5rem 0; background: #1a1a1a;"></div>
+                    <div id="search-map" style="height: 450px; border-radius: 15px; margin: 0.5rem 0; background: #1a1a1a; width: 100%; box-sizing: border-box;"></div>
                     
                     <!-- Info Panel -->
-                    <div id="searchInfoPanel" style="display: none; padding: 1.5rem; background: rgba(25, 25, 25, 0.95); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; margin: 1rem auto 0 auto; max-width: 500px;">
+                    <div id="searchInfoPanel" style="display: none; padding: 1.5rem; background: rgba(25, 25, 25, 0.95); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; margin: 1rem auto 0 auto; max-width: 500px; cursor: pointer;" onclick="this.scrollIntoView({ behavior: 'smooth', block: 'center' });" title="Click to view full details">
                         <div id="searchInfoContent"></div>
                     </div>
                     
                     <p style="color: #999; font-size: 0.9rem; margin-top: 1rem; text-align: center;">💡 Click any route on the map to view details below</p>
                 `;
             } else if (sectionId === 'swarms') {
+                content.style.cssText = 'padding: 2rem; max-width: 1600px; margin: 0 auto; padding-bottom: 3rem; position: absolute; top: 0; bottom: 0; left: 0; right: 0; overflow-y: auto; overflow-x: hidden; box-sizing: border-box; width: 100%; scrollbar-width: none; -ms-overflow-style: none;';
+                content.classList.add('search-content-scroll');
                 content.innerHTML = `
                     <h2 style="color: var(--accent-color); margin-bottom: 1rem;">Shopping Swarms</h2>
                     <p style="color: #d4d4d4; margin-bottom: 1.5rem;">Organize or join community walks where locals explore, shop, and support businesses together — a spontaneous celebration of local culture!</p>
@@ -4232,19 +4416,24 @@
                             <input type="text" id="swarmLocationSearch" placeholder="👉 Enter your zip code to find swarms near you..." style="width: 100%; padding: 1rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif; font-size: 1rem; animation: searchPulse 2s ease-in-out 3;">
                             <div id="swarmSearchSuggestions" style="position: absolute; top: 100%; left: 0; right: 0; background: rgba(30, 30, 30, 0.98); border: 2px solid rgba(107, 155, 158, 0.3); border-top: none; border-radius: 0 0 15px 15px; max-height: 300px; overflow-y: auto; z-index: 1000; display: none;"></div>
                         </div>
-                        <button class="feature-btn" onclick="showToast('Searching swarms...')">Search</button>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="feature-btn" onclick="showToast('Searching swarms...')">Search</button>
+                            <button class="feature-btn" onclick="locateMe()" style="background: linear-gradient(135deg, #5a8a8d, #7aacaf);">📍 Locate Me</button>
+                        </div>
                     </div>
                     
-                    <div id="swarm-map" style="height: 450px; border-radius: 15px; margin: 0.5rem 0; background: #1a1a1a;"></div>
+                    <div id="swarm-map" style="height: 450px; border-radius: 15px; margin: 0.5rem 0; background: #1a1a1a; width: 100%; box-sizing: border-box;"></div>
                     
                     <!-- Info Panel -->
-                    <div id="swarmInfoPanel" style="display: none; padding: 1.5rem; background: rgba(25, 25, 25, 0.95); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; margin: 1rem auto 0 auto; max-width: 500px;">
+                    <div id="swarmInfoPanel" style="display: none; padding: 1.5rem; background: rgba(25, 25, 25, 0.95); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; margin: 1rem auto 0 auto; max-width: 500px; cursor: pointer;" onclick="this.scrollIntoView({ behavior: 'smooth', block: 'center' });" title="Click to view full details">
                         <div id="swarmInfoContent"></div>
                     </div>
                     
                     <p style="color: #999; font-size: 0.9rem; margin-top: 1rem; text-align: center;">💡 Click any swarm pin to view details below</p>
                 `;
             } else if (sectionId === 'events') {
+                content.style.cssText = 'padding: 2rem; max-width: 1600px; margin: 0 auto; padding-bottom: 3rem; position: absolute; top: 0; bottom: 0; left: 0; right: 0; overflow-y: auto; overflow-x: hidden; box-sizing: border-box; width: 100%; scrollbar-width: none; -ms-overflow-style: none;';
+                content.classList.add('search-content-scroll');
                 content.innerHTML = `
                     <h2 style="color: var(--accent-color); margin-bottom: 1rem;">Local Events</h2>
                     <p style="color: #d4d4d4; margin-bottom: 1.5rem;">Discover and promote neighborhood celebrations, block parties, sidewalk sales, and community festivals.</p>
@@ -4255,13 +4444,16 @@
                             <input type="text" id="eventLocationSearch" placeholder="👉 Enter your zip code to find events near you..." style="width: 100%; padding: 1rem; border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; background: rgba(40, 40, 40, 0.9); color: #e0e0e0; font-family: 'Poppins', sans-serif; font-size: 1rem; animation: searchPulse 2s ease-in-out 3;">
                             <div id="eventSearchSuggestions" style="position: absolute; top: 100%; left: 0; right: 0; background: rgba(30, 30, 30, 0.98); border: 2px solid rgba(107, 155, 158, 0.3); border-top: none; border-radius: 0 0 15px 15px; max-height: 300px; overflow-y: auto; z-index: 1000; display: none;"></div>
                         </div>
-                        <button class="feature-btn" onclick="showToast('Searching events...')">Search Events</button>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="feature-btn" onclick="showToast('Searching events...')">Search Events</button>
+                            <button class="feature-btn" onclick="locateMe()" style="background: linear-gradient(135deg, #5a8a8d, #7aacaf);">📍 Locate Me</button>
+                        </div>
                     </div>
                     
-                    <div id="event-map" style="height: 450px; border-radius: 15px; margin: 0.5rem 0; background: #1a1a1a;"></div>
+                    <div id="event-map" style="height: 450px; border-radius: 15px; margin: 0.5rem 0; background: #1a1a1a; width: 100%; box-sizing: border-box;"></div>
                     
                     <!-- Info Panel -->
-                    <div id="eventInfoPanel" style="display: none; padding: 1.5rem; background: rgba(25, 25, 25, 0.95); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; margin: 1rem auto 0 auto; max-width: 500px;">
+                    <div id="eventInfoPanel" style="display: none; padding: 1.5rem; background: rgba(25, 25, 25, 0.95); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; margin: 1rem auto 0 auto; max-width: 500px; cursor: pointer;" onclick="this.scrollIntoView({ behavior: 'smooth', block: 'center' });" title="Click to view full details">
                         <div id="eventInfoContent"></div>
                     </div>
                     
@@ -4278,10 +4470,12 @@
                 if (sectionId === 'journey-map' || sectionId === 'swarm-map-v2' || sectionId === 'event-map-v2') {
                     const mapElement = document.getElementById('map');
                     if (mapElement && !journeyMap) {
-                        journeyMap = L.map(mapElement).setView([39.7392, -104.9903], 13);
+                        // Start with US-wide view, then try to get user's location
+                        journeyMap = L.map(mapElement).setView([39.8, -98.5], 4);
                         L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
                              tileSize: 512,
-                            zoomOffset: -1
+                            zoomOffset: -1,
+                            maxZoom: 20
                         }).addTo(journeyMap);
                         L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(journeyMap);
                         
@@ -4291,6 +4485,7 @@
                             routeMarkers = [];
                             routeCoordinates = [];
                             waypointLabels = [];
+                            waypointAddresses = [];
                             routePath = null;
                             
                             // Clear and hide waypoint labels container
@@ -4396,7 +4591,7 @@
                         if (mapElement._leaflet_id) {
                             delete mapElement._leaflet_id;
                         }
-                        searchMap = L.map(mapElement).setView([39.7392, -104.9903], 13);
+                        searchMap = L.map(mapElement).setView([39.8, -98.5], 4);
                         L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
                             tileSize: 512,
                             zoomOffset: -1
@@ -4404,6 +4599,25 @@
                         
                         // Add clean Mapbox attribution
                         L.control.attribution({ position: "bottomright", prefix: false }).addAttribution("© <a href=\"https://www.mapbox.com/\">Mapbox</a>").addTo(searchMap);
+                        
+                        // Create marker cluster group with spiderfy for route pins
+                        window.routeClusterGroup = L.markerClusterGroup({
+                            spiderfyOnMaxZoom: true,
+                            showCoverageOnHover: false,
+                            maxClusterRadius: 50,
+                            disableClusteringAtZoom: 16,
+                            iconCreateFunction: function(cluster) {
+                                const count = cluster.getChildCount();
+                                return L.divIcon({
+                                    html: `<div style="background: #0056b3; color: white; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); font-size: 14px;">${count}</div>`,
+                                    className: 'custom-cluster-icon',
+                                    iconSize: [36, 36],
+                                    iconAnchor: [18, 18]
+                                });
+                            }
+                        });
+                        searchMap.addLayer(window.routeClusterGroup);
+                        
                         // Load routes from Firebase
                         allRoutesData = []; // Reset
                         selectedRoute = null; // Reset
@@ -4466,8 +4680,8 @@
                                         allRoutesData.forEach(r => {
                                             r.polyline.setStyle({ opacity: 0.3, weight: 3 });
                                             // Hide plain pin
-                                            if (r.plainPin && searchMap.hasLayer(r.plainPin)) {
-                                                searchMap.removeLayer(r.plainPin);
+                                            if (r.plainPin && window.routeClusterGroup.hasLayer(r.plainPin)) {
+                                                window.routeClusterGroup.removeLayer(r.plainPin);
                                             }
                                             // Hide numbered markers
                                             r.markers.forEach(m => {
@@ -4489,7 +4703,7 @@
                                         
                                         // Zoom to the selected route
                                         const bounds = polyline.getBounds();
-                                        searchMap.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+                                        searchMap.fitBounds(bounds, { padding: [50, 50], maxZoom: 17 });
                                         
                                         // Check if user already liked this route in Firebase
                                         const user = auth.currentUser;
@@ -4516,7 +4730,11 @@
                                             if (route.waypointLabels && route.waypointLabels.length > 0) {
                                                 waypointsHTML = '<div style="margin-top: 1rem;"><strong style="color: var(--accent-light);">Route Stops:</strong><ol style="margin: 0.5rem 0; padding-left: 1.5rem; color: #d4d4d4;">';
                                                 route.waypointLabels.forEach((label, idx) => {
-                                                    waypointsHTML += `<li style="margin: 0.3rem 0;">${label || `Stop ${idx + 1}`}</li>`;
+                                                    const address = route.waypointAddresses && route.waypointAddresses[idx] ? route.waypointAddresses[idx] : '';
+                                                    waypointsHTML += `<li style="margin: 0.5rem 0;">
+                                                        <span style="font-weight: 600;">${label || `Stop ${idx + 1}`}</span>
+                                                        ${address ? `<br><span style="font-size: 0.85rem; color: #999;">${address}</span>` : ''}
+                                                    </li>`;
                                                 });
                                                 waypointsHTML += '</ol></div>';
                                             } else {
@@ -4542,7 +4760,10 @@
                                                 ${waypointsHTML}
                                                 <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(107, 155, 158, 0.2);">
                                                     <p id="route-like-count-${route.id}" style="color: var(--accent-light); font-weight: 600; margin: 0;">❤️ ${route.likes || 0} flâneurs like this route</p>
-                                                    ${btnState}
+                                                    <div style="display: flex; gap: 0.5rem;">
+                                                        ${btnState}
+                                                        <button onclick="reportContent('route', '${route.id}', '${route.name.replace(/'/g, "\\'")}', '${route.createdBy}')" style="background: rgba(255, 70, 70, 0.2); color: #ff6b6b; border: none; padding: 0.6rem 1rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.85rem;" onmouseover="this.style.background='rgba(255, 70, 70, 0.4)'" onmouseout="this.style.background='rgba(255, 70, 70, 0.2)'">🚩</button>
+                                                    </div>
                                                 </div>
                                             `;
                                             infoPanel.style.display = 'block';
@@ -4570,7 +4791,7 @@
                             // Initially show all routes on map (filter default is "all")
                             allRoutesData.forEach(routeData => {
                                 routeData.polyline.addTo(searchMap);
-                                routeData.plainPin.addTo(searchMap);
+                                window.routeClusterGroup.addLayer(routeData.plainPin); // Add to cluster
                             });
                             
                             // If we have a highlightId, filter to show only that route
@@ -4579,14 +4800,14 @@
                                     if (routeData.route.id === highlightId) {
                                         // Keep this route visible and highlighted
                                         routeData.polyline.fire('click');
-                                        // Center map on this route with city-level zoom (max zoom 12)
+                                        // Center map on this route with street-level zoom (max zoom 16)
                                         const bounds = routeData.polyline.getBounds();
-                                        searchMap.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
+                                        searchMap.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
                                     } else {
                                         // Hide other routes
                                         searchMap.removeLayer(routeData.polyline);
-                                        if (searchMap.hasLayer(routeData.plainPin)) {
-                                            searchMap.removeLayer(routeData.plainPin);
+                                        if (window.routeClusterGroup.hasLayer(routeData.plainPin)) {
+                                            window.routeClusterGroup.removeLayer(routeData.plainPin);
                                         }
                                     }
                                 });
@@ -4659,13 +4880,13 @@
                                             
                                             if (isCustom) {
                                                 searchMap.addLayer(routeData.polyline);
-                                                if (routeData.plainPin && !searchMap.hasLayer(routeData.plainPin)) {
-                                                    searchMap.addLayer(routeData.plainPin);
+                                                if (routeData.plainPin && !window.routeClusterGroup.hasLayer(routeData.plainPin)) {
+                                                    window.routeClusterGroup.addLayer(routeData.plainPin);
                                                 }
                                             } else {
                                                 searchMap.removeLayer(routeData.polyline);
-                                                if (routeData.plainPin && searchMap.hasLayer(routeData.plainPin)) {
-                                                    searchMap.removeLayer(routeData.plainPin);
+                                                if (routeData.plainPin && window.routeClusterGroup.hasLayer(routeData.plainPin)) {
+                                                    window.routeClusterGroup.removeLayer(routeData.plainPin);
                                                 }
                                             }
                                         });
@@ -4679,13 +4900,13 @@
                                             
                                             if (shouldShow) {
                                                 searchMap.addLayer(routeData.polyline);
-                                                if (routeData.plainPin && !searchMap.hasLayer(routeData.plainPin)) {
-                                                    searchMap.addLayer(routeData.plainPin);
+                                                if (routeData.plainPin && !window.routeClusterGroup.hasLayer(routeData.plainPin)) {
+                                                    window.routeClusterGroup.addLayer(routeData.plainPin);
                                                 }
                                             } else {
                                                 searchMap.removeLayer(routeData.polyline);
-                                                if (routeData.plainPin && searchMap.hasLayer(routeData.plainPin)) {
-                                                    searchMap.removeLayer(routeData.plainPin);
+                                                if (routeData.plainPin && window.routeClusterGroup.hasLayer(routeData.plainPin)) {
+                                                    window.routeClusterGroup.removeLayer(routeData.plainPin);
                                                 }
                                             }
                                         });
@@ -4712,13 +4933,13 @@
                                             
                                             if (shouldShow) {
                                                 searchMap.addLayer(routeData.polyline);
-                                                if (routeData.plainPin && !searchMap.hasLayer(routeData.plainPin)) {
-                                                    searchMap.addLayer(routeData.plainPin);
+                                                if (routeData.plainPin && !window.routeClusterGroup.hasLayer(routeData.plainPin)) {
+                                                    window.routeClusterGroup.addLayer(routeData.plainPin);
                                                 }
                                             } else {
                                                 searchMap.removeLayer(routeData.polyline);
-                                                if (routeData.plainPin && searchMap.hasLayer(routeData.plainPin)) {
-                                                    searchMap.removeLayer(routeData.plainPin);
+                                                if (routeData.plainPin && window.routeClusterGroup.hasLayer(routeData.plainPin)) {
+                                                    window.routeClusterGroup.removeLayer(routeData.plainPin);
                                                 }
                                             }
                                         });
@@ -4787,12 +5008,30 @@
                             delete mapElement._leaflet_id;
                         }
                         // Initialize map
-                        swarmMap = L.map(mapElement).setView([39.7392, -104.9903], 13);
+                        swarmMap = L.map(mapElement).setView([39.8, -98.5], 4);
                         L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
                             tileSize: 512,
                             zoomOffset: -1
                         }).addTo(swarmMap);
                         L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(swarmMap);
+                        
+                        // Create marker cluster group with spiderfy
+                        const swarmClusterGroup = L.markerClusterGroup({
+                            spiderfyOnMaxZoom: true,
+                            showCoverageOnHover: false,
+                            maxClusterRadius: 50,
+                            disableClusteringAtZoom: 16,
+                            iconCreateFunction: function(cluster) {
+                                const count = cluster.getChildCount();
+                                return L.divIcon({
+                                    html: `<div style="background: #0056b3; color: white; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); font-size: 14px;">${count}</div>`,
+                                    className: 'custom-cluster-icon',
+                                    iconSize: [36, 36],
+                                    iconAnchor: [18, 18]
+                                });
+                            }
+                        });
+                        swarmMap.addLayer(swarmClusterGroup);
                         
                         // Always load/reload swarms from Firebase
                         window.allSwarmMarkersArray = []; // Reset marker array
@@ -4858,7 +5097,8 @@
                                 });
                                 
                                 const participants = swarm.interested || 0;
-                                const marker = L.marker([swarm.lat, swarm.lng], { icon: swarmPinIcon }).addTo(swarmMap);
+                                const marker = L.marker([swarm.lat, swarm.lng], { icon: swarmPinIcon });
+                                swarmClusterGroup.addLayer(marker); // Add to cluster group instead of map
                                 window.allSwarmMarkersArray.push(marker); // Store for zoom out
                                 
                                 // Click handler to populate info panel
@@ -4911,7 +5151,10 @@
                                             ${swarm.createdBy !== (user ? user.uid : null) ? `<button onclick="openMessageModal('${swarm.createdBy}', '${username.replace(/'/g, "\\'")}', 'swarm', '${(swarm.title || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}')" style="background: var(--accent-color); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin: 0.5rem 0; font-size: 0.9rem;">📧 Contact Organizer</button>` : ''}
                                             <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(107, 155, 158, 0.2);">
                                                 <p id="swarm-interest-count-${swarm.id}" style="color: var(--accent-light); font-weight: 600; margin: 0;">👥 ${participants} flâneurs interested</p>
-                                                ${btnState}
+                                                <div style="display: flex; gap: 0.5rem;">
+                                                    ${btnState}
+                                                    <button onclick="reportContent('swarm', '${swarm.id}', '${(swarm.title || '').replace(/'/g, "\\'")}', '${swarm.createdBy}')" style="background: rgba(255, 70, 70, 0.2); color: #ff6b6b; border: none; padding: 0.6rem 1rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.85rem;" onmouseover="this.style.background='rgba(255, 70, 70, 0.4)'" onmouseout="this.style.background='rgba(255, 70, 70, 0.2)'">🚩</button>
+                                                </div>
                                             </div>
                                         `;
                                         infoPanel.style.display = 'block';
@@ -4977,12 +5220,30 @@
                             delete eventMapElement._leaflet_id;
                         }
                         // Initialize map
-                        eventMap = L.map(eventMapElement).setView([39.7392, -104.9903], 13);
+                        eventMap = L.map(eventMapElement).setView([39.8, -98.5], 4);
                         L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
                             tileSize: 512,
                             zoomOffset: -1
                         }).addTo(eventMap);
                         L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(eventMap);
+                        
+                        // Create marker cluster group with spiderfy
+                        const eventClusterGroup = L.markerClusterGroup({
+                            spiderfyOnMaxZoom: true,
+                            showCoverageOnHover: false,
+                            maxClusterRadius: 50,
+                            disableClusteringAtZoom: 16,
+                            iconCreateFunction: function(cluster) {
+                                const count = cluster.getChildCount();
+                                return L.divIcon({
+                                    html: `<div style="background: #0056b3; color: white; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); font-size: 14px;">${count}</div>`,
+                                    className: 'custom-cluster-icon',
+                                    iconSize: [36, 36],
+                                    iconAnchor: [18, 18]
+                                });
+                            }
+                        });
+                        eventMap.addLayer(eventClusterGroup);
                         
                         // Always load/reload events from Firebase
                         getAllEvents().then(events => {
@@ -5091,7 +5352,8 @@
                                     iconAnchor: isHighlighted ? [20, 40] : [16, 32]
                                 });
                                 
-                                const marker = L.marker([event.lat, event.lng], { icon: eventPinIcon }).addTo(eventMap);
+                                const marker = L.marker([event.lat, event.lng], { icon: eventPinIcon });
+                                eventClusterGroup.addLayer(marker); // Add to cluster group instead of map
                                 console.log('PWA DEBUG: Added marker for event:', event.name, 'at', event.lat, event.lng);
                                 window.allEventMarkersArray.push(marker); // Store for zoom out
                                 
@@ -5147,7 +5409,10 @@
                                             ${event.maxParticipants ? `<p style="color: #d4d4d4; margin: 0.5rem 0;"><strong style="color: var(--accent-light);">👥 Max Participants:</strong> ${event.maxParticipants}</p>` : ''}
                                             <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(107, 155, 158, 0.2);">
                                                 <p id="event-interest-count-${event.id}" style="color: var(--accent-light); font-weight: 600; margin: 0;">👥 ${event.interested || 0} flâneurs interested</p>
-                                                ${btnState}
+                                                <div style="display: flex; gap: 0.5rem;">
+                                                    ${btnState}
+                                                    <button onclick="reportContent('event', '${event.id}', '${(event.name || '').replace(/'/g, "\\'")}', '${event.createdBy}')" style="background: rgba(255, 70, 70, 0.2); color: #ff6b6b; border: none; padding: 0.6rem 1rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.85rem;" onmouseover="this.style.background='rgba(255, 70, 70, 0.4)'" onmouseout="this.style.background='rgba(255, 70, 70, 0.2)'">🚩</button>
+                                                </div>
                                             </div>
                                         `;
                                         infoPanel.style.display = 'block';
@@ -5220,7 +5485,8 @@
             const marker = L.marker(latlng, { icon: numberIcon }).addTo(journeyMap);
             routeMarkers.push(marker);
             routeCoordinates.push([latlng.lat, latlng.lng]);
-            waypointLabels.push(''); // Initialize empty label
+            waypointLabels.push(''); // Initialize empty business name
+            waypointAddresses.push(''); // Initialize empty address
             
             // Show and update waypoint labels container
             const labelsContainer = document.getElementById('waypointLabelsContainer');
@@ -5229,36 +5495,57 @@
                 labelsContainer.style.display = 'block';
                 
                 const labelInput = document.createElement('div');
-                labelInput.style.cssText = 'display: flex; align-items: center; gap: 0.5rem;';
+                labelInput.id = `waypointLabelRow${waypointNumber}`;
+                labelInput.style.cssText = 'margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(107, 155, 158, 0.2);';
                 labelInput.innerHTML = `
-                    <span style="color: var(--accent-light); font-weight: 600; min-width: 30px;">${waypointNumber}.</span>
-                    <input type="text" 
-                           id="waypointLabel${waypointNumber}" 
-                           placeholder="Loading location..."
-                           maxlength="50"
-                           required
-                           style="flex: 1; padding: 0.5rem; background: rgba(40, 40, 40, 0.8); border: 1px solid rgba(107, 155, 158, 0.3); border-radius: 8px; color: white; font-size: 0.9rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <span style="color: var(--accent-light); font-weight: 600; min-width: 30px;">${waypointNumber}.</span>
+                        <input type="text" 
+                               id="waypointName${waypointNumber}" 
+                               placeholder="Business/location name *"
+                               maxlength="50"
+                               required
+                               style="flex: 1; padding: 0.5rem; background: rgba(40, 40, 40, 0.8); border: 1px solid rgba(220, 38, 38, 0.6); border-radius: 8px; color: white; font-size: 0.9rem;">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; padding-left: 38px;">
+                        <input type="text" 
+                               id="waypointAddress${waypointNumber}" 
+                               placeholder="Loading address..."
+                               maxlength="100"
+                               style="flex: 1; padding: 0.5rem; background: rgba(40, 40, 40, 0.8); border: 1px solid rgba(107, 155, 158, 0.3); border-radius: 8px; color: #aaa; font-size: 0.85rem;">
+                    </div>
+                    <div style="padding-left: 38px; margin-top: 0.25rem;">
+                        <span style="font-size: 0.75rem; color: #888; font-style: italic;">Address may not be exact</span>
+                    </div>
                 `;
                 labelsList.appendChild(labelInput);
                 
-                // Get business name via reverse geocoding
-                const input = document.getElementById(`waypointLabel${waypointNumber}`);
-                const placeName = await reverseGeocode(latlng.lat, latlng.lng);
+                // Get address via reverse geocoding
+                const nameInput = document.getElementById(`waypointName${waypointNumber}`);
+                const addressInput = document.getElementById(`waypointAddress${waypointNumber}`);
+                const geoResult = await reverseGeocode(latlng.lat, latlng.lng);
                 
-                if (placeName) {
-                    // Extract just the business/place name (first part before comma)
-                    const shortName = placeName.split(',')[0].trim();
-                    input.value = shortName;
-                    input.placeholder = "e.g., Blue Bottle Coffee, Tattered Cover, etc.";
-                    waypointLabels[waypointNumber - 1] = shortName;
+                if (geoResult) {
+                    // Check if we got a business name
+                    if (typeof geoResult === 'object' && geoResult.businessName) {
+                        nameInput.value = geoResult.businessName;
+                        nameInput.style.borderColor = 'rgba(107, 155, 158, 0.3)';
+                        waypointLabels[waypointNumber - 1] = geoResult.businessName;
+                        addressInput.value = geoResult.address;
+                        waypointAddresses[waypointNumber - 1] = geoResult.address;
+                    } else {
+                        // Just got an address
+                        addressInput.value = geoResult;
+                        waypointAddresses[waypointNumber - 1] = geoResult;
+                    }
+                    addressInput.placeholder = "Address";
                 } else {
-                    input.placeholder = "e.g., Blue Bottle Coffee, Tattered Cover, etc.";
+                    addressInput.placeholder = "Address unavailable";
                 }
                 
-                // Update waypointLabels array when input changes
-                input.addEventListener('input', (e) => {
+                // Update waypointLabels array when name input changes
+                nameInput.addEventListener('input', (e) => {
                     waypointLabels[waypointNumber - 1] = e.target.value;
-                    // Visual feedback for empty labels
                     if (e.target.value.trim() === '') {
                         e.target.style.borderColor = 'rgba(220, 38, 38, 0.6)';
                     } else {
@@ -5266,10 +5553,10 @@
                     }
                 });
                 
-                // Initial check if label is empty
-                if (!input.value || input.value.trim() === '') {
-                    input.style.borderColor = 'rgba(220, 38, 38, 0.6)';
-                }
+                // Update waypointAddresses array when address input changes
+                addressInput.addEventListener('input', (e) => {
+                    waypointAddresses[waypointNumber - 1] = e.target.value;
+                });
             }
             
             if (routePath) {
@@ -5289,6 +5576,7 @@
             routeMarkers = [];
             routeCoordinates = [];
             waypointLabels = [];
+            waypointAddresses = [];
             routePath = null;
             
             // Clear and hide waypoint labels container
@@ -5632,6 +5920,15 @@
                 return;
             }
             
+            // Check for banned locations
+            for (let i = 0; i < waypointLabels.length; i++) {
+                const coords = routeCoordinates[i];
+                if (isWaypointBanned(waypointLabels[i], coords[0], coords[1])) {
+                    showToast('One or more locations cannot be included. Please remove and try again.');
+                    return;
+                }
+            }
+            
             const description = document.getElementById('routeDescription')?.value || '';
             let category = document.getElementById('routeCategory')?.value || '';
             
@@ -5680,7 +5977,8 @@
                 category: category,
                 waypoints: routeCoordinates, // Original waypoints for markers
                 streetGeometry: streetGeometry, // Street-following path for line
-                waypointLabels: waypointLabels, // Save custom labels
+                waypointLabels: waypointLabels, // Save business names
+                waypointAddresses: waypointAddresses, // Save addresses
                 waypointCount: routeCoordinates.length,
                 likes: 0, // Initialize likes counter
                 created: new Date().toISOString(),
@@ -5697,12 +5995,27 @@
                 
                 // Check if we're editing an existing route or creating new
                 if (window.editingRouteId) {
-                    // UPDATE existing route
-                    const routeRef = window.database.ref(`routes/${window.editingRouteId}`);
-                    await routeRef.update(routeData);
+                    // UPDATE existing route - don't overwrite created date
+                    const editedRouteId = window.editingRouteId;
+                    const routeRef = window.database.ref(`routes/${editedRouteId}`);
+                    const updateData = {
+                        name: name,
+                        description: description,
+                        category: category,
+                        waypoints: routeCoordinates,
+                        streetGeometry: streetGeometry,
+                        waypointLabels: waypointLabels,
+                        waypointAddresses: waypointAddresses,
+                        waypointCount: routeCoordinates.length,
+                        lastModified: new Date().toISOString()
+                    };
+                    await routeRef.update(updateData);
                     
                     document.getElementById('saveRouteModal').remove();
                     showToast(`Route "${name}" updated successfully!`);
+                    
+                    // Invalidate routes cache so fresh data is loaded
+                    invalidateCache('routes');
                     
                     // Clear editing flags
                     window.editingRouteId = null;
@@ -5724,11 +6037,13 @@
                         // Clear route data
                         routeCoordinates = [];
                         waypointLabels = [];
+                        waypointAddresses = [];
                         routeMarkers = [];
                     }
                     
-                    // Open dashboard to show updated route
-                    openDashboard();
+                    // Open browse routes and highlight the edited one
+                    closeDashboard();
+                    toggleSection('search', editedRouteId);
                 } else {
                     // CREATE new route
                     const routesRef = window.database.ref('routes');
@@ -5740,6 +6055,9 @@
                     
                     // Close the creation map and open browse routes with the new route highlighted
                     if (newRouteId) {
+                        // Invalidate routes cache so fresh data is loaded
+                        invalidateCache('routes');
+                        
                         // Close creation section
                         const modal = document.getElementById('fullscreen-journey-map');
                         if (modal) {
@@ -5756,6 +6074,7 @@
                             // Clear route data so it doesn't persist on next create
                             routeCoordinates = [];
                             waypointLabels = [];
+                            waypointAddresses = [];
                             routeMarkers = [];
                         }
                         // Open browse routes immediately showing the new route
@@ -5868,8 +6187,8 @@
             allRoutesData.forEach(r => {
                 r.polyline.setStyle({ opacity: 0.3, weight: 3 });
                 // Hide plain pin
-                if (r.plainPin && searchMap.hasLayer(r.plainPin)) {
-                    searchMap.removeLayer(r.plainPin);
+                if (r.plainPin && window.routeClusterGroup.hasLayer(r.plainPin)) {
+                    window.routeClusterGroup.removeLayer(r.plainPin);
                 }
                 // Hide numbered markers
                 r.markers.forEach(m => {
@@ -5892,8 +6211,8 @@
                     if (!searchMap.hasLayer(routeData.polyline)) {
                         routeData.polyline.addTo(searchMap);
                     }
-                    if (!searchMap.hasLayer(routeData.plainPin)) {
-                        routeData.plainPin.addTo(searchMap);
+                    if (!window.routeClusterGroup.hasLayer(routeData.plainPin)) {
+                        window.routeClusterGroup.addLayer(routeData.plainPin);
                     }
                     routeData.polyline.setStyle({ opacity: 0.7, weight: 4 });
                     foundRoutes++;
@@ -5902,8 +6221,8 @@
                     if (searchMap.hasLayer(routeData.polyline)) {
                         searchMap.removeLayer(routeData.polyline);
                     }
-                    if (routeData.plainPin && searchMap.hasLayer(routeData.plainPin)) {
-                        searchMap.removeLayer(routeData.plainPin);
+                    if (routeData.plainPin && window.routeClusterGroup.hasLayer(routeData.plainPin)) {
+                        window.routeClusterGroup.removeLayer(routeData.plainPin);
                     }
                 }
             });
@@ -6005,6 +6324,39 @@
                         const date = new Date(item.created).toLocaleDateString();
                         const sectionMap = { 'route': 'search', 'swarm': 'swarms', 'event': 'events' };
                         
+                        // Check if swarm/event is in the past
+                        let isPast = false;
+                        const now = new Date();
+                        
+                        if (item.type === 'swarm' && item.date) {
+                            const [year, month, day] = item.date.split('-');
+                            const swarmDate = new Date(year, month - 1, day);
+                            if (item.time) {
+                                const [hours, minutes] = item.time.split(':');
+                                swarmDate.setHours(hours, minutes);
+                            }
+                            isPast = swarmDate < now;
+                        }
+                        
+                        if (item.type === 'event' && (item.endDate || item.startDate)) {
+                            const checkDate = item.endDate || item.startDate;
+                            const [year, month, day] = checkDate.split('-');
+                            const eventDate = new Date(year, month - 1, day);
+                            if (item.endTime) {
+                                const [hours, minutes] = item.endTime.split(':');
+                                eventDate.setHours(hours, minutes);
+                            } else if (item.startTime) {
+                                const [hours, minutes] = item.startTime.split(':');
+                                eventDate.setHours(hours, minutes);
+                            }
+                            isPast = eventDate < now;
+                        }
+                        
+                        const pastBadge = isPast ? `<span style="background: rgba(150, 150, 150, 0.3); color: #999; padding: 0.2rem 0.6rem; border-radius: 10px; font-size: 0.7rem; font-weight: 600; margin-left: 0.5rem;">Past</span>` : '';
+                        const cardStyle = isPast ? 
+                            'background: rgba(30, 30, 30, 0.5); border: 2px solid rgba(100, 100, 100, 0.2); border-radius: 15px; padding: 1.5rem; cursor: pointer; transition: all 0.3s; opacity: 0.6;' :
+                            'background: rgba(30, 30, 30, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; padding: 1.5rem; cursor: pointer; transition: all 0.3s;';
+                        
                         // Add recurring badge for events
                         const recurringBadge = ''; // Recurring removed per user request
                         
@@ -6012,19 +6364,24 @@
                         const eventDateTime = item.type === 'event' && item.startDate ? 
                             `<p style="color: var(--accent-light); font-size: 0.85rem; margin: 0.5rem 0; font-weight: 600;">📅 ${item.startDate} at ${item.startTime || 'TBD'}</p>` : '';
                         
+                        // Add swarm-specific date/time
+                        const swarmDateTime = item.type === 'swarm' && item.date ? 
+                            `<p style="color: var(--accent-light); font-size: 0.85rem; margin: 0.5rem 0; font-weight: 600;">📅 ${item.date} at ${item.time || 'TBD'}</p>` : '';
+                        
                         html += `
                             <div onclick="document.getElementById('user-profile-modal').remove(); toggleSection('${sectionMap[item.type]}', '${item.id}')" 
-                                 style="background: rgba(30, 30, 30, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 15px; padding: 1.5rem; cursor: pointer; transition: all 0.3s;"
+                                 style="${cardStyle}"
                                  onmouseover="this.style.borderColor='var(--accent-color)'; this.style.transform='translateY(-2px)'"
-                                 onmouseout="this.style.borderColor='rgba(107, 155, 158, 0.3)'; this.style.transform='translateY(0)'">
+                                 onmouseout="this.style.borderColor='${isPast ? 'rgba(100, 100, 100, 0.2)' : 'rgba(107, 155, 158, 0.3)'}'; this.style.transform='translateY(0)'">
                                 <div style="display: flex; align-items: start; gap: 1rem;">
                                     <div style="font-size: 2rem; line-height: 1;">${emoji}</div>
                                     <div style="flex: 1;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                            <h3 style="color: var(--accent-light); margin: 0; font-size: 1.1rem;">${title}${recurringBadge}</h3>
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                                            <h3 style="color: ${isPast ? '#999' : 'var(--accent-light)'}; margin: 0; font-size: 1.1rem;">${title}${recurringBadge}${pastBadge}</h3>
                                             <span style="background: rgba(107, 155, 158, 0.2); color: var(--accent-light); padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">${typeLabel}</span>
                                         </div>
                                         ${eventDateTime}
+                                        ${swarmDateTime}
                                         ${item.recurrenceInfo ? `<p style="color: #999; font-size: 0.8rem; font-style: italic; margin: 0.5rem 0;">${item.recurrenceInfo}</p>` : ''}
                                         <p style="color: #d4d4d4; font-size: 0.9rem; margin: 0.5rem 0; line-height: 1.4;">${desc.substring(0, 150)}${desc.length > 150 ? '...' : ''}</p>
                                         <p style="color: #999; font-size: 0.8rem; margin: 0.5rem 0 0 0;">📅 Posted ${date}</p>
@@ -6218,19 +6575,26 @@
                 });
                 
                 // Show plain pin
-                if (r.plainPin && !searchMap.hasLayer(r.plainPin)) {
-                    r.plainPin.addTo(searchMap);
+                if (r.plainPin && !window.routeClusterGroup.hasLayer(r.plainPin)) {
+                    window.routeClusterGroup.addLayer(r.plainPin);
                 }
                 if (r.plainPin) {
                     r.plainPin.setOpacity(1);
                 }
             });
             
-            // Zoom out to city level (zoom 12) instead of fitting bounds
+            // Zoom to fit all visible routes, or stay at current view if only one area
             if (allRoutesData.length > 0) {
-                // Use first route's coordinates to center, or default to Denver
-                const centerCoords = allRoutesData[0]?.route?.waypoints?.[0] || [39.7392, -104.9903];
-                searchMap.setView(centerCoords, 12);
+                const allBounds = [];
+                allRoutesData.forEach(r => {
+                    if (r.route.waypoints) {
+                        r.route.waypoints.forEach(wp => allBounds.push(wp));
+                    }
+                });
+                if (allBounds.length > 0) {
+                    const bounds = L.latLngBounds(allBounds);
+                    searchMap.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+                }
             }
             
             selectedRoute = null;
@@ -6280,25 +6644,119 @@
             
             setTimeout(() => {
                 toast.remove();
-            }, 3000);
+            }, 5000);
         }
         window.showToast = showToast;
+        
+        // ===== LOCATE ME FUNCTION =====
+        function locateMe() {
+            if (!navigator.geolocation) {
+                showToast('Geolocation is not supported by your browser');
+                return;
+            }
+            
+            showToast('Finding your location...');
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    let mapCentered = false;
+                    
+                    // Check which section is currently visible and center that map
+                    const swarmSection = document.getElementById('swarms');
+                    const eventSection = document.getElementById('events');
+                    const searchSection = document.getElementById('search');
+                    
+                    if (swarmSection && swarmSection.style.display !== 'none' && swarmMap) {
+                        swarmMap.setView([latitude, longitude], 14);
+                        mapCentered = true;
+                    } else if (eventSection && eventSection.style.display !== 'none' && eventMap) {
+                        eventMap.setView([latitude, longitude], 14);
+                        mapCentered = true;
+                    } else if (searchSection && searchSection.style.display !== 'none' && searchMap) {
+                        searchMap.setView([latitude, longitude], 14);
+                        mapCentered = true;
+                    } else if (searchMap) {
+                        // Fallback to searchMap if it exists
+                        searchMap.setView([latitude, longitude], 14);
+                        mapCentered = true;
+                    } else if (swarmMap) {
+                        swarmMap.setView([latitude, longitude], 14);
+                        mapCentered = true;
+                    } else if (eventMap) {
+                        eventMap.setView([latitude, longitude], 14);
+                        mapCentered = true;
+                    }
+                    
+                    if (mapCentered) {
+                        showToast('Map centered on your location!');
+                    } else {
+                        showToast('No map available to center');
+                    }
+                },
+                (error) => {
+                    if (error.code === error.PERMISSION_DENIED) {
+                        showToast('Location access denied. Please enable it in your browser settings.');
+                    } else if (error.code === error.POSITION_UNAVAILABLE) {
+                        showToast('Location unavailable. Please try again.');
+                    } else {
+                        showToast('Could not get your location. Please try again.');
+                    }
+                },
+                { enableHighAccuracy: true, timeout: 30000, maximumAge: 60000 }
+            );
+        }
+        window.locateMe = locateMe;
         
         // ===== REVERSE GEOCODING =====
         // Convert coordinates back to address
         async function reverseGeocode(lat, lng) {
             try {
-                const accessToken = 'pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3cifQ.EPETOMFI41QInYccb4Cehg';
-                const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${accessToken}&limit=1`;
+                const accessToken = 'pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg';
                 
-                const response = await fetch(url);
-                const data = await response.json();
+                // Round coordinates to 6 decimal places
+                const roundedLng = parseFloat(lng).toFixed(6);
+                const roundedLat = parseFloat(lat).toFixed(6);
                 
-                if (data.features && data.features.length > 0) {
-                    const address = data.features[0].place_name;
-                    return address;
+                // Get POI results
+                const poiUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${roundedLng},${roundedLat}.json?access_token=${accessToken}&types=poi&limit=1`;
+                const poiResponse = await fetch(poiUrl);
+                const poiData = await poiResponse.json();
+                
+                // Get address results
+                const addressUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${roundedLng},${roundedLat}.json?access_token=${accessToken}&types=address&limit=1`;
+                const addressResponse = await fetch(addressUrl);
+                const addressData = await addressResponse.json();
+                
+                let businessName = null;
+                let address = null;
+                
+                // Check for POI
+                if (poiData.features && poiData.features.length > 0) {
+                    const poi = poiData.features[0];
+                    const poiLng = poi.center[0];
+                    const poiLat = poi.center[1];
+                    const distance = Math.sqrt(Math.pow(poiLat - lat, 2) + Math.pow(poiLng - lng, 2)) * 111000;
+                    
+                    console.log('POI found:', poi.text, 'at distance:', distance.toFixed(1), 'meters');
+                    
+                    if (distance < 100) {
+                        businessName = poi.text;
+                    }
+                } else {
+                    console.log('No POI found nearby');
                 }
-                return null;
+                
+                // Get address
+                if (addressData.features && addressData.features.length > 0) {
+                    address = addressData.features[0].place_name;
+                }
+                
+                // Return object with both, or just address as string for backwards compatibility
+                if (businessName) {
+                    return { businessName, address: address || 'Address unavailable' };
+                }
+                return address;
             } catch (error) {
                 console.error('Reverse geocoding error:', error);
                 return null;
@@ -6330,14 +6788,28 @@
             
             document.body.appendChild(modal);
             
-            // Initialize map - EXACT SAME as Share Your Journey
+            // Initialize map with US-wide view, then try geolocation
             setTimeout(() => {
-                pinCreationMap = L.map('pinCreationMap').setView([39.7392, -104.9903], 11);
-                L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3cifQ.EPETOMFI41QInYccb4Cehg', {
+                pinCreationMap = L.map('pinCreationMap').setView([39.8, -98.5], 4);
+                L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
                     tileSize: 512,
                     zoomOffset: -1
                 }).addTo(pinCreationMap);
                 L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(pinCreationMap);
+                
+                // Try to get user's actual GPS location
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const { latitude, longitude } = position.coords;
+                            pinCreationMap.setView([latitude, longitude], 14);
+                        },
+                        (error) => {
+                            console.log('Geolocation denied or unavailable');
+                        },
+                        { enableHighAccuracy: true, timeout: 30000, maximumAge: 60000 }
+                    );
+                }
                 
                 // CRITICAL: Modal needs invalidateSize after it renders
                 setTimeout(() => {
@@ -6418,14 +6890,28 @@
             
             document.body.appendChild(modal);
             
-            // Initialize map - EXACT SAME as Share Your Journey
+            // Initialize map with US-wide view, then try geolocation
             setTimeout(() => {
-                pinCreationMap = L.map('pinCreationMap').setView([39.7392, -104.9903], 11);
-                L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3cifQ.EPETOMFI41QInYccb4Cehg', {
+                pinCreationMap = L.map('pinCreationMap').setView([39.8, -98.5], 4);
+                L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiaGlnaGRlZnBhbnRzIiwiYSI6ImNtaHpiNGt0NzBsNTIyam9saW45YmQ0Z3gifQ.EPETOMFI41QInYccb4Cehg', {
                     tileSize: 512,
                     zoomOffset: -1
                 }).addTo(pinCreationMap);
                 L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© <a href="https://www.mapbox.com/">Mapbox</a>').addTo(pinCreationMap);
+                
+                // Try to get user's actual GPS location
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const { latitude, longitude } = position.coords;
+                            pinCreationMap.setView([latitude, longitude], 14);
+                        },
+                        (error) => {
+                            console.log('Geolocation denied or unavailable');
+                        },
+                        { enableHighAccuracy: true, timeout: 30000, maximumAge: 60000 }
+                    );
+                }
                 
                 // CRITICAL: Modal needs invalidateSize after it renders
                 setTimeout(() => {
@@ -6701,12 +7187,31 @@
             
             // Save to Firebase (also keeps localStorage as backup)
             if (window.editingSwarmId) {
-                // UPDATE existing swarm
-                await database.ref(`swarms/${window.editingSwarmId}`).update(swarmData);
+                // UPDATE existing swarm - don't overwrite created date
+                const editedSwarmId = window.editingSwarmId;
+                const updateData = {
+                    title: formData.get('swarmTitle'),
+                    meetingLocation: formData.get('swarmMeetingLocation'),
+                    lat: lat,
+                    lng: lng,
+                    location: window.swarmLocation.address || formData.get('swarmMeetingLocation'),
+                    date: formData.get('swarmDate'),
+                    time: formData.get('swarmTime'),
+                    description: formData.get('swarmDescription'),
+                    postedBy: formData.get('swarmPostedBy'),
+                    duration: formData.get('swarmDuration'),
+                    identifier: formData.get('swarmIdentifier'),
+                    lastModified: new Date().toISOString()
+                };
+                await database.ref(`swarms/${editedSwarmId}`).update(updateData);
                 showToast('Swarm updated successfully!');
+                // Invalidate swarms cache
+                invalidateCache('swarms');
                 window.editingSwarmId = null; // Clear editing flag
                 closeCreateSwarmModal();
-                openDashboard(); // Show updated swarm in dashboard
+                closeDashboard();
+                // Open browse swarms and highlight the edited one
+                toggleSection('swarms', editedSwarmId);
             } else {
                 // CREATE new swarm
                 const newSwarmId = await saveSwarmToFirebase(swarmData);
@@ -6787,12 +7292,32 @@
             
             // Save to Firebase (also keeps localStorage as backup)
             if (window.editingEventId) {
-                // UPDATE existing event
-                await database.ref(`events/${window.editingEventId}`).update(eventData);
+                // UPDATE existing event - don't overwrite created date
+                const editedEventId = window.editingEventId;
+                const updateData = {
+                    name: formData.get('eventName'),
+                    location: formData.get('eventLocation'),
+                    lat: lat,
+                    lng: lng,
+                    startDate: formData.get('eventStartDate'),
+                    startTime: formData.get('eventStartTime'),
+                    endDate: formData.get('eventEndDate'),
+                    endTime: formData.get('eventEndTime'),
+                    description: formData.get('eventDescription'),
+                    website: formData.get('eventWebsite'),
+                    maxParticipants: formData.get('eventMaxParticipants'),
+                    postedBy: formData.get('eventPostedBy'),
+                    lastModified: new Date().toISOString()
+                };
+                await database.ref(`events/${editedEventId}`).update(updateData);
                 showToast('Event updated successfully!');
+                // Invalidate events cache
+                invalidateCache('events');
                 window.editingEventId = null; // Clear editing flag
                 closeCreateEventModal();
-                openDashboard(); // Show updated event in dashboard
+                closeDashboard();
+                // Open browse events and highlight the edited one
+                toggleSection('events', editedEventId);
             } else {
                 // CREATE new event
                 const newEventId = await saveEventToFirebase(eventData);
@@ -7610,10 +8135,113 @@
         }
         window.reportMessage = reportMessage;
         
+        // Report content (routes, swarms, events)
+        async function reportContent(contentType, contentId, contentName, createdBy) {
+            const user = auth.currentUser;
+            if (!user) {
+                showToast('Please sign in to report content');
+                return;
+            }
+            
+            // Check if user is reporting their own content
+            if (user.uid === createdBy) {
+                showToast('You cannot report your own content');
+                return;
+            }
+            
+            // Check if already reported by this user
+            try {
+                const existingReport = await database.ref('reports')
+                    .orderByChild('contentId')
+                    .equalTo(contentId)
+                    .once('value');
+                
+                let alreadyReported = false;
+                existingReport.forEach(snap => {
+                    if (snap.val().reportedBy === user.uid) {
+                        alreadyReported = true;
+                    }
+                });
+                
+                if (alreadyReported) {
+                    showToast('You have already reported this content');
+                    return;
+                }
+            } catch (error) {
+                console.error('Error checking existing reports:', error);
+            }
+            
+            // Show report modal with reason field
+            const modal = document.createElement('div');
+            modal.id = 'reportModal';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 10001; display: flex; align-items: center; justify-content: center; padding: 2rem;';
+            modal.innerHTML = `
+                <div style="background: rgba(30, 30, 30, 0.98); border-radius: 20px; padding: 2rem; max-width: 500px; width: 100%; border: 2px solid rgba(107, 155, 158, 0.3);">
+                    <h2 style="color: #ff6b6b; margin-bottom: 1rem;">🚩 Report ${contentType}</h2>
+                    <p style="color: #999; margin-bottom: 1rem;">You're reporting: <strong style="color: #e0e0e0;">${contentName}</strong></p>
+                    <label style="color: #8DBCC0; display: block; margin-bottom: 0.5rem;">Why are you reporting this? *</label>
+                    <select id="reportReasonSelect" style="width: 100%; padding: 1rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: #e0e0e0; font-family: 'Poppins', sans-serif; margin-bottom: 1rem;">
+                        <option value="">Select a reason...</option>
+                        <option value="Inappropriate content">Inappropriate content</option>
+                        <option value="Spam or misleading">Spam or misleading</option>
+                        <option value="Harassment or hate">Harassment or hate</option>
+                        <option value="Safety concern">Safety concern</option>
+                        <option value="Incorrect information">Incorrect information</option>
+                        <option value="Copyright/IP violation">Copyright/IP violation</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <label style="color: #8DBCC0; display: block; margin-bottom: 0.5rem;">Additional details (optional)</label>
+                    <textarea id="reportDetails" placeholder="Please provide any additional context..." style="width: 100%; padding: 1rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: #e0e0e0; font-family: 'Poppins', sans-serif; min-height: 100px; resize: vertical; margin-bottom: 1.5rem;"></textarea>
+                    <div style="display: flex; gap: 1rem;">
+                        <button onclick="document.getElementById('reportModal').remove()" style="flex: 1; padding: 1rem; background: rgba(100, 100, 100, 0.5); color: #e0e0e0; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">Cancel</button>
+                        <button onclick="submitReport('${contentType}', '${contentId}', '${contentName.replace(/'/g, "\\'")}', '${createdBy}')" style="flex: 1; padding: 1rem; background: #dc3545; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">Submit Report</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        window.reportContent = reportContent;
+        
+        async function submitReport(contentType, contentId, contentName, createdBy) {
+            const reason = document.getElementById('reportReasonSelect').value;
+            const details = document.getElementById('reportDetails').value.trim();
+            
+            if (!reason) {
+                showToast('Please select a reason for reporting');
+                return;
+            }
+            
+            const user = auth.currentUser;
+            
+            try {
+                const reportData = {
+                    type: contentType,
+                    contentId: contentId,
+                    contentName: contentName,
+                    contentCreatedBy: createdBy,
+                    reportedBy: user.uid,
+                    reportedByEmail: user.email,
+                    reportedByName: user.displayName || user.email.split('@')[0],
+                    reason: reason,
+                    details: details || '',
+                    reportTimestamp: new Date().toISOString(),
+                    status: 'pending'
+                };
+                
+                await database.ref('reports').push(reportData);
+                document.getElementById('reportModal').remove();
+                showToast('Thank you for reporting. Our team will review this content.');
+            } catch (error) {
+                console.error('Error reporting content:', error);
+                showToast('Error submitting report');
+            }
+        }
+        window.submitReport = submitReport;
+        
     </script>
 
     <!-- Create Swarm Modal -->
-    <div id="createSwarmModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 10000; align-items: center; justify-content: center; padding: 2rem;">
+    <div id="createSwarmModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 10001; align-items: center; justify-content: center; padding: 2rem;">
         <div style="background: rgba(25, 25, 25, 0.98); border-radius: 20px; padding: 2.5rem; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; border: 2px solid rgba(107, 155, 158, 0.3); position: relative;">
             <button onclick="closeCreateSwarmModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--accent-color); font-size: 2rem; cursor: pointer; line-height: 1;">&times;</button>
             
@@ -7678,7 +8306,7 @@
     </div>
 
     <!-- Create Event Modal -->
-    <div id="createEventModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 10000; align-items: center; justify-content: center; padding: 2rem;">
+    <div id="createEventModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 10001; align-items: center; justify-content: center; padding: 2rem;">
         <div style="background: rgba(25, 25, 25, 0.98); border-radius: 20px; padding: 2.5rem; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; border: 2px solid rgba(107, 155, 158, 0.3); position: relative;">
             <button onclick="closeCreateEventModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--accent-color); font-size: 2rem; cursor: pointer; line-height: 1;">&times;</button>
             
@@ -7824,8 +8452,13 @@
                     <input type="text" id="signUpDisplayName" required oninput="checkUsernameAvailability()" pattern="[a-zA-Z0-9_]+" minlength="3" maxlength="20" style="width: 100%; padding: 0.8rem; background: rgba(40, 40, 40, 0.8); border: 2px solid rgba(107, 155, 158, 0.3); border-radius: 10px; color: white; font-size: 1rem;" placeholder="Letters, numbers, underscore only">
                     <p id="usernameStatus" style="margin-top: 0.5rem; font-size: 0.85rem; color: #999;"></p>
                 </div>
-                <!-- Honeypot field (hidden from humans, bots will fill it) -->
+                <!-- Honeypot fields (hidden from humans, bots will fill them) -->
                 <input type="text" id="website" name="website" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1" autocomplete="off">
+                <input type="text" id="phone_number" name="phone_number" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1" autocomplete="off">
+                <input type="text" id="confirm_email" name="confirm_email" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1" autocomplete="off">
+                <input type="text" id="address" name="address" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1" autocomplete="off">
+                <!-- Timestamp for time-based bot check -->
+                <input type="hidden" id="formLoadTime" value="">
                 <button type="submit" class="feature-btn" style="width: 100%;">Sign Up</button>
                 <p style="color: #8DBCC0; font-size: 0.88rem; margin-top: 1rem; text-align: center; padding: 0.8rem; background: rgba(107, 155, 158, 0.08); border-radius: 8px;">
                     By signing up, you agree to our <a href="/safety.html" target="_blank" style="color: var(--accent-color); text-decoration: underline;">Safety Guidelines</a> and <a href="/terms.html" target="_blank" style="color: var(--accent-color); text-decoration: underline;">Terms of Use</a>
@@ -8039,6 +8672,11 @@
                         console.log('PWA: Showing iOS banner on page load');
                     }, 2000); // Show after 2 seconds to not be annoying
                 }
+            }
+            
+            // Load banned locations from Firebase
+            if (typeof loadBannedLocations === 'function') {
+                loadBannedLocations();
             }
         });
     </script>
